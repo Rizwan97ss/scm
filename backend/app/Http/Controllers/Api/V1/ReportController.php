@@ -32,7 +32,7 @@ class ReportController extends Controller
         $from = $request->filled('from_date') ? Carbon::parse($request->string('from_date')->toString()) : now()->subMonths(5)->startOfMonth();
         $to = $request->filled('to_date') ? Carbon::parse($request->string('to_date')->toString()) : now();
 
-        return ApiResponse::success($reports->summary($user->school, $user, $from, $to));
+        return ApiResponse::success($reports->summary(tenant(), $user, $from, $to));
     }
 
     public function academicPerformance(Request $request, AcademicReportService $reports): JsonResponse
@@ -40,7 +40,7 @@ class ReportController extends Controller
         $user = $request->user();
         abort_unless($user->can('exam-marks.view'), 403);
 
-        return ApiResponse::success(['exams' => $reports->recentExamPerformance($user->school)]);
+        return ApiResponse::success(['exams' => $reports->recentExamPerformance(tenant())]);
     }
 
     public function enrollment(Request $request, EnrollmentReportService $reports): JsonResponse
@@ -48,7 +48,7 @@ class ReportController extends Controller
         $user = $request->user();
         abort_unless($user->can('students.view'), 403);
 
-        return ApiResponse::success($reports->summary($user->school));
+        return ApiResponse::success($reports->summary(tenant()));
     }
 
     public function operations(Request $request, OperationsReportService $reports): JsonResponse
@@ -56,6 +56,6 @@ class ReportController extends Controller
         $user = $request->user();
         abort_unless($user->can('library.view') || $user->can('transport.view') || $user->can('hostel.view'), 403);
 
-        return ApiResponse::success($reports->summary($user->school, $user));
+        return ApiResponse::success($reports->summary(tenant(), $user));
     }
 }

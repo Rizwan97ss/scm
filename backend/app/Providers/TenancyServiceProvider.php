@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Support\ApiResponse;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -12,6 +13,7 @@ use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
 use Stancl\Tenancy\Middleware;
+use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
 
 class TenancyServiceProvider extends ServiceProvider
 {
@@ -112,6 +114,15 @@ class TenancyServiceProvider extends ServiceProvider
         $this->mapRoutes();
 
         $this->makeTenancyMiddlewareHighestPriority();
+
+        // Default failure mode is to throw an uncaught exception. Every route
+        // this middleware guards is an API endpoint (see routes/api.php's
+        // tenant zone) — a request that can't resolve a tenant (bogus
+        // subdomain, or the central domain hitting a tenant-only route
+        // directly) should get a clean JSON 404, not a 500.
+        InitializeTenancyBySubdomain::$onFail = function () {
+            return ApiResponse::error('School not found.', 404);
+        };
     }
 
     protected function bootEvents()

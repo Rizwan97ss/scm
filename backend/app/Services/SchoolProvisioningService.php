@@ -6,9 +6,12 @@ use App\Enums\SettingType;
 use App\Models\Plan;
 use App\Models\School;
 use App\Models\User;
+use Database\Seeders\PermissionSeeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
+use Throwable;
 
 /**
  * Stands up one new tenant: the School row, its default roles/permissions
@@ -223,9 +226,21 @@ class SchoolProvisioningService
      * Creates (or resyncs) the school's default roles and their default
      * permission sets. Idempotent — safe to re-run against a school that
      * already has these roles (e.g. from the CLI seeder).
+     *
+     * Under database-per-tenant, Spatie's own `permissions` table lives in
+     * THIS tenant's database too, not a shared one — a brand-new tenant has
+     * zero rows in it, and syncPermissions() throws PermissionDoesNotExist
+     * for a name that isn't there yet. PermissionSeeder used to run once,
+     * globally, for the whole (single, shared) app; now it has to run once
+     * per tenant, which is what actually makes this method self-sufficient
+     * regardless of caller (matches its own "idempotent" contract above)
+     * rather than relying on some other seeder having already run first
+     * against this exact tenant connection.
      */
     public function seedDefaultRoles(School $school): void
     {
+        app(PermissionSeeder::class)->run();
+
         $registrar = app(PermissionRegistrar::class);
 
         foreach (self::SCHOOL_SCOPED_ROLE_PERMISSIONS as $roleName => $permissions) {
@@ -249,38 +264,50 @@ class SchoolProvisioningService
     }
 
     /**
-     * Stands up a brand-new tenant end to end: the School row, its roles,
-     * its first admin user (assigned "School Admin"), and plan-derived
-     * settings — all inside one transaction. Deliberately Stripe-agnostic:
-     * callers handle Stripe customer/subscription creation afterward,
-     * since that's an external HTTP call that shouldn't hold a DB
-     * transaction open.
+     * Stands up a brand-new tenant end to end: the School row (landlord),
+     * its physical tenant database (synchronous — see School's
+     * $dispatchesEvents docblock; no queue worker exists in this app), and
+     * — inside that tenant's own connection — its default roles, first
+     * admin user ("School Admin"), plan-derived settings, and a one-time
+     * login token for the signup-completion handoff (see SignupController:
+     * a session created while this request is on the central/signup domain
+     * can't carry over to the tenant's own subdomain, since session cookies
+     * don't cross origins — this token is what proves "this really is the
+     * admin who just signed up" on that first request to the new subdomain).
+     *
+     * No DB::transaction wrapper: the landlord write and the tenant writes
+     * are on entirely different physical connections, so one transaction
+     * can never span both. On any failure after the School row exists, the
+     * whole tenant (row + physical database, whatever got created before
+     * the failure) is torn down instead — a half-provisioned tenant with no
+     * working admin login is worse than no tenant at all.
      *
      * @param  array<string, mixed>  $schoolAttributes
      * @param  array<string, mixed>  $adminAttributes
-     *
-     * TODO(tenancy): this whole method needs Sub-phase E's rewrite, not a
-     * patch — School::create() no longer atomically implies a ready tenant
-     * database (see School's $dispatchesEvents: creating the row triggers
-     * async-capable provisioning via stancl's job pipeline), seedDefaultRoles()
-     * and the admin User::create() below must run INSIDE that tenant's own
-     * connection once it exists, and 'school_id' => $school->id is a
-     * straightforwardly broken reference to a column User no longer has.
-     * Left as a known-broken placeholder rather than patched piecemeal.
+     * @return array{school: School, admin: User, login_token: string}
      */
-    public function provision(array $schoolAttributes, array $adminAttributes, Plan $plan): School
+    public function provision(array $schoolAttributes, array $adminAttributes, Plan $plan): array
     {
-        return DB::transaction(function () use ($schoolAttributes, $adminAttributes, $plan) {
-            $school = School::query()->create([...$schoolAttributes, 'plan_id' => $plan->id]);
+        $school = School::query()->create([...$schoolAttributes, 'plan_id' => $plan->id]);
 
-            $this->seedDefaultRoles($school);
+        try {
+            $result = $school->run(function () use ($adminAttributes, $plan, $school) {
+                $this->seedDefaultRoles($school);
 
-            $admin = User::query()->create([...$adminAttributes, 'school_id' => $school->id]);
-            $admin->assignRole('School Admin');
+                $admin = User::query()->create($adminAttributes);
+                $admin->assignRole('School Admin');
 
-            $this->applyPlanLimits($school, $plan);
+                $this->applyPlanLimits($school, $plan);
 
-            return $school;
-        });
+                return ['admin' => $admin, 'login_token' => Password::broker()->createToken($admin)];
+            });
+        } catch (Throwable $e) {
+            DB::statement('DROP DATABASE IF EXISTS `'.$school->database()->getName().'`');
+            $school->forceDelete();
+
+            throw $e;
+        }
+
+        return ['school' => $school, 'admin' => $result['admin'], 'login_token' => $result['login_token']];
     }
 }

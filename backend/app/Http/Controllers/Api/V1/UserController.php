@@ -25,11 +25,11 @@ class UserController extends Controller
     {
         $this->authorize('viewAny', User::class);
 
-        $actor = $request->user();
-
-        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
+        // Super Admin (PlatformUser) can't reach this tenant-scoped route at
+        // all, so there's no cross-tenant "?school_id=" filter branch to
+        // support here anymore — every request here already sees exactly
+        // one tenant's users, by construction.
         $paginator = QueryBuilder::for(User::query()->with(['roles', 'designation']))
-            ->when($actor->school_id === null && $request->filled('school_id'), fn ($q) => $q->inSchool($request->integer('school_id')))
             ->allowedFilters('first_name', 'last_name', 'email', 'status', AllowedFilter::exact('role', 'roles.name'))
             ->allowedSorts('first_name', 'last_name', 'email', 'created_at')
             ->defaultSort('first_name')
@@ -48,15 +48,14 @@ class UserController extends Controller
     {
         $this->authorize('create', User::class);
 
-        $actor = $request->user();
-
         // Only roles that actually count toward a "staff seat" (see
         // School::staffCount()) trigger the check — a user created here
-        // with only Student/Parent roles doesn't consume one.
+        // with only Student/Parent roles doesn't consume one. Super Admin
+        // (PlatformUser) can't reach this tenant-scoped route at all, so no
+        // bypass is needed here.
         $isStaffRole = ! empty(array_diff($request->array('roles'), ['Student', 'Parent']));
-        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
-        if ($actor->school_id !== null && $isStaffRole) {
-            $planLimits->assertCanAddStaffUser($actor->school);
+        if ($isStaffRole) {
+            $planLimits->assertCanAddStaffUser(tenant());
         }
 
         $user = User::query()->create([

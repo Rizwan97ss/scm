@@ -133,6 +133,21 @@ class School extends Model implements TenantWithDatabase
         return $this->belongsTo(Plan::class);
     }
 
+    /**
+     * This school's own frontend origin, derived from the central one
+     * (config('app.frontend_url'), e.g. http://localtest.me:5173) by
+     * inserting this school's slug as a subdomain -- there's no separate
+     * per-school config value to read, subdomain identification means the
+     * URL is always {slug}.{central host}.
+     */
+    public function frontendUrl(): string
+    {
+        $central = parse_url(config('app.frontend_url'));
+        $port = isset($central['port']) ? ':'.$central['port'] : '';
+
+        return "{$central['scheme']}://{$this->slug}.{$central['host']}{$port}";
+    }
+
     public function studentCount(): int
     {
         return $this->students()->whereNull('deleted_at')->count();

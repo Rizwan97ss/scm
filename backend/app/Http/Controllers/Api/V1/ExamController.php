@@ -174,7 +174,7 @@ class ExamController extends CrudController
 
         $pdf = Pdf::loadView('pdf.report-card', [
             'data' => $data,
-            'schoolName' => $exam->school->name,
+            'schoolName' => tenant()->name,
             'generatedAt' => now()->toDayDateTimeString(),
         ]);
 

@@ -17,11 +17,11 @@ class AuditLogController extends Controller
     {
         $this->authorize('viewAny', Activity::class);
 
-        $actor = $request->user();
-
-        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
+        // Super Admin (PlatformUser) can't reach this tenant-scoped route at
+        // all, and Activity no longer has a school_id column (Sub-phase D)
+        // -- every row visible via the current tenant connection already
+        // belongs to this tenant, by construction.
         $paginator = QueryBuilder::for(Activity::query()->with('causer'))
-            ->when($actor->school_id !== null, fn ($q) => $q->where('school_id', $actor->school_id))
             ->allowedFilters('log_name', 'event', AllowedFilter::exact('subject_type'))
             ->defaultSort('-created_at')
             ->allowedSorts('created_at')

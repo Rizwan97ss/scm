@@ -16,7 +16,7 @@ class FeeReportController extends Controller
         $this->authorize('viewReports', Invoice::class);
 
         return ApiResponse::success($reports->collectionSummary(
-            $request->user()->school,
+            tenant(),
             $request->string('from_date')->toString() ?: null,
             $request->string('to_date')->toString() ?: null,
         ));
@@ -26,6 +26,6 @@ class FeeReportController extends Controller
     {
         $this->authorize('viewReports', Invoice::class);
 
-        return ApiResponse::success($reports->outstandingDues($request->user()->school));
+        return ApiResponse::success($reports->outstandingDues(tenant()));
     }
 }

@@ -10,7 +10,11 @@ use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\LogoutController;
 use App\Http\Controllers\Api\V1\Auth\MeController;
 use App\Http\Controllers\Api\V1\Auth\PasswordController;
+use App\Http\Controllers\Api\V1\Auth\PlatformLoginController;
+use App\Http\Controllers\Api\V1\Auth\PlatformLogoutController;
+use App\Http\Controllers\Api\V1\Auth\PlatformMeController;
 use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
+use App\Http\Controllers\Api\V1\Auth\SignupCompleteController;
 use App\Http\Controllers\Api\V1\Auth\SignupController;
 use App\Http\Controllers\Api\V1\BillingController;
 use App\Http\Controllers\Api\V1\BookController;
@@ -82,286 +86,317 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
 
-    // ---- Auth ---------------------------------------------------------
+    // =====================================================================
+    // CENTRAL zone — no tenant resolved. Runs on the platform/signup domain
+    // (localtest.me, no subdomain) — tenancy.subdomain middleware never
+    // touches anything in this block. A school doesn't exist yet when
+    // signup runs, and Super Admin isn't inside any one tenant at all.
+    // =====================================================================
+
     Route::prefix('auth')->name('auth.')->group(function () {
-        Route::post('login', LoginController::class)->name('login')->middleware('throttle:10,1');
         Route::post('signup', SignupController::class)->name('signup')->middleware('throttle:5,60');
-        Route::post('forgot-password', ForgotPasswordController::class)->name('forgot-password')->middleware('throttle:5,1');
-        Route::post('reset-password', ResetPasswordController::class)->name('reset-password')->middleware('throttle:5,1');
+        Route::post('platform-login', PlatformLoginController::class)->name('platform-login')->middleware('throttle:10,1');
 
-        Route::middleware('auth:sanctum')->group(function () {
-            Route::post('logout', LogoutController::class)->name('logout');
-            Route::get('me', MeController::class)->name('me');
-            Route::put('password', PasswordController::class)->name('password');
-            Route::post('email/verification-notification', [EmailVerificationController::class, 'notify'])
-                ->name('verification.send')
-                ->middleware('throttle:6,1');
+        Route::middleware('auth:platform')->group(function () {
+            Route::post('platform-logout', PlatformLogoutController::class)->name('platform-logout');
+            Route::get('platform-me', PlatformMeController::class)->name('platform-me');
         });
-
-        Route::get('email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-            ->middleware(['auth:sanctum', 'signed'])
-            ->name('verification.verify');
     });
 
-    // ---- Public (no auth) ---------------------------------------------
-    Route::get('settings/public', [SettingController::class, 'public'])->name('settings.public');
     Route::get('plans', [PlanController::class, 'index'])->name('plans.index');
 
-    // ---- Everything below requires an authenticated session -----------
-    Route::middleware('auth:sanctum')->group(function () {
-
-        Route::get('dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
-
+    Route::middleware('auth:platform')->group(function () {
         Route::apiResource('schools', SchoolController::class)->names('schools');
 
-        // ---- Platform admin (Super Admin only, cross-tenant) -----------
         Route::prefix('platform')->name('platform.')->group(function () {
             Route::get('schools', [PlatformSchoolController::class, 'index'])->name('schools.index');
             Route::get('schools/{school}', [PlatformSchoolController::class, 'show'])->name('schools.show');
             Route::post('schools/{school}/plan', [SchoolPlanController::class, 'update'])->name('schools.plan');
             Route::get('metrics', [PlatformMetricsController::class, 'index'])->name('metrics');
         });
+    });
 
-        // ---- Billing (school-scoped — a School Admin's own plan/trial) --
-        Route::prefix('billing')->name('billing.')->group(function () {
-            Route::get('/', [BillingController::class, 'show'])->name('show');
-            Route::get('portal', [BillingController::class, 'portal'])->name('portal');
+    // =====================================================================
+    // TENANT zone — subdomain-resolved. tenancy.subdomain (see
+    // bootstrap/app.php) runs before anything else below, switching the
+    // active database connection to the school identified by the request's
+    // Host header before any of these routes execute.
+    // =====================================================================
+
+    Route::middleware('tenancy.subdomain')->group(function () {
+
+        // ---- Auth -------------------------------------------------------
+        Route::prefix('auth')->name('auth.')->group(function () {
+            Route::post('login', LoginController::class)->name('login')->middleware('throttle:10,1');
+            // The other half of SignupController's cross-domain handoff —
+            // see SignupCompleteController's own docblock.
+            Route::post('signup/complete', SignupCompleteController::class)->name('signup.complete')->middleware('throttle:10,1');
+            Route::post('forgot-password', ForgotPasswordController::class)->name('forgot-password')->middleware('throttle:5,1');
+            Route::post('reset-password', ResetPasswordController::class)->name('reset-password')->middleware('throttle:5,1');
+
+            Route::middleware('auth:sanctum')->group(function () {
+                Route::post('logout', LogoutController::class)->name('logout');
+                Route::get('me', MeController::class)->name('me');
+                Route::put('password', PasswordController::class)->name('password');
+                Route::post('email/verification-notification', [EmailVerificationController::class, 'notify'])
+                    ->name('verification.send')
+                    ->middleware('throttle:6,1');
+            });
+
+            Route::get('email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+                ->middleware(['auth:sanctum', 'signed'])
+                ->name('verification.verify');
         });
 
-        Route::get('users', [UserController::class, 'index'])->name('users.index');
-        Route::post('users', [UserController::class, 'store'])->name('users.store');
-        Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
-        Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
-        Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-        Route::post('users/{user}/roles', [UserController::class, 'updateRoles'])->name('users.roles');
-        Route::post('users/{user}/status', [UserController::class, 'updateStatus'])->name('users.status');
-        Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+        // ---- Public within this tenant (no auth, but tenant-resolved) -----
+        Route::get('settings/public', [SettingController::class, 'public'])->name('settings.public');
 
-        Route::apiResource('roles', RoleController::class)->names('roles');
-        Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
+        // ---- Everything below requires an authenticated tenant session ---
+        Route::middleware('auth:sanctum')->group(function () {
 
-        Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
-        Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+            Route::get('dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
 
-        Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+            // ---- Billing (school-scoped — a School Admin's own plan/trial) --
+            Route::prefix('billing')->name('billing.')->group(function () {
+                Route::get('/', [BillingController::class, 'show'])->name('show');
+                Route::get('portal', [BillingController::class, 'portal'])->name('portal');
+            });
 
-        // ---- Academic structure ----------------------------------------
-        Route::apiResource('academic-years', AcademicYearController::class)->names('academic-years');
-        Route::post('academic-years/{academicYear}/activate', [AcademicYearController::class, 'activate'])->name('academic-years.activate');
+            Route::get('users', [UserController::class, 'index'])->name('users.index');
+            Route::post('users', [UserController::class, 'store'])->name('users.store');
+            Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
+            Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
+            Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+            Route::post('users/{user}/roles', [UserController::class, 'updateRoles'])->name('users.roles');
+            Route::post('users/{user}/status', [UserController::class, 'updateStatus'])->name('users.status');
+            Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
 
-        Route::apiResource('terms', TermController::class)->names('terms');
-        Route::apiResource('departments', DepartmentController::class)->names('departments');
-        Route::apiResource('grade-levels', GradeLevelController::class)->names('grade-levels');
-        Route::apiResource('sections', SectionController::class)->names('sections');
-        Route::apiResource('subjects', SubjectController::class)->names('subjects');
-        Route::apiResource('rooms', RoomController::class)->names('rooms');
-        Route::apiResource('holidays', HolidayController::class)->names('holidays');
+            Route::apiResource('roles', RoleController::class)->names('roles');
+            Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
 
-        Route::get('class-subject-teachers', [ClassSubjectTeacherController::class, 'index'])->name('class-subject-teachers.index');
-        Route::post('class-subject-teachers', [ClassSubjectTeacherController::class, 'store'])->name('class-subject-teachers.store');
-        Route::delete('class-subject-teachers/{classSubjectTeacher}', [ClassSubjectTeacherController::class, 'destroy'])->name('class-subject-teachers.destroy');
+            Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+            Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
 
-        Route::apiResource('timetable-periods', TimetablePeriodController::class)->names('timetable-periods');
+            Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 
-        Route::get('timetable', [TimetableController::class, 'index'])->name('timetable.index');
-        Route::post('timetable-entries', [TimetableEntryController::class, 'store'])->name('timetable-entries.store');
-        Route::put('timetable-entries/{timetableEntry}', [TimetableEntryController::class, 'update'])->name('timetable-entries.update');
-        Route::delete('timetable-entries/{timetableEntry}', [TimetableEntryController::class, 'destroy'])->name('timetable-entries.destroy');
+            // ---- Academic structure ----------------------------------------
+            Route::apiResource('academic-years', AcademicYearController::class)->names('academic-years');
+            Route::post('academic-years/{academicYear}/activate', [AcademicYearController::class, 'activate'])->name('academic-years.activate');
 
-        // ---- Students & guardians ---------------------------------------
-        Route::get('students', [StudentController::class, 'index'])->name('students.index');
-        Route::post('students', [StudentController::class, 'store'])->name('students.store');
-        Route::get('students/import/template', [StudentImportController::class, 'template'])->name('students.import.template');
-        Route::post('students/import', StudentImportController::class)->name('students.import');
-        Route::get('students/export', StudentExportController::class)->name('students.export');
-        Route::post('students/bulk/promote', [StudentEnrollmentController::class, 'bulkPromote'])->name('students.bulk-promote');
-        Route::get('students/{student}', [StudentController::class, 'show'])->name('students.show');
-        Route::put('students/{student}', [StudentController::class, 'update'])->name('students.update');
-        Route::delete('students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
+            Route::apiResource('terms', TermController::class)->names('terms');
+            Route::apiResource('departments', DepartmentController::class)->names('departments');
+            Route::apiResource('grade-levels', GradeLevelController::class)->names('grade-levels');
+            Route::apiResource('sections', SectionController::class)->names('sections');
+            Route::apiResource('subjects', SubjectController::class)->names('subjects');
+            Route::apiResource('rooms', RoomController::class)->names('rooms');
+            Route::apiResource('holidays', HolidayController::class)->names('holidays');
 
-        Route::get('students/{student}/documents', [StudentDocumentController::class, 'index'])->name('students.documents.index');
-        Route::post('students/{student}/documents', [StudentDocumentController::class, 'store'])->name('students.documents.store');
-        Route::delete('students/{student}/documents/{media}', [StudentDocumentController::class, 'destroy'])->name('students.documents.destroy');
+            Route::get('class-subject-teachers', [ClassSubjectTeacherController::class, 'index'])->name('class-subject-teachers.index');
+            Route::post('class-subject-teachers', [ClassSubjectTeacherController::class, 'store'])->name('class-subject-teachers.store');
+            Route::delete('class-subject-teachers/{classSubjectTeacher}', [ClassSubjectTeacherController::class, 'destroy'])->name('class-subject-teachers.destroy');
 
-        Route::post('students/{student}/guardians', [StudentController::class, 'attachGuardian'])->name('students.guardians.store');
-        Route::put('students/{student}/guardians/{guardian}', [StudentController::class, 'updateGuardianLink'])->name('students.guardians.update');
-        Route::delete('students/{student}/guardians/{guardian}', [StudentController::class, 'detachGuardian'])->name('students.guardians.destroy');
+            Route::apiResource('timetable-periods', TimetablePeriodController::class)->names('timetable-periods');
 
-        Route::get('students/{student}/enrollment-history', [StudentEnrollmentController::class, 'history'])->name('students.enrollment-history');
-        Route::post('students/{student}/promote', [StudentEnrollmentController::class, 'promote'])->name('students.promote');
-        Route::post('students/{student}/transfer', [StudentEnrollmentController::class, 'transfer'])->name('students.transfer');
-        Route::post('students/{student}/withdraw', [StudentEnrollmentController::class, 'withdraw'])->name('students.withdraw');
-        Route::post('students/{student}/graduate', [StudentEnrollmentController::class, 'graduate'])->name('students.graduate');
-        Route::post('students/{student}/reactivate', [StudentEnrollmentController::class, 'reactivate'])->name('students.reactivate');
-        Route::post('students/{student}/invite-portal-user', [StudentController::class, 'invitePortalUser'])->name('students.invite-portal-user');
+            Route::get('timetable', [TimetableController::class, 'index'])->name('timetable.index');
+            Route::post('timetable-entries', [TimetableEntryController::class, 'store'])->name('timetable-entries.store');
+            Route::put('timetable-entries/{timetableEntry}', [TimetableEntryController::class, 'update'])->name('timetable-entries.update');
+            Route::delete('timetable-entries/{timetableEntry}', [TimetableEntryController::class, 'destroy'])->name('timetable-entries.destroy');
 
-        Route::get('guardians', [GuardianController::class, 'index'])->name('guardians.index');
-        Route::get('guardians/{guardian}', [GuardianController::class, 'show'])->name('guardians.show');
-        Route::post('guardians/{guardian}/invite', [GuardianController::class, 'invite'])->name('guardians.invite');
+            // ---- Students & guardians ---------------------------------------
+            Route::get('students', [StudentController::class, 'index'])->name('students.index');
+            Route::post('students', [StudentController::class, 'store'])->name('students.store');
+            Route::get('students/import/template', [StudentImportController::class, 'template'])->name('students.import.template');
+            Route::post('students/import', StudentImportController::class)->name('students.import');
+            Route::get('students/export', StudentExportController::class)->name('students.export');
+            Route::post('students/bulk/promote', [StudentEnrollmentController::class, 'bulkPromote'])->name('students.bulk-promote');
+            Route::get('students/{student}', [StudentController::class, 'show'])->name('students.show');
+            Route::put('students/{student}', [StudentController::class, 'update'])->name('students.update');
+            Route::delete('students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
 
-        // ---- Attendance ----------------------------------------------------
-        Route::get('attendance/students', [StudentAttendanceController::class, 'index'])->name('attendance.students.index');
-        Route::post('attendance/students', [StudentAttendanceController::class, 'store'])->name('attendance.students.store');
-        Route::get('attendance/students/summary', [StudentAttendanceController::class, 'summary'])->name('attendance.students.summary');
-        Route::get('attendance/students/section-summary', [StudentAttendanceController::class, 'sectionSummary'])->name('attendance.students.section-summary');
-        Route::put('attendance/students/{studentAttendance}', [StudentAttendanceController::class, 'update'])->name('attendance.students.update');
+            Route::get('students/{student}/documents', [StudentDocumentController::class, 'index'])->name('students.documents.index');
+            Route::post('students/{student}/documents', [StudentDocumentController::class, 'store'])->name('students.documents.store');
+            Route::delete('students/{student}/documents/{media}', [StudentDocumentController::class, 'destroy'])->name('students.documents.destroy');
 
-        Route::get('attendance/staff', [StaffAttendanceController::class, 'index'])->name('attendance.staff.index');
-        Route::post('attendance/staff', [StaffAttendanceController::class, 'store'])->name('attendance.staff.store');
-        Route::get('attendance/staff/summary', [StaffAttendanceController::class, 'summary'])->name('attendance.staff.summary');
-        Route::post('attendance/staff/check-in', [StaffAttendanceController::class, 'checkIn'])->name('attendance.staff.check-in');
-        Route::post('attendance/staff/check-out', [StaffAttendanceController::class, 'checkOut'])->name('attendance.staff.check-out');
-        Route::put('attendance/staff/{staffAttendance}', [StaffAttendanceController::class, 'update'])->name('attendance.staff.update');
+            Route::post('students/{student}/guardians', [StudentController::class, 'attachGuardian'])->name('students.guardians.store');
+            Route::put('students/{student}/guardians/{guardian}', [StudentController::class, 'updateGuardianLink'])->name('students.guardians.update');
+            Route::delete('students/{student}/guardians/{guardian}', [StudentController::class, 'detachGuardian'])->name('students.guardians.destroy');
 
-        // ---- Grading & Examinations -----------------------------------------
-        Route::pattern('exam', '[0-9]+');
-        Route::apiResource('grading-scales', GradingScaleController::class)->names('grading-scales');
+            Route::get('students/{student}/enrollment-history', [StudentEnrollmentController::class, 'history'])->name('students.enrollment-history');
+            Route::post('students/{student}/promote', [StudentEnrollmentController::class, 'promote'])->name('students.promote');
+            Route::post('students/{student}/transfer', [StudentEnrollmentController::class, 'transfer'])->name('students.transfer');
+            Route::post('students/{student}/withdraw', [StudentEnrollmentController::class, 'withdraw'])->name('students.withdraw');
+            Route::post('students/{student}/graduate', [StudentEnrollmentController::class, 'graduate'])->name('students.graduate');
+            Route::post('students/{student}/reactivate', [StudentEnrollmentController::class, 'reactivate'])->name('students.reactivate');
+            Route::post('students/{student}/invite-portal-user', [StudentController::class, 'invitePortalUser'])->name('students.invite-portal-user');
 
-        Route::apiResource('exams', ExamController::class)->names('exams');
-        Route::post('exams/{exam}/publish', [ExamController::class, 'publish'])->name('exams.publish');
-        Route::post('exams/{exam}/unpublish', [ExamController::class, 'unpublish'])->name('exams.unpublish');
-        Route::get('exams/{exam}/report-card', [ExamController::class, 'reportCard'])->name('exams.report-card');
-        Route::get('exams/{exam}/report-card/pdf', [ExamController::class, 'reportCardPdf'])->name('exams.report-card.pdf');
-        Route::delete('exams/{exam}/exam-subjects/{examSubject}', [ExamController::class, 'destroyExamSubject'])->name('exams.exam-subjects.destroy');
+            Route::get('guardians', [GuardianController::class, 'index'])->name('guardians.index');
+            Route::get('guardians/{guardian}', [GuardianController::class, 'show'])->name('guardians.show');
+            Route::post('guardians/{guardian}/invite', [GuardianController::class, 'invite'])->name('guardians.invite');
 
-        Route::get('exam-subjects/{examSubject}/marks', [ExamMarkController::class, 'index'])->name('exam-subjects.marks.index');
-        Route::post('exam-subjects/{examSubject}/marks', [ExamMarkController::class, 'store'])->name('exam-subjects.marks.store');
-        Route::put('exam-marks/{examMark}', [ExamMarkController::class, 'update'])->name('exam-marks.update');
+            // ---- Attendance ----------------------------------------------------
+            Route::get('attendance/students', [StudentAttendanceController::class, 'index'])->name('attendance.students.index');
+            Route::post('attendance/students', [StudentAttendanceController::class, 'store'])->name('attendance.students.store');
+            Route::get('attendance/students/summary', [StudentAttendanceController::class, 'summary'])->name('attendance.students.summary');
+            Route::get('attendance/students/section-summary', [StudentAttendanceController::class, 'sectionSummary'])->name('attendance.students.section-summary');
+            Route::put('attendance/students/{studentAttendance}', [StudentAttendanceController::class, 'update'])->name('attendance.students.update');
 
-        // ---- Question bank & online examinations ----------------------------
-        Route::apiResource('questions', QuestionController::class)->only(['index', 'store', 'show', 'update', 'destroy'])->names('questions');
+            Route::get('attendance/staff', [StaffAttendanceController::class, 'index'])->name('attendance.staff.index');
+            Route::post('attendance/staff', [StaffAttendanceController::class, 'store'])->name('attendance.staff.store');
+            Route::get('attendance/staff/summary', [StaffAttendanceController::class, 'summary'])->name('attendance.staff.summary');
+            Route::post('attendance/staff/check-in', [StaffAttendanceController::class, 'checkIn'])->name('attendance.staff.check-in');
+            Route::post('attendance/staff/check-out', [StaffAttendanceController::class, 'checkOut'])->name('attendance.staff.check-out');
+            Route::put('attendance/staff/{staffAttendance}', [StaffAttendanceController::class, 'update'])->name('attendance.staff.update');
 
-        Route::get('online-tests/mine', [OnlineTestController::class, 'myTests'])->name('online-tests.mine');
-        Route::post('exam-subjects/{examSubject}/online-test-questions', [OnlineTestController::class, 'syncQuestions'])->name('exam-subjects.online-test-questions.store');
-        Route::post('exam-subjects/{examSubject}/attempts', [OnlineTestController::class, 'start'])->name('exam-subjects.attempts.start');
-        Route::put('online-test-attempts/{attempt}/answers', [OnlineTestController::class, 'saveAnswer'])->name('online-test-attempts.answers.save');
-        Route::post('online-test-attempts/{attempt}/submit', [OnlineTestController::class, 'submit'])->name('online-test-attempts.submit');
-        Route::get('online-test-attempts/{attempt}', [OnlineTestController::class, 'show'])->name('online-test-attempts.show');
+            // ---- Grading & Examinations -----------------------------------------
+            Route::pattern('exam', '[0-9]+');
+            Route::apiResource('grading-scales', GradingScaleController::class)->names('grading-scales');
 
-        Route::get('terms/{term}/result', [TermResultController::class, 'show'])->name('terms.result');
+            Route::apiResource('exams', ExamController::class)->names('exams');
+            Route::post('exams/{exam}/publish', [ExamController::class, 'publish'])->name('exams.publish');
+            Route::post('exams/{exam}/unpublish', [ExamController::class, 'unpublish'])->name('exams.unpublish');
+            Route::get('exams/{exam}/report-card', [ExamController::class, 'reportCard'])->name('exams.report-card');
+            Route::get('exams/{exam}/report-card/pdf', [ExamController::class, 'reportCardPdf'])->name('exams.report-card.pdf');
+            Route::delete('exams/{exam}/exam-subjects/{examSubject}', [ExamController::class, 'destroyExamSubject'])->name('exams.exam-subjects.destroy');
 
-        // ---- Teacher module: homework & remarks ------------------------------
-        Route::apiResource('homework', HomeworkController::class)->names('homework');
-        Route::post('homework/{homework}/attachments', [HomeworkController::class, 'storeAttachment'])->name('homework.attachments.store');
-        Route::delete('homework/{homework}/attachments/{media}', [HomeworkController::class, 'destroyAttachment'])->name('homework.attachments.destroy');
-        Route::get('homework/{homework}/submissions', [HomeworkSubmissionController::class, 'index'])->name('homework.submissions.index');
-        Route::post('homework/{homework}/submit', [HomeworkSubmissionController::class, 'submit'])->name('homework.submit');
-        Route::put('homework-submissions/{submission}/grade', [HomeworkSubmissionController::class, 'grade'])->name('homework-submissions.grade');
+            Route::get('exam-subjects/{examSubject}/marks', [ExamMarkController::class, 'index'])->name('exam-subjects.marks.index');
+            Route::post('exam-subjects/{examSubject}/marks', [ExamMarkController::class, 'store'])->name('exam-subjects.marks.store');
+            Route::put('exam-marks/{examMark}', [ExamMarkController::class, 'update'])->name('exam-marks.update');
 
-        Route::apiResource('student-remarks', StudentRemarkController::class)->names('student-remarks');
+            // ---- Question bank & online examinations ----------------------------
+            Route::apiResource('questions', QuestionController::class)->only(['index', 'store', 'show', 'update', 'destroy'])->names('questions');
 
-        // ---- Fees / Billing / Accounting (Phase 8) -----------------------
-        // School-to-parent billing — distinct from Phase 6's platform-to-school
-        // Stripe subscription billing under the 'billing' prefix above.
-        Route::apiResource('fee-categories', FeeCategoryController::class)->names('fee-categories');
+            Route::get('online-tests/mine', [OnlineTestController::class, 'myTests'])->name('online-tests.mine');
+            Route::post('exam-subjects/{examSubject}/online-test-questions', [OnlineTestController::class, 'syncQuestions'])->name('exam-subjects.online-test-questions.store');
+            Route::post('exam-subjects/{examSubject}/attempts', [OnlineTestController::class, 'start'])->name('exam-subjects.attempts.start');
+            Route::put('online-test-attempts/{attempt}/answers', [OnlineTestController::class, 'saveAnswer'])->name('online-test-attempts.answers.save');
+            Route::post('online-test-attempts/{attempt}/submit', [OnlineTestController::class, 'submit'])->name('online-test-attempts.submit');
+            Route::get('online-test-attempts/{attempt}', [OnlineTestController::class, 'show'])->name('online-test-attempts.show');
 
-        Route::apiResource('fee-structures', FeeStructureController::class)->names('fee-structures');
-        Route::post('fee-structures/{feeStructure}/generate-invoices', [FeeStructureController::class, 'generateInvoices'])->name('fee-structures.generate-invoices');
+            Route::get('terms/{term}/result', [TermResultController::class, 'show'])->name('terms.result');
 
-        Route::apiResource('student-fee-assignments', StudentFeeAssignmentController::class)->names('student-fee-assignments');
+            // ---- Teacher module: homework & remarks ------------------------------
+            Route::apiResource('homework', HomeworkController::class)->names('homework');
+            Route::post('homework/{homework}/attachments', [HomeworkController::class, 'storeAttachment'])->name('homework.attachments.store');
+            Route::delete('homework/{homework}/attachments/{media}', [HomeworkController::class, 'destroyAttachment'])->name('homework.attachments.destroy');
+            Route::get('homework/{homework}/submissions', [HomeworkSubmissionController::class, 'index'])->name('homework.submissions.index');
+            Route::post('homework/{homework}/submit', [HomeworkSubmissionController::class, 'submit'])->name('homework.submit');
+            Route::put('homework-submissions/{submission}/grade', [HomeworkSubmissionController::class, 'grade'])->name('homework-submissions.grade');
 
-        Route::apiResource('invoices', InvoiceController::class)->names('invoices');
-        Route::post('invoices/{invoice}/void', [InvoiceController::class, 'void'])->name('invoices.void');
-        Route::post('invoices/{invoice}/payments', [InvoiceController::class, 'recordPayment'])->name('invoices.payments.store');
-        Route::post('invoices/{invoice}/credit-notes', [InvoiceController::class, 'issueCreditNote'])->name('invoices.credit-notes.store');
-        Route::get('students/{student}/fee-statement', [InvoiceController::class, 'statement'])->name('students.fee-statement');
+            Route::apiResource('student-remarks', StudentRemarkController::class)->names('student-remarks');
 
-        Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
-        Route::get('payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
-        Route::get('payments/{payment}/receipt/pdf', [PaymentController::class, 'receiptPdf'])->name('payments.receipt.pdf');
+            // ---- Fees / Billing / Accounting (Phase 8) -----------------------
+            // School-to-parent billing — distinct from Phase 6's platform-to-school
+            // Stripe subscription billing under the 'billing' prefix above.
+            Route::apiResource('fee-categories', FeeCategoryController::class)->names('fee-categories');
 
-        Route::get('fee-reports/collection-summary', [FeeReportController::class, 'collectionSummary'])->name('fee-reports.collection-summary');
-        Route::get('fee-reports/outstanding-dues', [FeeReportController::class, 'outstandingDues'])->name('fee-reports.outstanding-dues');
+            Route::apiResource('fee-structures', FeeStructureController::class)->names('fee-structures');
+            Route::post('fee-structures/{feeStructure}/generate-invoices', [FeeStructureController::class, 'generateInvoices'])->name('fee-structures.generate-invoices');
 
-        // ---- Staff / HR (Phase 9) -----------------------------------------
-        Route::apiResource('designations', DesignationController::class)->names('designations');
+            Route::apiResource('student-fee-assignments', StudentFeeAssignmentController::class)->names('student-fee-assignments');
 
-        Route::apiResource('leave-types', LeaveTypeController::class)->names('leave-types');
+            Route::apiResource('invoices', InvoiceController::class)->names('invoices');
+            Route::post('invoices/{invoice}/void', [InvoiceController::class, 'void'])->name('invoices.void');
+            Route::post('invoices/{invoice}/payments', [InvoiceController::class, 'recordPayment'])->name('invoices.payments.store');
+            Route::post('invoices/{invoice}/credit-notes', [InvoiceController::class, 'issueCreditNote'])->name('invoices.credit-notes.store');
+            Route::get('students/{student}/fee-statement', [InvoiceController::class, 'statement'])->name('students.fee-statement');
 
-        Route::get('leave-requests', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
-        Route::post('leave-requests', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
-        Route::get('leave-requests/{id}', [LeaveRequestController::class, 'show'])->name('leave-requests.show');
-        Route::post('leave-requests/{leaveRequest}/cancel', [LeaveRequestController::class, 'cancel'])->name('leave-requests.cancel');
-        Route::post('leave-requests/{leaveRequest}/review', [LeaveRequestController::class, 'review'])->name('leave-requests.review');
+            Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
+            Route::get('payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
+            Route::get('payments/{payment}/receipt/pdf', [PaymentController::class, 'receiptPdf'])->name('payments.receipt.pdf');
 
-        Route::apiResource('salary-structures', SalaryStructureController::class)->names('salary-structures');
+            Route::get('fee-reports/collection-summary', [FeeReportController::class, 'collectionSummary'])->name('fee-reports.collection-summary');
+            Route::get('fee-reports/outstanding-dues', [FeeReportController::class, 'outstandingDues'])->name('fee-reports.outstanding-dues');
 
-        Route::get('payslips', [PayslipController::class, 'index'])->name('payslips.index');
-        Route::post('payslips/generate', [PayslipController::class, 'generate'])->name('payslips.generate');
-        Route::post('payslips/{id}/mark-paid', [PayslipController::class, 'markPaid'])->name('payslips.mark-paid');
-        Route::get('payslips/{payslip}/receipt', [PayslipController::class, 'receipt'])->name('payslips.receipt');
-        Route::get('payslips/{payslip}/receipt/pdf', [PayslipController::class, 'receiptPdf'])->name('payslips.receipt.pdf');
+            // ---- Staff / HR (Phase 9) -----------------------------------------
+            Route::apiResource('designations', DesignationController::class)->names('designations');
 
-        // ---- Library (Phase 10) --------------------------------------------
-        Route::apiResource('books', BookController::class)->names('books');
-        Route::post('books/{book}/issue', [BookIssueController::class, 'store'])->name('books.issue');
-        Route::get('book-issues', [BookIssueController::class, 'index'])->name('book-issues.index');
-        Route::post('book-issues/{id}/return', [BookIssueController::class, 'returnBook'])->name('book-issues.return');
+            Route::apiResource('leave-types', LeaveTypeController::class)->names('leave-types');
 
-        // ---- Transport (Phase 10) -------------------------------------------
-        Route::apiResource('vehicles', VehicleController::class)->names('vehicles');
-        Route::apiResource('routes', TransportRouteController::class)->names('routes');
-        Route::post('routes/{route}/stops', [TransportRouteController::class, 'storeStop'])->name('routes.stops.store');
-        Route::delete('routes/{route}/stops/{stop}', [TransportRouteController::class, 'destroyStop'])->name('routes.stops.destroy');
-        Route::get('student-transport-assignments', [StudentTransportAssignmentController::class, 'index'])->name('student-transport-assignments.index');
-        Route::post('student-transport-assignments', [StudentTransportAssignmentController::class, 'store'])->name('student-transport-assignments.store');
+            Route::get('leave-requests', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
+            Route::post('leave-requests', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
+            Route::get('leave-requests/{id}', [LeaveRequestController::class, 'show'])->name('leave-requests.show');
+            Route::post('leave-requests/{leaveRequest}/cancel', [LeaveRequestController::class, 'cancel'])->name('leave-requests.cancel');
+            Route::post('leave-requests/{leaveRequest}/review', [LeaveRequestController::class, 'review'])->name('leave-requests.review');
 
-        // ---- Hostel (Phase 10) ------------------------------------------------
-        Route::apiResource('hostels', HostelController::class)->names('hostels');
-        Route::apiResource('hostel-rooms', HostelRoomController::class)->names('hostel-rooms');
-        Route::get('hostel-allocations', [HostelAllocationController::class, 'index'])->name('hostel-allocations.index');
-        Route::post('hostel-allocations', [HostelAllocationController::class, 'store'])->name('hostel-allocations.store');
-        Route::post('hostel-allocations/{id}/vacate', [HostelAllocationController::class, 'vacate'])->name('hostel-allocations.vacate');
+            Route::apiResource('salary-structures', SalaryStructureController::class)->names('salary-structures');
 
-        // ---- Front Desk / Visitor Management (Phase 10) ------------------------
-        Route::get('visitors', [VisitorController::class, 'index'])->name('visitors.index');
-        Route::post('visitors', [VisitorController::class, 'store'])->name('visitors.store');
-        Route::post('visitors/{id}/check-out', [VisitorController::class, 'checkOut'])->name('visitors.check-out');
+            Route::get('payslips', [PayslipController::class, 'index'])->name('payslips.index');
+            Route::post('payslips/generate', [PayslipController::class, 'generate'])->name('payslips.generate');
+            Route::post('payslips/{id}/mark-paid', [PayslipController::class, 'markPaid'])->name('payslips.mark-paid');
+            Route::get('payslips/{payslip}/receipt', [PayslipController::class, 'receipt'])->name('payslips.receipt');
+            Route::get('payslips/{payslip}/receipt/pdf', [PayslipController::class, 'receiptPdf'])->name('payslips.receipt.pdf');
 
-        // ---- Certificates & ID Cards (Phase 11) ------------------------------
-        Route::apiResource('certificate-templates', CertificateTemplateController::class)->names('certificate-templates');
-        Route::post('certificate-templates/{certificate_template}/issue', [CertificateController::class, 'store'])->name('certificate-templates.issue');
-        Route::get('certificates', [CertificateController::class, 'index'])->name('certificates.index');
-        Route::get('certificates/{id}', [CertificateController::class, 'show'])->name('certificates.show');
-        Route::get('certificates/{id}/pdf', [CertificateController::class, 'pdf'])->name('certificates.pdf');
-        Route::get('students/{id}/id-card/pdf', [IdCardController::class, 'student'])->name('students.id-card.pdf');
-        Route::get('users/{id}/id-card/pdf', [IdCardController::class, 'staff'])->name('users.id-card.pdf');
+            // ---- Library (Phase 10) --------------------------------------------
+            Route::apiResource('books', BookController::class)->names('books');
+            Route::post('books/{book}/issue', [BookIssueController::class, 'store'])->name('books.issue');
+            Route::get('book-issues', [BookIssueController::class, 'index'])->name('book-issues.index');
+            Route::post('book-issues/{id}/return', [BookIssueController::class, 'returnBook'])->name('book-issues.return');
 
-        // ---- Notice Board (Phase 11) ------------------------------------------
-        Route::get('notices', [NoticeController::class, 'index'])->name('notices.index');
-        Route::get('notices/{notice}', [NoticeController::class, 'show'])->name('notices.show');
-        Route::post('notices', [NoticeController::class, 'store'])->name('notices.store');
-        Route::put('notices/{notice}', [NoticeController::class, 'update'])->name('notices.update');
-        Route::delete('notices/{notice}', [NoticeController::class, 'destroy'])->name('notices.destroy');
-        Route::post('notices/{notice}/publish', [NoticeController::class, 'publish'])->name('notices.publish');
+            // ---- Transport (Phase 10) -------------------------------------------
+            Route::apiResource('vehicles', VehicleController::class)->names('vehicles');
+            Route::apiResource('routes', TransportRouteController::class)->names('routes');
+            Route::post('routes/{route}/stops', [TransportRouteController::class, 'storeStop'])->name('routes.stops.store');
+            Route::delete('routes/{route}/stops/{stop}', [TransportRouteController::class, 'destroyStop'])->name('routes.stops.destroy');
+            Route::get('student-transport-assignments', [StudentTransportAssignmentController::class, 'index'])->name('student-transport-assignments.index');
+            Route::post('student-transport-assignments', [StudentTransportAssignmentController::class, 'store'])->name('student-transport-assignments.store');
 
-        // ---- Communication / Notifications (Phase 11) --------------------------
-        Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
-        Route::post('announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
-        Route::get('notifications', [AppNotificationController::class, 'index'])->name('notifications.index');
-        Route::post('notifications/{id}/read', [AppNotificationController::class, 'markRead'])->name('notifications.read');
-        Route::post('notifications/read-all', [AppNotificationController::class, 'markAllRead'])->name('notifications.read-all');
+            // ---- Hostel (Phase 10) ------------------------------------------------
+            Route::apiResource('hostels', HostelController::class)->names('hostels');
+            Route::apiResource('hostel-rooms', HostelRoomController::class)->names('hostel-rooms');
+            Route::get('hostel-allocations', [HostelAllocationController::class, 'index'])->name('hostel-allocations.index');
+            Route::post('hostel-allocations', [HostelAllocationController::class, 'store'])->name('hostel-allocations.store');
+            Route::post('hostel-allocations/{id}/vacate', [HostelAllocationController::class, 'vacate'])->name('hostel-allocations.vacate');
 
-        // ---- Reports & Analytics (Phase 12) -------------------------------
-        Route::get('reports/attendance', [ReportController::class, 'attendance'])->name('reports.attendance');
-        Route::get('reports/academic-performance', [ReportController::class, 'academicPerformance'])->name('reports.academic-performance');
-        Route::get('reports/enrollment', [ReportController::class, 'enrollment'])->name('reports.enrollment');
-        Route::get('reports/operations', [ReportController::class, 'operations'])->name('reports.operations');
+            // ---- Front Desk / Visitor Management (Phase 10) ------------------------
+            Route::get('visitors', [VisitorController::class, 'index'])->name('visitors.index');
+            Route::post('visitors', [VisitorController::class, 'store'])->name('visitors.store');
+            Route::post('visitors/{id}/check-out', [VisitorController::class, 'checkOut'])->name('visitors.check-out');
 
-        // ---- Global Search (Phase 12) --------------------------------------
-        Route::get('search', [SearchController::class, 'index'])->name('search');
+            // ---- Certificates & ID Cards (Phase 11) ------------------------------
+            Route::apiResource('certificate-templates', CertificateTemplateController::class)->names('certificate-templates');
+            Route::post('certificate-templates/{certificate_template}/issue', [CertificateController::class, 'store'])->name('certificate-templates.issue');
+            Route::get('certificates', [CertificateController::class, 'index'])->name('certificates.index');
+            Route::get('certificates/{id}', [CertificateController::class, 'show'])->name('certificates.show');
+            Route::get('certificates/{id}/pdf', [CertificateController::class, 'pdf'])->name('certificates.pdf');
+            Route::get('students/{id}/id-card/pdf', [IdCardController::class, 'student'])->name('students.id-card.pdf');
+            Route::get('users/{id}/id-card/pdf', [IdCardController::class, 'staff'])->name('users.id-card.pdf');
 
-        // ---- Parent portal -----------------------------------------------
-        Route::get('parent/children', [ParentPortalController::class, 'children'])->name('parent.children');
-        Route::get('parent/children/{student}/profile', [ParentPortalController::class, 'childProfile'])->name('parent.children.profile');
-        Route::get('parent/children/{student}/attendance', [ParentPortalController::class, 'childAttendance'])->name('parent.children.attendance');
-        Route::get('parent/children/{student}/exams', [ParentPortalController::class, 'childExams'])->name('parent.children.exams');
-        Route::get('parent/children/{student}/report-card', [ParentPortalController::class, 'childReportCard'])->name('parent.children.report-card');
-        Route::get('parent/children/{student}/report-card/pdf', [ParentPortalController::class, 'childReportCardPdf'])->name('parent.children.report-card.pdf');
-        Route::get('parent/children/{student}/term-result', [ParentPortalController::class, 'childTermResult'])->name('parent.children.term-result');
-        Route::get('parent/children/{student}/homework', [ParentPortalController::class, 'childHomework'])->name('parent.children.homework');
-        Route::get('parent/children/{student}/remarks', [ParentPortalController::class, 'childRemarks'])->name('parent.children.remarks');
-        Route::get('parent/children/{student}/invoices', [ParentPortalController::class, 'childInvoices'])->name('parent.children.invoices');
+            // ---- Notice Board (Phase 11) ------------------------------------------
+            Route::get('notices', [NoticeController::class, 'index'])->name('notices.index');
+            Route::get('notices/{notice}', [NoticeController::class, 'show'])->name('notices.show');
+            Route::post('notices', [NoticeController::class, 'store'])->name('notices.store');
+            Route::put('notices/{notice}', [NoticeController::class, 'update'])->name('notices.update');
+            Route::delete('notices/{notice}', [NoticeController::class, 'destroy'])->name('notices.destroy');
+            Route::post('notices/{notice}/publish', [NoticeController::class, 'publish'])->name('notices.publish');
+
+            // ---- Communication / Notifications (Phase 11) --------------------------
+            Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+            Route::post('announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+            Route::get('notifications', [AppNotificationController::class, 'index'])->name('notifications.index');
+            Route::post('notifications/{id}/read', [AppNotificationController::class, 'markRead'])->name('notifications.read');
+            Route::post('notifications/read-all', [AppNotificationController::class, 'markAllRead'])->name('notifications.read-all');
+
+            // ---- Reports & Analytics (Phase 12) -------------------------------
+            Route::get('reports/attendance', [ReportController::class, 'attendance'])->name('reports.attendance');
+            Route::get('reports/academic-performance', [ReportController::class, 'academicPerformance'])->name('reports.academic-performance');
+            Route::get('reports/enrollment', [ReportController::class, 'enrollment'])->name('reports.enrollment');
+            Route::get('reports/operations', [ReportController::class, 'operations'])->name('reports.operations');
+
+            // ---- Global Search (Phase 12) --------------------------------------
+            Route::get('search', [SearchController::class, 'index'])->name('search');
+
+            // ---- Parent portal -----------------------------------------------
+            Route::get('parent/children', [ParentPortalController::class, 'children'])->name('parent.children');
+            Route::get('parent/children/{student}/profile', [ParentPortalController::class, 'childProfile'])->name('parent.children.profile');
+            Route::get('parent/children/{student}/attendance', [ParentPortalController::class, 'childAttendance'])->name('parent.children.attendance');
+            Route::get('parent/children/{student}/exams', [ParentPortalController::class, 'childExams'])->name('parent.children.exams');
+            Route::get('parent/children/{student}/report-card', [ParentPortalController::class, 'childReportCard'])->name('parent.children.report-card');
+            Route::get('parent/children/{student}/report-card/pdf', [ParentPortalController::class, 'childReportCardPdf'])->name('parent.children.report-card.pdf');
+            Route::get('parent/children/{student}/term-result', [ParentPortalController::class, 'childTermResult'])->name('parent.children.term-result');
+            Route::get('parent/children/{student}/homework', [ParentPortalController::class, 'childHomework'])->name('parent.children.homework');
+            Route::get('parent/children/{student}/remarks', [ParentPortalController::class, 'childRemarks'])->name('parent.children.remarks');
+            Route::get('parent/children/{student}/invoices', [ParentPortalController::class, 'childInvoices'])->name('parent.children.invoices');
+        });
     });
 
 });

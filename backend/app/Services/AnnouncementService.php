@@ -31,7 +31,7 @@ class AnnouncementService
      */
     public function send(array $data, User $sender): Announcement
     {
-        $recipients = $this->resolveRecipients($sender->school, $data['audience']);
+        $recipients = $this->resolveRecipients(tenant(), $data['audience']);
 
         $announcement = DB::transaction(function () use ($data, $sender, $recipients) {
             $announcement = Announcement::query()->create([

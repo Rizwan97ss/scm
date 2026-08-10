@@ -55,15 +55,13 @@ class StudentController extends Controller
     {
         $this->authorize('create', Student::class);
 
-        // Super Admin has no single school, and a plan limit is a business
-        // rule a platform operator can always override — not a hard invariant.
-        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
-        if ($request->user()->school_id !== null) {
-            $planLimits->assertCanAddStudent($request->user()->school);
-        }
+        // Super Admin (PlatformUser) can't reach this route at all -- it's
+        // tenant-scoped, on the tenant route group's guard, so $request->user()
+        // is always a tenant User here. No bypass needed.
+        $planLimits->assertCanAddStudent(tenant());
 
         $student = DB::transaction(function () use ($request, $idGenerator, $enrollment) {
-            $school = $request->user()->school;
+            $school = tenant();
 
             $student = Student::query()->create([
                 ...$request->safe()->except('guardians'),
@@ -176,7 +174,7 @@ class StudentController extends Controller
                 'status' => 'active',
             ])->save();
         } else {
-            $school = $student->school;
+            $school = tenant();
 
             $user = User::query()->create([
                 'username' => $student->admission_number,

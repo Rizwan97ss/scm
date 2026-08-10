@@ -19,9 +19,6 @@ class LoginController extends Controller
         $user = $request->user();
         $user->forceFill(['last_login_at' => now()])->saveQuietly();
 
-        // TODO(tenancy): $user->load(['roles', 'school.plan']) -- school.plan relies on a
-        // school_id FK on users that no longer exists; needs Sub-phase E's auth/response
-        // redesign (tenant() instead of a relation).
-        return ApiResponse::success(new UserResource($user->load(['roles', 'school.plan'])), 'Logged in successfully.');
+        return ApiResponse::success(new UserResource($user->load('roles')), 'Logged in successfully.');
     }
 }

@@ -55,7 +55,7 @@ class PayslipController extends Controller
     {
         $this->authorize('generate', Payslip::class);
 
-        $result = $this->payroll->generateForMonth($request->user()->school, $request->integer('month'), $request->integer('year'), $request->user());
+        $result = $this->payroll->generateForMonth(tenant(), $request->integer('month'), $request->integer('year'), $request->user());
 
         return ApiResponse::success([
             'created_count' => $result['created']->count(),
@@ -94,7 +94,7 @@ class PayslipController extends Controller
 
         $pdf = Pdf::loadView('pdf.payslip', [
             'data' => $data,
-            'schoolName' => $record->school->name,
+            'schoolName' => tenant()->name,
             'generatedAt' => now()->toDayDateTimeString(),
         ]);
 

@@ -22,7 +22,7 @@ class BillingController extends Controller
     {
         $this->authorize('billing.view');
 
-        $school = $request->user()->school()->with('plan')->firstOrFail();
+        $school = tenant()->loadMissing('plan');
 
         return ApiResponse::success(new PlatformSchoolResource($school));
     }
@@ -31,14 +31,12 @@ class BillingController extends Controller
     {
         $this->authorize('billing.manage');
 
-        $school = $request->user()->school;
+        $school = tenant();
 
         if (! $school->stripe_id) {
             return ApiResponse::error('Billing has not been set up for this school yet.', 422);
         }
 
-        $frontendUrl = rtrim(config('app.frontend_url'), '/');
-
-        return ApiResponse::success(['url' => $school->billingPortalUrl("{$frontendUrl}/settings/billing")]);
+        return ApiResponse::success(['url' => $school->billingPortalUrl($school->frontendUrl().'/settings/billing')]);
     }
 }

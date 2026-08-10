@@ -67,7 +67,7 @@ class CertificateController extends Controller
 
         $pdf = Pdf::loadView('pdf.certificate', [
             'certificate' => $certificate,
-            'schoolName' => $certificate->school->name,
+            'schoolName' => tenant()->name,
             'generatedAt' => now()->toDayDateTimeString(),
         ]);
 

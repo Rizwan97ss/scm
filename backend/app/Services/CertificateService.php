@@ -33,7 +33,7 @@ class CertificateService
         return Certificate::query()->create([
             'student_id' => $student->id,
             'certificate_template_id' => $template->id,
-            'certificate_number' => $this->nextCertificateNumber($template->school),
+            'certificate_number' => $this->nextCertificateNumber(tenant()),
             'issued_date' => $issuedDate,
             'issued_by' => $issuedBy->id,
             'content' => $this->render($template->body, $student, $issuedDate),
@@ -47,7 +47,7 @@ class CertificateService
             '{{admission_number}}' => $student->admission_number,
             '{{grade_level}}' => $student->currentGradeLevel?->name ?? '',
             '{{section}}' => $student->currentSection?->name ?? '',
-            '{{school_name}}' => $student->school->name,
+            '{{school_name}}' => tenant()->name,
             '{{date}}' => $issuedDate->toFormattedDateString(),
         ]);
     }

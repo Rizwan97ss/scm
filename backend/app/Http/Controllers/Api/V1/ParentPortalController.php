@@ -154,7 +154,7 @@ class ParentPortalController extends Controller
 
         $pdf = Pdf::loadView('pdf.report-card', [
             'data' => $data,
-            'schoolName' => $student->school->name,
+            'schoolName' => tenant()->name,
             'generatedAt' => now()->toDayDateTimeString(),
         ]);
 

@@ -32,11 +32,10 @@ class StudentImportController extends Controller
 
         // Checked once against current usage, not per row — a hard "you're
         // at your limit, upgrade to import more" gate rather than a precise
-        // per-row cutoff mid-import (see PlanLimitService's docblock).
-        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
-        if ($request->user()->school_id !== null) {
-            $planLimits->assertCanAddStudent($request->user()->school);
-        }
+        // per-row cutoff mid-import (see PlanLimitService's docblock). Super
+        // Admin (PlatformUser) can't reach this tenant-scoped route at all,
+        // so no bypass is needed here.
+        $planLimits->assertCanAddStudent(tenant());
 
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv']]);
 
@@ -47,7 +46,7 @@ class StudentImportController extends Controller
         }
 
         $import = new StudentsImport(
-            $request->user()->school,
+            tenant(),
             $academicYear,
             $request->user(),
             $idGenerator,

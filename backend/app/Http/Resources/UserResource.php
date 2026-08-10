@@ -37,17 +37,21 @@ class UserResource extends JsonResource
             'permissions' => $this->getAllPermissions()->pluck('name'),
             // Lets the frontend poll /auth/me after a self-service signup's
             // Stripe Checkout redirect to detect when the webhook has synced
-            // billing_status, without a dedicated endpoint. Null for Super
-            // Admin and anywhere `school` isn't eager loaded (see
-            // MeController/LoginController/SignupController).
-            // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
-            'school' => $this->whenLoaded('school', fn () => $this->school ? [
-                'id' => $this->school->id,
-                'name' => $this->school->name,
-                'plan_name' => $this->school->plan?->name,
-                'billing_status' => $this->school->billing_status,
-                'trial_ends_at' => $this->school->trial_ends_at?->toIso8601String(),
-            ] : null),
+            // billing_status, without a dedicated endpoint. Reads the
+            // currently-active tenant directly (tenant()) rather than a
+            // $this->school relation -- User has no FK to School anymore
+            // (different physical databases), but every User only ever
+            // exists within exactly one tenant's database, so "the current
+            // tenant" and "this user's school" are the same thing by
+            // construction. Null on a platform/central request where no
+            // tenant was ever resolved (PlatformUser has no school at all).
+            'school' => tenant() ? [
+                'id' => tenant()->id,
+                'name' => tenant()->name,
+                'plan_name' => tenant()->plan?->name,
+                'billing_status' => tenant()->billing_status,
+                'trial_ends_at' => tenant()->trial_ends_at?->toIso8601String(),
+            ] : null,
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

@@ -20,7 +20,7 @@ class IdCardController extends Controller
 
         $pdf = Pdf::loadView('pdf.id-card-student', [
             'student' => $student,
-            'schoolName' => $student->school->name,
+            'schoolName' => tenant()->name,
             'qrCode' => QrCodeGenerator::dataUri($student->uuid),
         ])->setPaper([0, 0, 243, 153]);
 
@@ -35,7 +35,7 @@ class IdCardController extends Controller
 
         $pdf = Pdf::loadView('pdf.id-card-staff', [
             'staff' => $user,
-            'schoolName' => $user->school->name,
+            'schoolName' => tenant()->name,
             'qrCode' => QrCodeGenerator::dataUri($user->uuid),
         ])->setPaper([0, 0, 243, 153]);
 

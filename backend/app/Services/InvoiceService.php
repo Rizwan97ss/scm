@@ -36,7 +36,7 @@ class InvoiceService
     public function createInvoice(array $data, User $creator): Invoice
     {
         return DB::transaction(function () use ($data, $creator) {
-            $school = $creator->school;
+            $school = tenant();
 
             $subtotal = collect($data['items'])->sum(fn ($item) => ($item['quantity'] ?? 1) * $item['unit_amount']);
 
@@ -141,7 +141,7 @@ class InvoiceService
             $invoice = Invoice::query()->create([
                 'student_id' => $student->id,
                 'academic_year_id' => $structure->academic_year_id,
-                'invoice_number' => $this->feeNumbers->nextInvoiceNumber($structure->school),
+                'invoice_number' => $this->feeNumbers->nextInvoiceNumber(tenant()),
                 'issue_date' => $issueDate,
                 'due_date' => $dueDate,
                 'status' => InvoiceStatus::Issued,
@@ -189,7 +189,7 @@ class InvoiceService
 
         $creditNote = CreditNote::query()->create([
             'invoice_id' => $invoice->id,
-            'credit_note_number' => $this->feeNumbers->nextCreditNoteNumber($invoice->school),
+            'credit_note_number' => $this->feeNumbers->nextCreditNoteNumber(tenant()),
             'amount' => $data['amount'],
             'reason' => $data['reason'],
             'issued_by' => $issuedBy->id,

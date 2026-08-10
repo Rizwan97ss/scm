@@ -29,7 +29,7 @@ class ManualPaymentGateway implements PaymentGatewayInterface
         return Payment::query()->create([
             'invoice_id' => $invoice->id,
             'student_id' => $invoice->student_id,
-            'payment_number' => $this->feeNumbers->nextPaymentNumber($invoice->school),
+            'payment_number' => $this->feeNumbers->nextPaymentNumber(tenant()),
             'amount' => $data['amount'],
             'method' => $data['method'],
             'gateway' => $this->name(),

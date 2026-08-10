@@ -63,7 +63,7 @@ class PaymentController extends Controller
 
         $pdf = Pdf::loadView('pdf.receipt', [
             'data' => $data,
-            'schoolName' => $record->school->name,
+            'schoolName' => tenant()->name,
             'generatedAt' => now()->toDayDateTimeString(),
         ]);
 
