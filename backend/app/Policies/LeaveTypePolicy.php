@@ -24,7 +24,7 @@ class LeaveTypePolicy
 
     public function view(User $user, LeaveType $leaveType): bool
     {
-        return $this->viewAny($user) && $leaveType->school_id === $user->school_id;
+        return $this->viewAny($user);
     }
 
     public function create(User $user): bool
@@ -34,7 +34,7 @@ class LeaveTypePolicy
 
     public function update(User $user, LeaveType $leaveType): bool
     {
-        return $user->can('leave.manage') && $leaveType->school_id === $user->school_id;
+        return $user->can('leave.manage');
     }
 
     public function delete(User $user, LeaveType $leaveType): bool

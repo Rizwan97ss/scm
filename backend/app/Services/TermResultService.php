@@ -26,7 +26,7 @@ class TermResultService
 
         $band = null;
         if ($weightedPercentage !== null) {
-            $scale = GradingScale::query()->where('school_id', $term->school_id)->where('is_default', true)->with('gradeBands')->first();
+            $scale = GradingScale::query()->where('is_default', true)->with('gradeBands')->first();
             $band = $scale?->resolveBand($weightedPercentage);
         }
 

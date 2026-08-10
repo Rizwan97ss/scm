@@ -10,10 +10,15 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Gates access based on a school's is_active flag and billing_status —
  * finally enforcing is_active, which has existed since Phase 0 as a
- * Super-Admin-editable column with nothing behind it until now. Registered
- * the same way as EnsureSchoolContext (appended to the global 'api' group,
- * not scoped to auth:sanctum specifically) since it also just no-ops for
- * an unauthenticated request or Super Admin (school_id === null).
+ * Super-Admin-editable column with nothing behind it until now.
+ *
+ * Reads the currently active tenant via tenant() (stancl/tenancy) rather
+ * than a $user->school relation — there is no school_id column on User to
+ * traverse anymore, isolation is physical. tenant() is null for any
+ * request that never resolved a tenant (no subdomain middleware ran, e.g.
+ * a platform/landlord-side request), which is exactly when this gate
+ * should no-op — a School Admin's own subdomain sets tenant() before this
+ * middleware runs; a Super Admin's platform-domain request never does.
  */
 class EnsureSchoolIsUsable
 {
@@ -33,9 +38,9 @@ class EnsureSchoolIsUsable
 
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
+        $school = tenant();
 
-        if (! $user || $user->school_id === null) {
+        if (! $school) {
             return $next($request);
         }
 
@@ -43,9 +48,7 @@ class EnsureSchoolIsUsable
             return $next($request);
         }
 
-        $school = $user->school;
-
-        if (! $school || ! $school->is_active) {
+        if (! $school->is_active) {
             return ApiResponse::error('This school has been deactivated. Contact your administrator.', 403);
         }
 

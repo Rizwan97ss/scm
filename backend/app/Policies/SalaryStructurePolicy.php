@@ -19,7 +19,7 @@ class SalaryStructurePolicy
 
     public function view(User $user, SalaryStructure $salaryStructure): bool
     {
-        return $this->viewAny($user) && $salaryStructure->school_id === $user->school_id;
+        return $this->viewAny($user);
     }
 
     public function create(User $user): bool
@@ -29,7 +29,7 @@ class SalaryStructurePolicy
 
     public function update(User $user, SalaryStructure $salaryStructure): bool
     {
-        return $user->can('payroll.manage') && $salaryStructure->school_id === $user->school_id;
+        return $user->can('payroll.manage');
     }
 
     public function delete(User $user, SalaryStructure $salaryStructure): bool

@@ -24,7 +24,6 @@ class LeaveService
         $end = Carbon::parse($data['end_date']);
 
         return LeaveRequest::query()->create([
-            'school_id' => $applicant->school_id,
             'user_id' => $applicant->id,
             'leave_type_id' => $data['leave_type_id'],
             'start_date' => $start->toDateString(),

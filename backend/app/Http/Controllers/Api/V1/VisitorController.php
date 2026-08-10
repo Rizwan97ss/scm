@@ -45,7 +45,6 @@ class VisitorController extends Controller
 
         $visitor = Visitor::query()->create([
             ...$request->validated(),
-            'school_id' => $request->user()->school_id,
             'check_in_time' => now(),
             'logged_by' => $request->user()->id,
         ]);

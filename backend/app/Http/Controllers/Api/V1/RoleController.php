@@ -17,12 +17,8 @@ class RoleController extends Controller
     {
         $this->authorize('viewAny', Role::class);
 
-        $actor = $request->user();
-        $schoolId = $actor->school_id ?? $request->integer('school_id') ?: null;
-
         $roles = Role::query()
             ->with('permissions')
-            ->where('school_id', $schoolId)
             ->orderBy('name')
             ->get();
 
@@ -36,7 +32,6 @@ class RoleController extends Controller
         $role = Role::query()->create([
             'name' => $request->string('name')->toString(),
             'guard_name' => 'web',
-            'school_id' => $request->user()->school_id,
         ]);
 
         $role->syncPermissions($request->array('permissions'));

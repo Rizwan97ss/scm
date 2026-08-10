@@ -66,7 +66,6 @@ class GradingScaleController extends CrudController
 
         foreach ($bands as $band) {
             GradeBand::query()->create([
-                'school_id' => $scale->school_id,
                 'grading_scale_id' => $scale->id,
                 'min_percentage' => $band['min_percentage'],
                 'max_percentage' => $band['max_percentage'],

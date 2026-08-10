@@ -37,7 +37,6 @@ class AttendanceReportService
     private function studentBreakdown(School $school, Carbon $from, Carbon $to): array
     {
         $records = StudentAttendance::query()
-            ->where('school_id', $school->id)
             ->whereDate('date', '>=', $from)
             ->whereDate('date', '<=', $to)
             ->whereNull('timetable_period_id')
@@ -63,7 +62,6 @@ class AttendanceReportService
     private function staffBreakdown(School $school, Carbon $from, Carbon $to): array
     {
         $records = StaffAttendance::query()
-            ->where('school_id', $school->id)
             ->whereDate('date', '>=', $from)
             ->whereDate('date', '<=', $to)
             ->get();

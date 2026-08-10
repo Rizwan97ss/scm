@@ -57,7 +57,6 @@ class StudentRemarkController extends CrudController
 
         $remark = StudentRemark::query()->create([
             ...$request->safe()->only(['category', 'body', 'visible_to_guardian']),
-            'school_id' => $student->school_id,
             'student_id' => $student->id,
             'author_id' => $request->user()->id,
             'section_id' => $student->current_section_id,

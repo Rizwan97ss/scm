@@ -71,7 +71,6 @@ class HomeworkController extends CrudController
 
         $homework = new Homework([
             ...$request->safe()->only(['academic_year_id', 'section_id', 'subject_id', 'title', 'description', 'due_date', 'max_score']),
-            'school_id' => $request->user()->school_id,
             'teacher_id' => $request->user()->id,
         ]);
 

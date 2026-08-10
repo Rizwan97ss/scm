@@ -61,12 +61,10 @@ class PayrollService
     public function generateForMonth(School $school, int $month, int $year, User $creator): array
     {
         $structures = SalaryStructure::query()
-            ->where('school_id', $school->id)
             ->where('is_active', true)
             ->get();
 
         $alreadyPaidUserIds = Payslip::query()
-            ->where('school_id', $school->id)
             ->where('month', $month)
             ->where('year', $year)
             ->pluck('user_id')
@@ -91,7 +89,6 @@ class PayrollService
     private function generateOnePayslip(School $school, SalaryStructure $structure, int $month, int $year, User $creator): Payslip
     {
         return DB::transaction(fn () => Payslip::query()->create([
-            'school_id' => $school->id,
             'user_id' => $structure->user_id,
             'salary_structure_id' => $structure->id,
             'payslip_number' => $this->nextPayslipNumber($school),

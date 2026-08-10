@@ -25,7 +25,6 @@ class FeeReportService
         $to = $toDate ? Carbon::parse($toDate) : now()->endOfMonth();
 
         $payments = Payment::query()
-            ->where('school_id', $school->id)
             ->whereDate('paid_at', '>=', $from->toDateString())
             ->whereDate('paid_at', '<=', $to->toDateString())
             ->get();
@@ -34,7 +33,6 @@ class FeeReportService
             ->map(fn ($group) => round($group->sum('amount'), 2));
 
         $byCategory = Invoice::query()
-            ->where('school_id', $school->id)
             ->whereHas('payments', fn ($q) => $q->whereDate('paid_at', '>=', $from->toDateString())->whereDate('paid_at', '<=', $to->toDateString()))
             ->with('items.feeCategory')
             ->get()
@@ -58,7 +56,6 @@ class FeeReportService
     public function outstandingDues(School $school): array
     {
         $invoices = Invoice::query()
-            ->where('school_id', $school->id)
             ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid])
             ->with(['student.currentGradeLevel', 'student.currentSection'])
             ->get()

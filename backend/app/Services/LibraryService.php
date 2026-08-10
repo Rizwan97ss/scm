@@ -29,7 +29,6 @@ class LibraryService
             $book->decrement('available_copies');
 
             return BookIssue::query()->create([
-                'school_id' => $book->school_id,
                 'book_id' => $book->id,
                 'student_id' => $data['student_id'] ?? null,
                 'user_id' => $data['user_id'] ?? null,
@@ -47,7 +46,7 @@ class LibraryService
 
         return DB::transaction(function () use ($bookIssue) {
             $returnDate = now();
-            $fine = $this->calculateFine($bookIssue->due_date, $returnDate, $bookIssue->school_id);
+            $fine = $this->calculateFine($bookIssue->due_date, $returnDate);
 
             $bookIssue->update([
                 'return_date' => $returnDate->toDateString(),
@@ -61,7 +60,7 @@ class LibraryService
         });
     }
 
-    private function calculateFine(Carbon $dueDate, Carbon $returnDate, int $schoolId): float
+    private function calculateFine(Carbon $dueDate, Carbon $returnDate): float
     {
         // Clone before mutating — $dueDate is the live BookIssue model's own
         // due_date attribute, and Carbon's startOfDay() mutates in place.
@@ -71,7 +70,7 @@ class LibraryService
             return 0.0;
         }
 
-        $perDay = (float) $this->settings->get('library.fine_per_day', 0, $schoolId);
+        $perDay = (float) $this->settings->get('library.fine_per_day', 0);
 
         return round($daysLate * $perDay, 2);
     }

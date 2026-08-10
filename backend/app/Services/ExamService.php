@@ -96,7 +96,7 @@ class ExamService
 
             $scale = $examSubject->gradingScale;
             if (! $scale) {
-                $defaultScale ??= GradingScale::query()->where('school_id', $examSubject->school_id)->where('is_default', true)->with('gradeBands')->first();
+                $defaultScale ??= GradingScale::query()->where('is_default', true)->with('gradeBands')->first();
                 $scale = $defaultScale;
             }
 

@@ -30,7 +30,6 @@ class HostelService
                 ->update(['status' => HostelAllocationStatus::Vacated, 'vacated_date' => $data['allocated_date']]);
 
             return HostelAllocation::query()->create([
-                'school_id' => $room->school_id,
                 'student_id' => $data['student_id'],
                 'hostel_room_id' => $room->id,
                 'bed_number' => $data['bed_number'] ?? null,

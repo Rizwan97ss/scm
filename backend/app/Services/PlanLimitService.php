@@ -18,8 +18,10 @@ use App\Models\School;
  * on Plan but not live-enforced yet — see docs/roadmap.md's Phase 6 notes.
  *
  * Callers are responsible for skipping this entirely when the acting user
- * is Super Admin (school_id === null) — plan limits are a business rule
- * a platform operator can always override, not a hard invariant.
+ * is Super Admin — plan limits are a business rule a platform operator can
+ * always override, not a hard invariant.
+ *
+ * TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
  */
 class PlanLimitService
 {

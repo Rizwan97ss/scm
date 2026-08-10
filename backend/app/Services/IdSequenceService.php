@@ -16,14 +16,12 @@ class IdSequenceService
     {
         return DB::transaction(function () use ($schoolId, $key) {
             $sequence = IdSequence::query()
-                ->where('school_id', $schoolId)
                 ->where('key', $key)
                 ->lockForUpdate()
                 ->first();
 
             if (! $sequence) {
                 $sequence = IdSequence::query()->create([
-                    'school_id' => $schoolId,
                     'key' => $key,
                     'last_value' => 0,
                 ]);

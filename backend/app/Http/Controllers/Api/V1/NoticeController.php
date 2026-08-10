@@ -56,7 +56,6 @@ class NoticeController extends Controller
 
         $notice = Notice::query()->create([
             ...$request->validated(),
-            'school_id' => $request->user()->school_id,
             'created_by' => $request->user()->id,
         ]);
 

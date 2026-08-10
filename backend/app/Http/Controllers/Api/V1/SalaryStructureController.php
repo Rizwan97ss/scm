@@ -39,7 +39,6 @@ class SalaryStructureController extends CrudController
 
         $structure = SalaryStructure::query()->create([
             ...$data,
-            'school_id' => $request->user()->school_id,
             'is_active' => true,
         ]);
 

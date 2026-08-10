@@ -186,7 +186,6 @@ class ExamController extends CrudController
     private function createExamSubject(Exam $exam, array $data): ExamSubject
     {
         return ExamSubject::query()->create([
-            'school_id' => $exam->school_id,
             'exam_id' => $exam->id,
             'subject_id' => $data['subject_id'],
             'section_id' => $data['section_id'],

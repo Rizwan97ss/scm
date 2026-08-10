@@ -60,7 +60,6 @@ class HomeworkSubmissionController extends Controller
 
         $submission = HomeworkSubmission::query()->firstOrNew(['homework_id' => $homework->id, 'student_id' => $student->id]);
         $submission->fill([
-            'school_id' => $homework->school_id,
             'status' => HomeworkSubmissionStatus::Submitted,
             'content' => $request->input('content'),
             'submitted_at' => now(),

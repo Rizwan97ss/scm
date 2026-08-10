@@ -14,7 +14,6 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'uuid' => $this->uuid,
-            'school_id' => $this->school_id,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
             'full_name' => $this->full_name,
@@ -39,8 +38,9 @@ class UserResource extends JsonResource
             // Lets the frontend poll /auth/me after a self-service signup's
             // Stripe Checkout redirect to detect when the webhook has synced
             // billing_status, without a dedicated endpoint. Null for Super
-            // Admin (school_id === null) and anywhere `school` isn't eager
-            // loaded (see MeController/LoginController/SignupController).
+            // Admin and anywhere `school` isn't eager loaded (see
+            // MeController/LoginController/SignupController).
+            // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
             'school' => $this->whenLoaded('school', fn () => $this->school ? [
                 'id' => $this->school->id,
                 'name' => $this->school->name,

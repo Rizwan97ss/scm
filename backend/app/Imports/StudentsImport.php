@@ -38,9 +38,8 @@ class StudentsImport implements OnEachRow, SkipsEmptyRows, SkipsOnFailure, WithH
     {
         $data = $row->toCollection();
 
-        $gradeLevel = GradeLevel::query()->where('school_id', $this->school->id)->where('code', $data['grade_level_code'])->first();
+        $gradeLevel = GradeLevel::query()->where('code', $data['grade_level_code'])->first();
         $section = Section::query()
-            ->where('school_id', $this->school->id)
             ->where('academic_year_id', $this->academicYear->id)
             ->where('grade_level_id', $gradeLevel?->id)
             ->where('name', $data['section_name'])
@@ -58,7 +57,6 @@ class StudentsImport implements OnEachRow, SkipsEmptyRows, SkipsOnFailure, WithH
         }
 
         $student = Student::query()->create([
-            'school_id' => $this->school->id,
             'admission_number' => $this->idGenerator->generate($this->school, now()),
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],

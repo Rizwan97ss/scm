@@ -36,10 +36,7 @@ class FeeStructureController extends CrudController
     {
         $this->authorize('create', FeeStructure::class);
 
-        $feeStructure = FeeStructure::query()->create([
-            ...$request->validated(),
-            'school_id' => $request->user()->school_id,
-        ]);
+        $feeStructure = FeeStructure::query()->create($request->validated());
 
         return ApiResponse::created(new FeeStructureResource($feeStructure->load($this->with)));
     }

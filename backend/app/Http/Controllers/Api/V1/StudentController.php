@@ -57,6 +57,7 @@ class StudentController extends Controller
 
         // Super Admin has no single school, and a plan limit is a business
         // rule a platform operator can always override — not a hard invariant.
+        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
         if ($request->user()->school_id !== null) {
             $planLimits->assertCanAddStudent($request->user()->school);
         }
@@ -178,7 +179,6 @@ class StudentController extends Controller
             $school = $student->school;
 
             $user = User::query()->create([
-                'school_id' => $student->school_id,
                 'username' => $student->admission_number,
                 'email' => "{$student->admission_number}@{$school->slug}.students.local",
                 'first_name' => $student->first_name,

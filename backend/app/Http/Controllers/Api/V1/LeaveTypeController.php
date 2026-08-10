@@ -33,7 +33,6 @@ class LeaveTypeController extends CrudController
 
         $leaveType = LeaveType::query()->create([
             ...$request->validated(),
-            'school_id' => $request->user()->school_id,
         ]);
 
         return ApiResponse::created(new LeaveTypeResource($leaveType));

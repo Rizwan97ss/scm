@@ -21,11 +21,21 @@ use Spatie\Permission\PermissionRegistrar;
  */
 class RolePermissionSeeder extends Seeder
 {
+    /**
+     * TODO(tenancy): needs Sub-phase E's rewrite. "Super Admin" as a Spatie
+     * Role in team 0 doesn't fit the new shape at all — Super Admin becomes
+     * a landlord-side PlatformUser with its own separate guard/authorization,
+     * not a Role row inside any tenant database. And the per-school loop
+     * below needs to switch into EACH tenant's own connection before calling
+     * seedDefaultRoles() -- Role::findOrCreate() must run against that
+     * tenant's own `roles` table, not whatever connection happens to be
+     * active. Left as a known-broken placeholder rather than patched
+     * piecemeal.
+     */
     public function run(): void
     {
         $registrar = app(PermissionRegistrar::class);
 
-        $registrar->setPermissionsTeamId(0);
         $superAdmin = Role::findOrCreate('Super Admin', 'web');
         $superAdmin->syncPermissions($this->allPermissionNames());
 

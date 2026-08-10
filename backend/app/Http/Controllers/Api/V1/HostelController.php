@@ -33,10 +33,7 @@ class HostelController extends CrudController
     {
         $this->authorize('create', Hostel::class);
 
-        $hostel = Hostel::query()->create([
-            ...$request->validated(),
-            'school_id' => $request->user()->school_id,
-        ]);
+        $hostel = Hostel::query()->create($request->validated());
 
         return ApiResponse::created(new HostelResource($hostel));
     }

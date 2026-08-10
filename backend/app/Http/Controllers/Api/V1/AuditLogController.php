@@ -19,6 +19,7 @@ class AuditLogController extends Controller
 
         $actor = $request->user();
 
+        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
         $paginator = QueryBuilder::for(Activity::query()->with('causer'))
             ->when($actor->school_id !== null, fn ($q) => $q->where('school_id', $actor->school_id))
             ->allowedFilters('log_name', 'event', AllowedFilter::exact('subject_type'))

@@ -18,7 +18,6 @@ class AcademicReportService
     public function recentExamPerformance(School $school, int $limit = 6): array
     {
         $exams = Exam::query()
-            ->where('school_id', $school->id)
             ->where('is_published', true)
             ->with(['examSubjects.marks' => fn ($q) => $q->where('is_absent', false)->whereNotNull('marks_obtained')])
             ->orderByDesc('created_at')

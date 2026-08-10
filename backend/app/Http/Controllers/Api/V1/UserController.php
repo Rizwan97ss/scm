@@ -27,8 +27,8 @@ class UserController extends Controller
 
         $actor = $request->user();
 
+        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
         $paginator = QueryBuilder::for(User::query()->with(['roles', 'designation']))
-            ->when($actor->school_id !== null, fn ($q) => $q->inSchool($actor->school_id))
             ->when($actor->school_id === null && $request->filled('school_id'), fn ($q) => $q->inSchool($request->integer('school_id')))
             ->allowedFilters('first_name', 'last_name', 'email', 'status', AllowedFilter::exact('role', 'roles.name'))
             ->allowedSorts('first_name', 'last_name', 'email', 'created_at')
@@ -49,19 +49,18 @@ class UserController extends Controller
         $this->authorize('create', User::class);
 
         $actor = $request->user();
-        $schoolId = $actor->school_id ?? $request->integer('school_id');
 
         // Only roles that actually count toward a "staff seat" (see
         // School::staffCount()) trigger the check — a user created here
         // with only Student/Parent roles doesn't consume one.
         $isStaffRole = ! empty(array_diff($request->array('roles'), ['Student', 'Parent']));
+        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
         if ($actor->school_id !== null && $isStaffRole) {
             $planLimits->assertCanAddStaffUser($actor->school);
         }
 
         $user = User::query()->create([
             ...$request->safe()->except(['roles', 'password_confirmation']),
-            'school_id' => $schoolId,
             'password' => Hash::make($request->string('password')->toString()),
         ]);
 

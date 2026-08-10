@@ -30,7 +30,6 @@ class SearchService
 
         if ($user->can('students.view')) {
             $results['students'] = Student::query()
-                ->where('school_id', $user->school_id)
                 ->where(fn ($q) => $this->matchesName($q, $query)->orWhere('admission_number', 'like', "%{$query}%"))
                 ->limit(self::PER_CATEGORY_LIMIT)
                 ->get()
@@ -40,7 +39,6 @@ class SearchService
 
         if ($user->can('guardians.view')) {
             $results['guardians'] = Guardian::query()
-                ->where('school_id', $user->school_id)
                 ->where(fn ($q) => $this->matchesName($q, $query)->orWhere('phone', 'like', "%{$query}%"))
                 ->limit(self::PER_CATEGORY_LIMIT)
                 ->get()
@@ -50,7 +48,6 @@ class SearchService
 
         if ($user->can('users.view')) {
             $results['staff'] = User::query()
-                ->inSchool($user->school_id)
                 ->whereHas('roles', fn ($q) => $q->whereNotIn('name', ['Student', 'Parent']))
                 ->where(fn ($q) => $this->matchesName($q, $query)
                     ->orWhere('email', 'like', "%{$query}%")
@@ -63,7 +60,6 @@ class SearchService
 
         if ($user->can('library.view')) {
             $results['books'] = Book::query()
-                ->where('school_id', $user->school_id)
                 ->where(fn ($q) => $q->where('title', 'like', "%{$query}%")
                     ->orWhere('isbn', 'like', "%{$query}%"))
                 ->limit(self::PER_CATEGORY_LIMIT)
@@ -74,7 +70,6 @@ class SearchService
 
         if ($user->can('invoices.view')) {
             $results['invoices'] = Invoice::query()
-                ->where('school_id', $user->school_id)
                 ->visibleTo($user)
                 ->where('invoice_number', 'like', "%{$query}%")
                 ->with('student')

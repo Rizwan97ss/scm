@@ -19,7 +19,7 @@ class PayslipPolicy
             return true;
         }
 
-        return $user->can('payroll.view') && $payslip->school_id === $user->school_id;
+        return $user->can('payroll.view');
     }
 
     public function generate(User $user): bool
@@ -29,6 +29,6 @@ class PayslipPolicy
 
     public function markPaid(User $user, Payslip $payslip): bool
     {
-        return $user->can('payroll.manage') && $payslip->school_id === $user->school_id;
+        return $user->can('payroll.manage');
     }
 }

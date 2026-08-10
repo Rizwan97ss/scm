@@ -94,7 +94,6 @@ class QuestionController extends CrudController
 
         foreach ($options as $index => $option) {
             QuestionOption::query()->create([
-                'school_id' => $question->school_id,
                 'question_id' => $question->id,
                 'option_text' => $option['option_text'],
                 'is_correct' => $option['is_correct'] ?? false,

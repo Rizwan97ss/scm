@@ -5,14 +5,19 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\PermissionRegistrar;
 
+/**
+ * TODO(tenancy): this whole seeder is obsolete under database-per-tenant --
+ * Super Admin becomes a landlord-side PlatformUser (its own model/guard,
+ * living in the central database), not a User row with school_id === null.
+ * User no longer even has a school_id column to set null. Needs Sub-phase
+ * E's PlatformAdminSeeder replacement, not a patch. Left in place
+ * (unremoved from DatabaseSeeder) as a known-broken placeholder.
+ */
 class SuperAdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        app(PermissionRegistrar::class)->setPermissionsTeamId(0);
-
         $user = User::query()->updateOrCreate(
             ['email' => 'superadmin@example.com'],
             [

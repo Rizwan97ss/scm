@@ -7,9 +7,15 @@ use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Reads/writes database-driven settings. A setting with school_id = null is the
- * global default; a school-specific row (same key) overrides it for that school.
- * Results are cached per school for the app's lifetime and invalidated on write.
+ * Reads/writes database-driven settings. Settings now live in the active
+ * tenant's own database (one row per key — see the `settings` tenant
+ * migration's `unique(['key'])`), so there is no more global-default-vs-
+ * school-override merge to do: whatever's in the current tenant connection
+ * IS this school's settings. The now-vestigial $schoolId parameters are
+ * kept only so unrelated call sites elsewhere (still passing a School id
+ * for cache-key/legacy reasons) keep compiling; they no longer affect which
+ * rows are read/written. Results are cached for the app's lifetime and
+ * invalidated on write.
  */
 class SettingsService
 {
@@ -23,7 +29,7 @@ class SettingsService
     public function set(string $key, mixed $value, ?int $schoolId = null, SettingType $type = SettingType::String, string $group = 'general', bool $isPublic = false): Setting
     {
         $setting = Setting::query()->updateOrCreate(
-            ['school_id' => $schoolId, 'key' => $key],
+            ['key' => $key],
             [
                 'value' => $type->serialize($value),
                 'type' => $type->value,
@@ -38,21 +44,15 @@ class SettingsService
     }
 
     /**
-     * All effective settings for a school: global defaults overridden by school-specific values.
+     * All settings for the current tenant.
      *
      * @return array<string, mixed>
      */
     public function allForSchool(?int $schoolId): array
     {
-        return Cache::remember("settings:{$this->cacheKeyFor($schoolId)}", self::CACHE_TTL, function () use ($schoolId) {
-            $global = Setting::query()->whereNull('school_id')->get();
-            $scoped = $schoolId ? Setting::query()->where('school_id', $schoolId)->get() : collect();
-
+        return Cache::remember("settings:{$this->cacheKeyFor($schoolId)}", self::CACHE_TTL, function () {
             $merged = [];
-            foreach ($global as $setting) {
-                $merged[$setting->key] = $setting->type->cast($setting->value);
-            }
-            foreach ($scoped as $setting) {
+            foreach (Setting::query()->get() as $setting) {
                 $merged[$setting->key] = $setting->type->cast($setting->value);
             }
 
@@ -69,7 +69,6 @@ class SettingsService
     {
         $publicKeys = Setting::query()
             ->where('is_public', true)
-            ->where(fn ($q) => $q->whereNull('school_id')->orWhere('school_id', $schoolId))
             ->pluck('key')
             ->unique();
 

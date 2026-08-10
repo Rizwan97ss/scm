@@ -16,7 +16,6 @@ class EnrollmentReportService
         $from = now()->subMonths(5)->startOfMonth();
 
         $historyEntries = StudentEnrollmentHistory::query()
-            ->whereHas('student', fn ($q) => $q->where('school_id', $school->id))
             ->whereDate('effective_date', '>=', $from)
             ->get();
 
@@ -32,7 +31,6 @@ class EnrollmentReportService
             ->values();
 
         $byGrade = Student::query()
-            ->where('school_id', $school->id)
             ->where('status', 'active')
             ->with('currentGradeLevel')
             ->get()
@@ -42,7 +40,7 @@ class EnrollmentReportService
         return [
             'trend' => $trend->all(),
             'active_by_grade' => $byGrade,
-            'active_total' => Student::query()->where('school_id', $school->id)->where('status', 'active')->count(),
+            'active_total' => Student::query()->where('status', 'active')->count(),
         ];
     }
 }

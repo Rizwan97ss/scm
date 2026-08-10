@@ -31,7 +31,6 @@ class CertificateService
         $issuedDate = isset($data['issued_date']) ? Carbon::parse($data['issued_date']) : now();
 
         return Certificate::query()->create([
-            'school_id' => $template->school_id,
             'student_id' => $student->id,
             'certificate_template_id' => $template->id,
             'certificate_number' => $this->nextCertificateNumber($template->school),

@@ -27,7 +27,6 @@ class ManualPaymentGateway implements PaymentGatewayInterface
     public function record(Invoice $invoice, array $data, User $receivedBy): Payment
     {
         return Payment::query()->create([
-            'school_id' => $invoice->school_id,
             'invoice_id' => $invoice->id,
             'student_id' => $invoice->student_id,
             'payment_number' => $this->feeNumbers->nextPaymentNumber($invoice->school),

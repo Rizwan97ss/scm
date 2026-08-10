@@ -31,10 +31,7 @@ class DesignationController extends CrudController
     {
         $this->authorize('create', Designation::class);
 
-        $designation = Designation::query()->create([
-            ...$request->validated(),
-            'school_id' => $request->user()->school_id,
-        ]);
+        $designation = Designation::query()->create($request->validated());
 
         return ApiResponse::created(new DesignationResource($designation));
     }

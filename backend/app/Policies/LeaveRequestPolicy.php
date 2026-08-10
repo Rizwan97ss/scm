@@ -26,7 +26,7 @@ class LeaveRequestPolicy
             return true;
         }
 
-        return $user->can('leave.view') && $leaveRequest->school_id === $user->school_id;
+        return $user->can('leave.view');
     }
 
     /** Any staff member (not Student/Parent) may submit a leave request for themselves. */
@@ -43,6 +43,6 @@ class LeaveRequestPolicy
 
     public function review(User $user, LeaveRequest $leaveRequest): bool
     {
-        return $user->can('leave.manage') && $leaveRequest->school_id === $user->school_id;
+        return $user->can('leave.manage');
     }
 }

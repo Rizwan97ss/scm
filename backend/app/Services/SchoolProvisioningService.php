@@ -227,7 +227,6 @@ class SchoolProvisioningService
     public function seedDefaultRoles(School $school): void
     {
         $registrar = app(PermissionRegistrar::class);
-        $registrar->setPermissionsTeamId($school->id);
 
         foreach (self::SCHOOL_SCOPED_ROLE_PERMISSIONS as $roleName => $permissions) {
             $role = Role::findOrCreate($roleName, 'web');
@@ -259,6 +258,15 @@ class SchoolProvisioningService
      *
      * @param  array<string, mixed>  $schoolAttributes
      * @param  array<string, mixed>  $adminAttributes
+     *
+     * TODO(tenancy): this whole method needs Sub-phase E's rewrite, not a
+     * patch — School::create() no longer atomically implies a ready tenant
+     * database (see School's $dispatchesEvents: creating the row triggers
+     * async-capable provisioning via stancl's job pipeline), seedDefaultRoles()
+     * and the admin User::create() below must run INSIDE that tenant's own
+     * connection once it exists, and 'school_id' => $school->id is a
+     * straightforwardly broken reference to a column User no longer has.
+     * Left as a known-broken placeholder rather than patched piecemeal.
      */
     public function provision(array $schoolAttributes, array $adminAttributes, Plan $plan): School
     {
@@ -266,10 +274,6 @@ class SchoolProvisioningService
             $school = School::query()->create([...$schoolAttributes, 'plan_id' => $plan->id]);
 
             $this->seedDefaultRoles($school);
-
-            // Must happen before assignRole() — Spatie resolves/creates the
-            // pivot row under whatever team id is currently active.
-            app(PermissionRegistrar::class)->setPermissionsTeamId($school->id);
 
             $admin = User::query()->create([...$adminAttributes, 'school_id' => $school->id]);
             $admin->assignRole('School Admin');

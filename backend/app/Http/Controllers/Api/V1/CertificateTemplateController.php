@@ -31,10 +31,7 @@ class CertificateTemplateController extends CrudController
     {
         $this->authorize('create', CertificateTemplate::class);
 
-        $template = CertificateTemplate::query()->create([
-            ...$request->validated(),
-            'school_id' => $request->user()->school_id,
-        ]);
+        $template = CertificateTemplate::query()->create($request->validated());
 
         return ApiResponse::created(new CertificateTemplateResource($template));
     }

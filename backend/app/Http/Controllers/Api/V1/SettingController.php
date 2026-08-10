@@ -20,6 +20,10 @@ class SettingController extends Controller
     {
         $this->authorize('viewAny', Setting::class);
 
+        // TODO(tenancy): SettingsService::allForSchool()'s global-default/
+        // per-school-override model (school_id column on Setting, out of
+        // scope of this file) needs a redesign for database-per-tenant --
+        // do not guess at a replacement.
         return ApiResponse::success($this->settings->allForSchool($request->user()->school_id));
     }
 
@@ -45,6 +49,8 @@ class SettingController extends Controller
         $this->authorize('update', Setting::class);
 
         $actor = $request->user();
+        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
+        // Also depends on SettingsService's global-vs-per-school model (see index() above).
         $schoolId = $actor->school_id === null && $request->boolean('global') ? null : $actor->school_id;
 
         foreach ($request->array('settings') as $setting) {

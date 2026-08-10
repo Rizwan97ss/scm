@@ -54,7 +54,7 @@ class AcademicYearController extends CrudController
         $this->authorize('update', $academicYear);
 
         DB::transaction(function () use ($academicYear) {
-            AcademicYear::query()->where('school_id', $academicYear->school_id)->update(['is_current' => false]);
+            AcademicYear::query()->update(['is_current' => false]);
             $academicYear->update(['is_current' => true, 'status' => 'active']);
         });
 

@@ -44,7 +44,6 @@ class StudentTransportAssignmentController extends Controller
 
         $assignment = $this->transport->assign([
             ...$request->validated(),
-            'school_id' => $request->user()->school_id,
         ]);
 
         return ApiResponse::created(new StudentTransportAssignmentResource($assignment->load(self::WITH)));

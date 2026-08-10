@@ -29,7 +29,6 @@ class OnlineExamService
 
             foreach ($questions as $index => $q) {
                 $examSubject->onlineTestQuestions()->create([
-                    'school_id' => $examSubject->school_id,
                     'question_id' => $q['question_id'],
                     'marks' => $q['marks'] ?? null,
                     'sequence' => $index,
@@ -79,7 +78,6 @@ class OnlineExamService
         throw_if($existingAttempts >= $examSubject->max_attempts, ValidationException::withMessages(['attempts' => 'No attempts remaining.']));
 
         return OnlineTestAttempt::query()->create([
-            'school_id' => $examSubject->school_id,
             'exam_subject_id' => $examSubject->id,
             'student_id' => $student->id,
             'attempt_number' => $existingAttempts + 1,
@@ -124,7 +122,6 @@ class OnlineExamService
 
                 $correctOption = $question->correctOption();
                 $answer = OnlineTestAnswer::query()->firstOrNew(['attempt_id' => $attempt->id, 'question_id' => $question->id]);
-                $answer->school_id = $attempt->school_id;
 
                 $isCorrect = $correctOption && $answer->selected_option_id === $correctOption->id;
                 $answer->is_correct = $isCorrect;
@@ -154,7 +151,6 @@ class OnlineExamService
         ExamMark::query()->updateOrCreate(
             ['exam_subject_id' => $examSubject->id, 'student_id' => $attempt->student_id],
             [
-                'school_id' => $examSubject->school_id,
                 'marks_obtained' => $score,
                 'is_absent' => false,
                 'remarks' => 'Auto-graded via online test.',

@@ -31,10 +31,7 @@ class FeeCategoryController extends CrudController
     {
         $this->authorize('create', FeeCategory::class);
 
-        $feeCategory = FeeCategory::query()->create([
-            ...$request->validated(),
-            'school_id' => $request->user()->school_id,
-        ]);
+        $feeCategory = FeeCategory::query()->create($request->validated());
 
         return ApiResponse::created(new FeeCategoryResource($feeCategory));
     }

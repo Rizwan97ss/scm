@@ -35,7 +35,6 @@ class StudentFeeAssignmentController extends CrudController
 
         $assignment = StudentFeeAssignment::query()->create([
             ...$request->validated(),
-            'school_id' => $request->user()->school_id,
         ]);
 
         return ApiResponse::created(new StudentFeeAssignmentResource($assignment->load($this->with)));

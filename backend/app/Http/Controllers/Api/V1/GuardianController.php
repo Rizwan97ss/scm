@@ -60,7 +60,6 @@ class GuardianController extends Controller
             $user = User::query()->firstOrCreate(
                 ['email' => $guardian->email],
                 [
-                    'school_id' => $guardian->school_id,
                     'first_name' => $guardian->first_name,
                     'last_name' => $guardian->last_name,
                     'phone' => $guardian->phone,

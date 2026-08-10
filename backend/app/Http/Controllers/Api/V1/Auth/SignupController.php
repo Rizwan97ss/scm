@@ -12,7 +12,6 @@ use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Spatie\Permission\PermissionRegistrar;
 use Throwable;
 
 class SignupController extends Controller
@@ -22,6 +21,16 @@ class SignupController extends Controller
         private readonly SubscriptionService $subscriptions,
     ) {}
 
+    /**
+     * TODO(tenancy): this entire flow needs Sub-phase E's rewrite, not a
+     * patch — $this->provisioning->provision() and $school->users()->first()
+     * both still assume the old single-database shape (a School row's admin
+     * User is reachable via a school_id FK). The real order becomes: create
+     * School (landlord) -> synchronously provision + migrate its physical
+     * tenant database -> create the admin User INSIDE that tenant context.
+     * Only the now-pointless setPermissionsTeamId() call (teams is off) was
+     * removed here; everything else is left as a known-broken placeholder.
+     */
     public function __invoke(SignupRequest $request): JsonResponse
     {
         $plan = Plan::query()->findOrFail($request->validated('plan_id'));
@@ -35,12 +44,9 @@ class SignupController extends Controller
         $admin = $school->users()->first();
 
         // The new admin lands authenticated immediately — taking them to
-        // Stripe is a checkout step, not a login gate. EnsureSchoolContext
-        // ran before this request had a user, so the permission team id
-        // must be set again here, same as LoginController.
+        // Stripe is a checkout step, not a login gate.
         Auth::login($admin);
         $request->session()->regenerate();
-        app(PermissionRegistrar::class)->setPermissionsTeamId($school->id);
 
         $admin->sendEmailVerificationNotification();
 
@@ -61,11 +67,10 @@ class SignupController extends Controller
 
             // Compensating action, not a DB transaction rollback —
             // provision() already committed before this external Stripe
-            // call, which can't safely hold that transaction open. Soft
-            // deletes leave the school's roles/permission rows orphaned
-            // under its team id, which is harmless (SchoolScope excludes
-            // the soft-deleted school from every query) and left for a
-            // future cleanup job rather than deep-cleaned here.
+            // call, which can't safely hold that transaction open.
+            // TODO(tenancy): once Sub-phase E's real flow lands, this needs
+            // to hard-delete-and-drop the tenant database on failure, not
+            // soft-delete — see docs/roadmap.md Phase 14 plan notes.
             $admin->delete();
             $school->delete();
 

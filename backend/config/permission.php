@@ -146,9 +146,15 @@ return [
      * If you already did the migration then you must make a new migration to also
      * add 'team_foreign_key' to 'roles', 'model_has_roles', and 'model_has_permissions'
      * (view the latest version of this package's migration file)
+     *
+     * Off under database-per-tenant: with exactly one school per physical
+     * database, team-scoping roles/permissions by school_id was only ever
+     * needed to let one shared `roles` table serve every school — that
+     * reason is gone now that isolation is physical. Every
+     * setPermissionsTeamId() call site has been removed accordingly.
      */
 
-    'teams' => true,
+    'teams' => false,
 
     /*
      * The class to use to resolve the permissions team id

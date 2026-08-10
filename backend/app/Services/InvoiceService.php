@@ -41,7 +41,6 @@ class InvoiceService
             $subtotal = collect($data['items'])->sum(fn ($item) => ($item['quantity'] ?? 1) * $item['unit_amount']);
 
             $invoice = Invoice::query()->create([
-                'school_id' => $creator->school_id,
                 'student_id' => $data['student_id'],
                 'academic_year_id' => $data['academic_year_id'],
                 'invoice_number' => $this->feeNumbers->nextInvoiceNumber($school),
@@ -58,7 +57,6 @@ class InvoiceService
             foreach ($data['items'] as $item) {
                 $quantity = $item['quantity'] ?? 1;
                 $invoice->items()->create([
-                    'school_id' => $creator->school_id,
                     'fee_category_id' => $item['fee_category_id'],
                     'fee_structure_id' => $item['fee_structure_id'] ?? null,
                     'description' => $item['description'],
@@ -98,7 +96,6 @@ class InvoiceService
     public function generateFromStructure(FeeStructure $structure, ?int $sectionId, string $issueDate, string $dueDate, User $creator): array
     {
         $students = Student::query()
-            ->where('school_id', $structure->school_id)
             ->whereIn('status', StudentStatus::activeStatuses())
             ->when($sectionId, fn ($q) => $q->where('current_section_id', $sectionId))
             ->when(! $sectionId && $structure->grade_level_id, fn ($q) => $q->where('current_grade_level_id', $structure->grade_level_id))
@@ -142,7 +139,6 @@ class InvoiceService
             $effectiveAmount = $assignment ? $assignment->applyDiscount($baseAmount) : $baseAmount;
 
             $invoice = Invoice::query()->create([
-                'school_id' => $structure->school_id,
                 'student_id' => $student->id,
                 'academic_year_id' => $structure->academic_year_id,
                 'invoice_number' => $this->feeNumbers->nextInvoiceNumber($structure->school),
@@ -156,7 +152,6 @@ class InvoiceService
             ]);
 
             $invoice->items()->create([
-                'school_id' => $structure->school_id,
                 'fee_category_id' => $structure->fee_category_id,
                 'fee_structure_id' => $structure->id,
                 'description' => $structure->name,
@@ -193,7 +188,6 @@ class InvoiceService
         abort_if($data['amount'] > $invoice->balance, 422, 'Credit note amount exceeds the outstanding balance.');
 
         $creditNote = CreditNote::query()->create([
-            'school_id' => $invoice->school_id,
             'invoice_id' => $invoice->id,
             'credit_note_number' => $this->feeNumbers->nextCreditNoteNumber($invoice->school),
             'amount' => $data['amount'],

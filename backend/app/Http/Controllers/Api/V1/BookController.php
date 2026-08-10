@@ -33,7 +33,6 @@ class BookController extends CrudController
 
         $book = Book::query()->create([
             ...$request->validated(),
-            'school_id' => $request->user()->school_id,
             // A new book's full stock starts fully available — there's no
             // history of issues yet for it to differ from total_copies.
             'available_copies' => $request->validated('total_copies'),

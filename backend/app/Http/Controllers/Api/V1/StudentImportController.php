@@ -33,13 +33,14 @@ class StudentImportController extends Controller
         // Checked once against current usage, not per row — a hard "you're
         // at your limit, upgrade to import more" gate rather than a precise
         // per-row cutoff mid-import (see PlanLimitService's docblock).
+        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
         if ($request->user()->school_id !== null) {
             $planLimits->assertCanAddStudent($request->user()->school);
         }
 
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv']]);
 
-        $academicYear = AcademicYear::query()->where('school_id', $request->user()->school_id)->where('is_current', true)->first();
+        $academicYear = AcademicYear::query()->where('is_current', true)->first();
 
         if (! $academicYear) {
             throw ValidationException::withMessages(['file' => 'No current academic year is set for this school yet.']);

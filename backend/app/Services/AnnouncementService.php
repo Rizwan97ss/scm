@@ -35,7 +35,6 @@ class AnnouncementService
 
         $announcement = DB::transaction(function () use ($data, $sender, $recipients) {
             $announcement = Announcement::query()->create([
-                'school_id' => $sender->school_id,
                 'title' => $data['title'],
                 'body' => $data['body'],
                 'audience' => $data['audience'],
@@ -47,7 +46,6 @@ class AnnouncementService
 
             foreach ($recipients as $recipient) {
                 $announcement->notifications()->create([
-                    'school_id' => $sender->school_id,
                     'user_id' => $recipient->id,
                     'title' => $data['title'],
                     'body' => $data['body'],
@@ -67,7 +65,7 @@ class AnnouncementService
      */
     private function resolveRecipients(School $school, string $audience): Collection
     {
-        $query = User::query()->inSchool($school->id);
+        $query = User::query();
 
         $query = match ($audience) {
             'students' => $query->whereHas('roles', fn ($q) => $q->where('name', 'Student')),

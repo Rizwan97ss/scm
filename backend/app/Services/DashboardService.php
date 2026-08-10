@@ -31,6 +31,7 @@ class DashboardService
 
     public function summaryFor(User $user): array
     {
+        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
         if ($user->school_id === null && $user->hasRole('Super Admin')) {
             return $this->superAdminSummary();
         }
@@ -73,17 +74,17 @@ class DashboardService
         return [
             'role_context' => 'staff',
             'student_count' => Student::query()->where('status', 'active')->count(),
-            'staff_count' => User::query()->inSchool($user->school_id)->whereHas('roles', fn ($q) => $q->whereNotIn('name', ['Student', 'Parent']))->count(),
+            'staff_count' => User::query()->whereHas('roles', fn ($q) => $q->whereNotIn('name', ['Student', 'Parent']))->count(),
             'section_count' => Section::query()->count(),
             'todays_attendance_marked_count' => $todayCount,
             'pending_leave_requests_count' => $user->can('leave.manage')
-                ? LeaveRequest::query()->where('school_id', $user->school_id)->where('status', 'pending')->count()
+                ? LeaveRequest::query()->where('status', 'pending')->count()
                 : null,
             'fee_collected_this_month' => $user->can('invoices.view-reports')
-                ? round(Payment::query()->where('school_id', $user->school_id)->whereDate('paid_at', '>=', now()->startOfMonth())->sum('amount'), 2)
+                ? round(Payment::query()->whereDate('paid_at', '>=', now()->startOfMonth())->sum('amount'), 2)
                 : null,
             'library_overdue_count' => $user->can('library.view')
-                ? BookIssue::query()->where('school_id', $user->school_id)->where('status', 'issued')->whereDate('due_date', '<', now())->count()
+                ? BookIssue::query()->where('status', 'issued')->whereDate('due_date', '<', now())->count()
                 : null,
         ];
     }

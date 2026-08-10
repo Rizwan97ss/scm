@@ -39,12 +39,10 @@ class RouteController extends CrudController
         $route = DB::transaction(function () use ($request) {
             $route = Route::query()->create([
                 ...$request->safe()->except('stops'),
-                'school_id' => $request->user()->school_id,
             ]);
 
             foreach ($request->input('stops', []) as $index => $stop) {
                 $route->stops()->create([
-                    'school_id' => $request->user()->school_id,
                     'name' => $stop['name'],
                     'sequence' => $stop['sequence'] ?? $index + 1,
                 ]);
@@ -71,7 +69,6 @@ class RouteController extends CrudController
 
         $stop = $route->stops()->create([
             ...$request->validated(),
-            'school_id' => $request->user()->school_id,
             'sequence' => $request->validated('sequence') ?? $route->stops()->count() + 1,
         ]);
 

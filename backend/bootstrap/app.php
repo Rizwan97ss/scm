@@ -1,7 +1,6 @@
 <?php
 
 use App\Exceptions\PlanLimitExceededException;
-use App\Http\Middleware\EnsureSchoolContext;
 use App\Http\Middleware\EnsureSchoolIsUsable;
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\ApiResponse;
@@ -41,7 +40,6 @@ return Application::configure(basePath: dirname(__DIR__))
         }
 
         $middleware->alias([
-            'school.context' => EnsureSchoolContext::class,
             // Not yet attached to any route group — Sub-phase E splits
             // routes.php into a tenant-facing group (gets this) vs a
             // platform-facing one (must never get it, since Super Admin
@@ -52,7 +50,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenancy.subdomain' => \Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain::class,
         ]);
 
-        $middleware->appendToGroup('api', EnsureSchoolContext::class);
+        // EnsureSchoolContext (Spatie permission "team" context) was deleted
+        // in Sub-phase D — teams is off now that physical DB separation
+        // replaces it. EnsureSchoolIsUsable stays: it now reads tenant()
+        // instead of $user->school (see its own docblock).
         $middleware->appendToGroup('api', EnsureSchoolIsUsable::class);
 
         // Stripe's webhook POSTs are server-to-server — no session, no CSRF

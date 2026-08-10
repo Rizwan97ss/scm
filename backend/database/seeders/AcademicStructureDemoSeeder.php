@@ -17,8 +17,15 @@ use App\Models\TimetablePeriod;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\PermissionRegistrar;
 
+/**
+ * TODO(tenancy): needs Sub-phase E's rewrite, not a patch -- every model
+ * created below (AcademicYear, Section, User, ...) now lives in a tenant's
+ * own database. This seeder must run inside $school->run(fn () => ...) /
+ * tenancy()->initialize($school) for any of these creates to land in the
+ * right place at all; today it silently writes to whatever connection
+ * happens to be active. Left as a known-broken placeholder.
+ */
 class AcademicStructureDemoSeeder extends Seeder
 {
     private School $school;
@@ -26,7 +33,6 @@ class AcademicStructureDemoSeeder extends Seeder
     public function run(): void
     {
         $this->school = School::query()->where('short_name', 'demo')->firstOrFail();
-        app(PermissionRegistrar::class)->setPermissionsTeamId($this->school->id);
 
         $academicYear = $this->academicYear();
         $this->terms($academicYear);

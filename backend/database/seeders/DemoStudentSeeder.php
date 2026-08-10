@@ -12,16 +12,20 @@ use App\Services\StudentEnrollmentService;
 use App\Services\StudentIdGeneratorService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\PermissionRegistrar;
 
+/**
+ * TODO(tenancy): needs Sub-phase E's rewrite, not a patch -- same issue as
+ * AcademicStructureDemoSeeder: every model created below now lives in a
+ * tenant's own database and this must run inside that tenant's context.
+ * Left as a known-broken placeholder.
+ */
 class DemoStudentSeeder extends Seeder
 {
     public function run(StudentIdGeneratorService $idGenerator, StudentEnrollmentService $enrollment): void
     {
         $school = School::query()->where('short_name', 'demo')->firstOrFail();
-        app(PermissionRegistrar::class)->setPermissionsTeamId($school->id);
 
-        $year = AcademicYear::query()->where('school_id', $school->id)->where('is_current', true)->firstOrFail();
+        $year = AcademicYear::query()->where('is_current', true)->firstOrFail();
         $performedBy = User::query()->where('email', 'admin@riverside-demo.test')->firstOrFail();
 
         $gina = $this->guardian($school, 'Gina', 'Guardian', 'gina.guardian@example.com', invited: true);

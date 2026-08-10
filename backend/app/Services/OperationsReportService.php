@@ -35,9 +35,9 @@ class OperationsReportService
     private function library(School $school): array
     {
         return [
-            'total_books' => Book::query()->where('school_id', $school->id)->count(),
-            'issued_this_month' => BookIssue::query()->where('school_id', $school->id)->whereDate('issue_date', '>=', now()->startOfMonth())->count(),
-            'currently_overdue' => BookIssue::query()->where('school_id', $school->id)->where('status', 'issued')->whereDate('due_date', '<', now())->count(),
+            'total_books' => Book::query()->count(),
+            'issued_this_month' => BookIssue::query()->whereDate('issue_date', '>=', now()->startOfMonth())->count(),
+            'currently_overdue' => BookIssue::query()->where('status', 'issued')->whereDate('due_date', '<', now())->count(),
         ];
     }
 
@@ -47,8 +47,8 @@ class OperationsReportService
     private function transport(School $school): array
     {
         return [
-            'vehicle_count' => Vehicle::query()->where('school_id', $school->id)->where('is_active', true)->count(),
-            'students_assigned' => StudentTransportAssignment::query()->where('school_id', $school->id)->where('is_active', true)->count(),
+            'vehicle_count' => Vehicle::query()->where('is_active', true)->count(),
+            'students_assigned' => StudentTransportAssignment::query()->where('is_active', true)->count(),
         ];
     }
 
@@ -57,7 +57,7 @@ class OperationsReportService
      */
     private function hostel(School $school): array
     {
-        $rooms = HostelRoom::query()->where('school_id', $school->id)->where('is_active', true)->withCount(['allocations' => fn ($q) => $q->where('status', 'allocated')])->get();
+        $rooms = HostelRoom::query()->where('is_active', true)->withCount(['allocations' => fn ($q) => $q->where('status', 'allocated')])->get();
 
         $totalCapacity = $rooms->sum('capacity');
         $totalOccupied = $rooms->sum('allocations_count');

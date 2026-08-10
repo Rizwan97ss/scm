@@ -27,7 +27,7 @@ class StaffAttendancePolicy
             return true;
         }
 
-        return $user->can('staff-attendance.view') && $this->belongsToActorsSchool($user, $attendance);
+        return $user->can('staff-attendance.view');
     }
 
     public function mark(User $user): bool
@@ -47,16 +47,11 @@ class StaffAttendancePolicy
 
     public function update(User $user, StaffAttendance $attendance): bool
     {
-        return $user->can('staff-attendance.edit') && $this->belongsToActorsSchool($user, $attendance);
+        return $user->can('staff-attendance.edit');
     }
 
     public function export(User $user): bool
     {
         return $user->can('staff-attendance.export');
-    }
-
-    private function belongsToActorsSchool(User $user, StaffAttendance $attendance): bool
-    {
-        return $attendance->school_id === $user->school_id;
     }
 }
