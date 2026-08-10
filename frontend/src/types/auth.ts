@@ -1,0 +1,48 @@
+import type { Gender, UserStatus } from './enums'
+
+export interface UserSchoolSnapshot {
+  id: number
+  name: string
+  plan_name: string | null
+  billing_status: string | null
+  trial_ends_at: string | null
+}
+
+export interface User {
+  id: number
+  uuid: string
+  school_id: number | null
+  first_name: string
+  last_name: string
+  full_name: string
+  email: string
+  username: string | null
+  phone: string | null
+  gender: Gender | null
+  date_of_birth: string | null
+  status: UserStatus
+  must_change_password: boolean
+  last_login_at: string | null
+  avatar_url: string | null
+  designation?: { id: number; name: string } | null
+  employee_id: string | null
+  hire_date: string | null
+  roles: string[]
+  permissions?: string[]
+  // Null for Super Admin and anywhere the backend didn't eager-load
+  // `school` on the resource (see UserResource's docblock).
+  school?: UserSchoolSnapshot | null
+  created_at: string
+}
+
+export interface LoginPayload {
+  email: string
+  password: string
+  remember?: boolean
+}
+
+export interface UpdatePasswordPayload {
+  current_password: string
+  password: string
+  password_confirmation: string
+}

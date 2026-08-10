@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Http\Requests\Student;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class ReactivateStudentRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        $schoolId = $this->user()->school_id;
+
+        return [
+            'to_grade_level_id' => ['required', Rule::exists('grade_levels', 'id')->where('school_id', $schoolId)],
+            'to_section_id' => ['required', Rule::exists('sections', 'id')->where('school_id', $schoolId)],
+            'reason' => ['nullable', 'string'],
+            'effective_date' => ['nullable', 'date'],
+        ];
+    }
+}
