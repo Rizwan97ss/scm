@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('invoice_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('invoice_id')->constrained('invoices')->cascadeOnDelete();
             $table->foreignId('fee_structure_id')->nullable()->constrained('fee_structures')->nullOnDelete();
             $table->foreignId('fee_category_id')->constrained('fee_categories')->restrictOnDelete();
@@ -19,7 +18,7 @@ return new class extends Migration
             $table->decimal('unit_amount', 10, 2);
             $table->decimal('amount', 10, 2);
             $table->timestamps();
-            $table->index(['school_id', 'invoice_id']);
+            $table->index(['invoice_id']);
         });
     }
 

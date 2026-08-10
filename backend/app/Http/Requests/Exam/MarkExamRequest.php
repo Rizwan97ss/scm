@@ -16,11 +16,10 @@ class MarkExamRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
             'entries' => ['required', 'array', 'min:1'],
-            'entries.*.student_id' => ['required', Rule::exists('students', 'id')->where('school_id', $schoolId)],
+            'entries.*.student_id' => ['required', Rule::exists('students', 'id')],
             'entries.*.marks_obtained' => ['nullable', 'numeric', 'min:0'],
             'entries.*.is_absent' => ['sometimes', 'boolean'],
             'entries.*.remarks' => ['nullable', 'string', 'max:500'],

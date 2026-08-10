@@ -14,7 +14,7 @@ class UpdateGradingScaleRequest extends StoreGradingScaleRequest
     {
         return [
             ...parent::rules(),
-            'name' => ['required', 'string', 'max:150', Rule::unique('grading_scales', 'name')->where('school_id', $this->user()->school_id)->ignore($this->route('grading_scale'))],
+            'name' => ['required', 'string', 'max:150', Rule::unique('grading_scales', 'name')->ignore($this->route('grading_scale'))],
         ];
     }
 }

@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('hostels', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('name');
             $table->string('type')->default('mixed');
             $table->string('address')->nullable();
@@ -19,7 +18,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
-            $table->unique(['school_id', 'name']);
+            $table->unique(['name']);
         });
     }
 

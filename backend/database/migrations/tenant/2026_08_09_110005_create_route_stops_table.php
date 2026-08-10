@@ -10,12 +10,11 @@ return new class extends Migration
     {
         Schema::create('route_stops', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('route_id')->constrained('routes')->cascadeOnDelete();
             $table->string('name');
             $table->unsignedSmallInteger('sequence')->default(1);
             $table->timestamps();
-            $table->index(['school_id', 'route_id']);
+            $table->index(['route_id']);
         });
     }
 

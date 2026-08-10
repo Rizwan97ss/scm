@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('online_test_questions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('exam_subject_id')->constrained('exam_subjects')->cascadeOnDelete();
             $table->foreignId('question_id')->constrained('questions')->cascadeOnDelete();
             $table->decimal('marks', 6, 2)->nullable(); // null = use question.default_marks

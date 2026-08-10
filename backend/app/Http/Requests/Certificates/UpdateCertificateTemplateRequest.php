@@ -14,11 +14,10 @@ class UpdateCertificateTemplateRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
         $templateId = $this->route('certificate_template');
 
         return [
-            'name' => ['sometimes', 'required', 'string', 'max:150', Rule::unique('certificate_templates', 'name')->where('school_id', $schoolId)->ignore($templateId)],
+            'name' => ['sometimes', 'required', 'string', 'max:150', Rule::unique('certificate_templates', 'name')->ignore($templateId)],
             'type' => ['sometimes', 'required', 'string', 'max:100'],
             'body' => ['sometimes', 'required', 'string'],
             'is_active' => ['sometimes', 'boolean'],

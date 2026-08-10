@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +12,7 @@ use Spatie\Activitylog\Support\LogOptions;
 #[Fillable(['school_id', 'invoice_id', 'credit_note_number', 'amount', 'reason', 'issued_by', 'issued_at'])]
 class CreditNote extends Model
 {
-    use BelongsToSchool, HasFactory, LogsActivity;
+    use HasFactory, LogsActivity;
 
     protected function casts(): array
     {

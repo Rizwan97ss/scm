@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('timetable_periods', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('name');
             $table->time('start_time');
             $table->time('end_time');

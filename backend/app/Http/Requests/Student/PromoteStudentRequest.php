@@ -14,12 +14,11 @@ class PromoteStudentRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'to_grade_level_id' => ['required', Rule::exists('grade_levels', 'id')->where('school_id', $schoolId)],
-            'to_section_id' => ['required', Rule::exists('sections', 'id')->where('school_id', $schoolId)],
-            'to_academic_year_id' => ['required', Rule::exists('academic_years', 'id')->where('school_id', $schoolId)],
+            'to_grade_level_id' => ['required', Rule::exists('grade_levels', 'id')],
+            'to_section_id' => ['required', Rule::exists('sections', 'id')],
+            'to_academic_year_id' => ['required', Rule::exists('academic_years', 'id')],
             'reason' => ['nullable', 'string'],
             'effective_date' => ['nullable', 'date'],
         ];

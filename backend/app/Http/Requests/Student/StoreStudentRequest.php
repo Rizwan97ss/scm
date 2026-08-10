@@ -14,7 +14,6 @@ class StoreStudentRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
             'first_name' => ['required', 'string', 'max:100'],
@@ -23,9 +22,9 @@ class StoreStudentRequest extends FormRequest
             'date_of_birth' => ['required', 'date', 'before:today'],
             'blood_group' => ['nullable', 'string', 'max:10'],
             'nationality' => ['nullable', 'string', 'max:100'],
-            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')->where('school_id', $schoolId)],
-            'current_grade_level_id' => ['nullable', Rule::exists('grade_levels', 'id')->where('school_id', $schoolId)],
-            'current_section_id' => ['nullable', Rule::exists('sections', 'id')->where('school_id', $schoolId)],
+            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')],
+            'current_grade_level_id' => ['nullable', Rule::exists('grade_levels', 'id')],
+            'current_section_id' => ['nullable', Rule::exists('sections', 'id')],
             'roll_number' => ['nullable', 'string', 'max:50'],
             'admission_date' => ['required', 'date'],
             'previous_school_name' => ['nullable', 'string', 'max:255'],
@@ -41,7 +40,7 @@ class StoreStudentRequest extends FormRequest
             'country' => ['nullable', 'string', 'max:100'],
 
             'guardians' => ['sometimes', 'array'],
-            'guardians.*.guardian_id' => ['nullable', Rule::exists('guardians', 'id')->where('school_id', $schoolId)],
+            'guardians.*.guardian_id' => ['nullable', Rule::exists('guardians', 'id')],
             'guardians.*.first_name' => ['required_without:guardians.*.guardian_id', 'string', 'max:100'],
             'guardians.*.last_name' => ['required_without:guardians.*.guardian_id', 'string', 'max:100'],
             'guardians.*.email' => ['nullable', 'email', 'max:255'],

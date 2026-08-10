@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('homeworks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('academic_year_id')->constrained('academic_years')->cascadeOnDelete();
             $table->foreignId('section_id')->constrained('sections')->cascadeOnDelete();
             $table->foreignId('subject_id')->constrained('subjects')->cascadeOnDelete();
@@ -21,7 +20,7 @@ return new class extends Migration
             $table->decimal('max_score', 6, 2)->nullable();
             $table->timestamps();
             $table->softDeletes();
-            $table->index(['school_id', 'section_id']);
+            $table->index(['section_id']);
         });
     }
 

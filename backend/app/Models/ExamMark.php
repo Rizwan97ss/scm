@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +13,7 @@ use Spatie\Activitylog\Support\LogOptions;
 #[Fillable(['school_id', 'exam_subject_id', 'student_id', 'marks_obtained', 'is_absent', 'remarks', 'entered_by'])]
 class ExamMark extends Model
 {
-    use BelongsToSchool, HasFactory, LogsActivity;
+    use HasFactory, LogsActivity;
 
     protected function casts(): array
     {

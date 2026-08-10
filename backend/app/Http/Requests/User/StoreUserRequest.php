@@ -15,7 +15,6 @@ class StoreUserRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
             'first_name' => ['required', 'string', 'max:100'],
@@ -28,8 +27,8 @@ class StoreUserRequest extends FormRequest
             'password' => ['required', 'confirmed', Password::defaults()],
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => ['string'],
-            'designation_id' => ['nullable', Rule::exists('designations', 'id')->where('school_id', $schoolId)],
-            'employee_id' => ['nullable', 'string', 'max:50', Rule::unique('users', 'employee_id')->where('school_id', $schoolId)],
+            'designation_id' => ['nullable', Rule::exists('designations', 'id')],
+            'employee_id' => ['nullable', 'string', 'max:50', Rule::unique('users', 'employee_id')],
             'hire_date' => ['nullable', 'date'],
         ];
     }

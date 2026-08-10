@@ -14,10 +14,9 @@ class UpdateHostelRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'name' => ['sometimes', 'required', 'string', 'max:150', Rule::unique('hostels', 'name')->where('school_id', $schoolId)->ignore($this->route('hostel'))],
+            'name' => ['sometimes', 'required', 'string', 'max:150', Rule::unique('hostels', 'name')->ignore($this->route('hostel'))],
             'type' => ['sometimes', 'required', Rule::in(['boys', 'girls', 'mixed'])],
             'address' => ['nullable', 'string', 'max:255'],
             'warden_name' => ['nullable', 'string', 'max:255'],

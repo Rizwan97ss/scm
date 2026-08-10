@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\LeaveStatus;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +14,7 @@ use Spatie\Activitylog\Support\LogOptions;
 #[Fillable(['school_id', 'user_id', 'leave_type_id', 'start_date', 'end_date', 'days', 'reason', 'status', 'reviewed_by', 'reviewed_at', 'review_notes'])]
 class LeaveRequest extends Model
 {
-    use BelongsToSchool, HasFactory, LogsActivity;
+    use HasFactory, LogsActivity;
 
     protected function casts(): array
     {

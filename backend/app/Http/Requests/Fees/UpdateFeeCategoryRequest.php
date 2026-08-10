@@ -14,11 +14,10 @@ class UpdateFeeCategoryRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
         $feeCategory = $this->route('fee_category');
 
         return [
-            'name' => ['required', 'string', 'max:100', Rule::unique('fee_categories', 'name')->where('school_id', $schoolId)->ignore($feeCategory)],
+            'name' => ['required', 'string', 'max:100', Rule::unique('fee_categories', 'name')->ignore($feeCategory)],
             'description' => ['nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
         ];

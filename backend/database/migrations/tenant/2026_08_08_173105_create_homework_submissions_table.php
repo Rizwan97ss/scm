@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('homework_submissions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('homework_id')->constrained('homeworks')->cascadeOnDelete();
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->string('status')->default('submitted');

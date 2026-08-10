@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('invoice_id')->constrained('invoices')->cascadeOnDelete();
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->string('payment_number');
@@ -22,8 +21,8 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->foreignId('received_by')->constrained('users')->restrictOnDelete();
             $table->timestamps();
-            $table->unique(['school_id', 'payment_number']);
-            $table->index(['school_id', 'invoice_id']);
+            $table->unique(['payment_number']);
+            $table->index(['invoice_id']);
         });
     }
 

@@ -14,10 +14,9 @@ class StoreHostelRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'name' => ['required', 'string', 'max:150', Rule::unique('hostels', 'name')->where('school_id', $schoolId)],
+            'name' => ['required', 'string', 'max:150', Rule::unique('hostels', 'name')],
             'type' => ['required', Rule::in(['boys', 'girls', 'mixed'])],
             'address' => ['nullable', 'string', 'max:255'],
             'warden_name' => ['nullable', 'string', 'max:255'],

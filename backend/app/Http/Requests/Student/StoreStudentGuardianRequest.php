@@ -14,10 +14,9 @@ class StoreStudentGuardianRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'guardian_id' => ['nullable', Rule::exists('guardians', 'id')->where('school_id', $schoolId)],
+            'guardian_id' => ['nullable', Rule::exists('guardians', 'id')],
             'first_name' => ['required_without:guardian_id', 'string', 'max:100'],
             'last_name' => ['required_without:guardian_id', 'string', 'max:100'],
             'email' => ['nullable', 'email', 'max:255'],

@@ -10,11 +10,10 @@ return new class extends Migration
     {
         Schema::create('grading_scales', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('name');
             $table->boolean('is_default')->default(false);
             $table->timestamps();
-            $table->unique(['school_id', 'name']);
+            $table->unique(['name']);
         });
     }
 

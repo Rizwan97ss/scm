@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\InvoiceStatus;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -18,7 +17,7 @@ use Spatie\Activitylog\Support\LogOptions;
 #[Fillable(['school_id', 'student_id', 'academic_year_id', 'invoice_number', 'issue_date', 'due_date', 'status', 'subtotal', 'discount_total', 'total', 'amount_paid', 'credit_total', 'notes', 'created_by'])]
 class Invoice extends Model
 {
-    use BelongsToSchool, HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected function casts(): array
     {

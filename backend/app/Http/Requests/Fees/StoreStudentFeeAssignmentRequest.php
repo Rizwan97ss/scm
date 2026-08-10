@@ -14,11 +14,10 @@ class StoreStudentFeeAssignmentRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'student_id' => ['required', Rule::exists('students', 'id')->where('school_id', $schoolId)],
-            'fee_structure_id' => ['required', Rule::exists('fee_structures', 'id')->where('school_id', $schoolId)],
+            'student_id' => ['required', Rule::exists('students', 'id')],
+            'fee_structure_id' => ['required', Rule::exists('fee_structures', 'id')],
             'discount_type' => ['required', Rule::in(['none', 'percentage', 'fixed'])],
             'discount_value' => ['required_unless:discount_type,none', 'nullable', 'numeric', 'min:0'],
             'reason' => ['nullable', 'string', 'max:255'],

@@ -14,11 +14,10 @@ class SaveOnlineTestAnswerRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'question_id' => ['required', Rule::exists('questions', 'id')->where('school_id', $schoolId)],
-            'selected_option_id' => ['nullable', Rule::exists('question_options', 'id')->where('school_id', $schoolId)],
+            'question_id' => ['required', Rule::exists('questions', 'id')],
+            'selected_option_id' => ['nullable', Rule::exists('question_options', 'id')],
         ];
     }
 }

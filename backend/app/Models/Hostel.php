@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\HostelType;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['school_id', 'name', 'type', 'address', 'warden_name', 'warden_phone', 'is_active'])]
 class Hostel extends Model
 {
-    use BelongsToSchool, HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

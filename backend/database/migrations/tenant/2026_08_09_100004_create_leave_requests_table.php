@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('leave_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('leave_type_id')->constrained('leave_types')->restrictOnDelete();
             $table->date('start_date');
@@ -22,7 +21,7 @@ return new class extends Migration
             $table->timestamp('reviewed_at')->nullable();
             $table->text('review_notes')->nullable();
             $table->timestamps();
-            $table->index(['school_id', 'user_id', 'status']);
+            $table->index(['user_id', 'status']);
         });
     }
 

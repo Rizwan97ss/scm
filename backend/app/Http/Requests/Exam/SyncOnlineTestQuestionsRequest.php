@@ -14,11 +14,10 @@ class SyncOnlineTestQuestionsRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
             'questions' => ['required', 'array', 'min:1'],
-            'questions.*.question_id' => ['required', 'distinct', Rule::exists('questions', 'id')->where('school_id', $schoolId)],
+            'questions.*.question_id' => ['required', 'distinct', Rule::exists('questions', 'id')],
             'questions.*.marks' => ['nullable', 'numeric', 'min:0.01'],
         ];
     }

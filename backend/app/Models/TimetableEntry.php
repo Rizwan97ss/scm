@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\DayOfWeek;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['school_id', 'academic_year_id', 'section_id', 'subject_id', 'teacher_id', 'room_id', 'timetable_period_id', 'day_of_week'])]
 class TimetableEntry extends Model
 {
-    use BelongsToSchool, HasFactory;
+    use HasFactory;
 
     protected function casts(): array
     {

@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('credit_notes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('invoice_id')->constrained('invoices')->cascadeOnDelete();
             $table->string('credit_note_number');
             $table->decimal('amount', 10, 2);
@@ -18,8 +17,8 @@ return new class extends Migration
             $table->foreignId('issued_by')->constrained('users')->restrictOnDelete();
             $table->date('issued_at');
             $table->timestamps();
-            $table->unique(['school_id', 'credit_note_number']);
-            $table->index(['school_id', 'invoice_id']);
+            $table->unique(['credit_note_number']);
+            $table->index(['invoice_id']);
         });
     }
 

@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('exam_subjects', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('exam_id')->constrained('exams')->cascadeOnDelete();
             $table->foreignId('subject_id')->constrained('subjects')->cascadeOnDelete();
             $table->foreignId('section_id')->constrained('sections')->cascadeOnDelete();

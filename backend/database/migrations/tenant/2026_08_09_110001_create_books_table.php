@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('books', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('title');
             $table->string('author')->nullable();
             $table->string('isbn')->nullable();
@@ -20,7 +19,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
-            $table->index(['school_id', 'category']);
+            $table->index(['category']);
         });
     }
 

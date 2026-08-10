@@ -16,7 +16,7 @@ class StoreGradeLevelRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:50'],
-            'code' => ['required', 'string', 'max:20', Rule::unique('grade_levels', 'code')->where('school_id', $this->user()->school_id)],
+            'code' => ['required', 'string', 'max:20', Rule::unique('grade_levels', 'code')],
             'sequence' => ['sometimes', 'integer', 'min:0'],
         ];
     }

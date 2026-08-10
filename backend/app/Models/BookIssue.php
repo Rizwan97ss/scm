@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\BookIssueStatus;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['school_id', 'book_id', 'student_id', 'user_id', 'issue_date', 'due_date', 'return_date', 'fine_amount', 'status', 'issued_by'])]
 class BookIssue extends Model
 {
-    use BelongsToSchool, HasFactory;
+    use HasFactory;
 
     protected function casts(): array
     {

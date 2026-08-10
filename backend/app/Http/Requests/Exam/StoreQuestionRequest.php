@@ -15,10 +15,9 @@ class StoreQuestionRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'subject_id' => ['nullable', Rule::exists('subjects', 'id')->where('school_id', $schoolId)],
+            'subject_id' => ['nullable', Rule::exists('subjects', 'id')],
             'type' => ['required', Rule::in(['mcq', 'true_false'])],
             'text' => ['required', 'string'],
             'default_marks' => ['sometimes', 'numeric', 'min:0.01'],

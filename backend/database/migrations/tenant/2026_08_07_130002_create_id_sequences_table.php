@@ -10,12 +10,11 @@ return new class extends Migration
     {
         Schema::create('id_sequences', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('key');
             $table->unsignedBigInteger('last_value')->default(0);
             $table->timestamps();
 
-            $table->unique(['school_id', 'key']);
+            $table->unique(['key']);
         });
     }
 

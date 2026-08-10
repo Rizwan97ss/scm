@@ -14,18 +14,17 @@ class StoreExamRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')->where('school_id', $schoolId)],
-            'term_id' => ['nullable', Rule::exists('terms', 'id')->where('school_id', $schoolId)],
+            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')],
+            'term_id' => ['nullable', Rule::exists('terms', 'id')],
             'name' => ['required', 'string', 'max:150'],
             'weight' => ['sometimes', 'numeric', 'min:0.01', 'max:100'],
 
             'exam_subjects' => ['sometimes', 'array'],
-            'exam_subjects.*.subject_id' => ['required_with:exam_subjects', Rule::exists('subjects', 'id')->where('school_id', $schoolId)],
-            'exam_subjects.*.section_id' => ['required_with:exam_subjects', Rule::exists('sections', 'id')->where('school_id', $schoolId)],
-            'exam_subjects.*.grading_scale_id' => ['nullable', Rule::exists('grading_scales', 'id')->where('school_id', $schoolId)],
+            'exam_subjects.*.subject_id' => ['required_with:exam_subjects', Rule::exists('subjects', 'id')],
+            'exam_subjects.*.section_id' => ['required_with:exam_subjects', Rule::exists('sections', 'id')],
+            'exam_subjects.*.grading_scale_id' => ['nullable', Rule::exists('grading_scales', 'id')],
             'exam_subjects.*.max_marks' => ['required_with:exam_subjects', 'numeric', 'min:1'],
             'exam_subjects.*.passing_marks' => ['nullable', 'numeric', 'min:0'],
             'exam_subjects.*.exam_date' => ['nullable', 'date'],

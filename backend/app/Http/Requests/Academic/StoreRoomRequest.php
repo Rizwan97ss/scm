@@ -16,7 +16,7 @@ class StoreRoomRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:100'],
-            'code' => ['required', 'string', 'max:20', Rule::unique('rooms', 'code')->where('school_id', $this->user()->school_id)],
+            'code' => ['required', 'string', 'max:20', Rule::unique('rooms', 'code')],
             'capacity' => ['nullable', 'integer', 'min:1'],
             'type' => ['sometimes', Rule::in(['classroom', 'lab', 'hall', 'other'])],
         ];

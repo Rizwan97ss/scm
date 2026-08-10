@@ -14,10 +14,9 @@ class StoreLeaveTypeRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'name' => ['required', 'string', 'max:100', Rule::unique('leave_types', 'name')->where('school_id', $schoolId)],
+            'name' => ['required', 'string', 'max:100', Rule::unique('leave_types', 'name')],
             'days_allowed_per_year' => ['nullable', 'integer', 'min:1', 'max:365'],
             'is_paid' => ['sometimes', 'boolean'],
             'description' => ['nullable', 'string'],

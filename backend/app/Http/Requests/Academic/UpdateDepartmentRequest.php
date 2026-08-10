@@ -18,7 +18,7 @@ class UpdateDepartmentRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:100'],
             'code' => [
                 'sometimes', 'required', 'string', 'max:20',
-                Rule::unique('departments', 'code')->where('school_id', $this->user()->school_id)->ignore($this->route('department')),
+                Rule::unique('departments', 'code')->ignore($this->route('department')),
             ],
             'description' => ['nullable', 'string'],
         ];

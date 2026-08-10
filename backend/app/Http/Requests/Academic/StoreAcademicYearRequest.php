@@ -15,7 +15,7 @@ class StoreAcademicYearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:50', Rule::unique('academic_years', 'name')->where('school_id', $this->user()->school_id)],
+            'name' => ['required', 'string', 'max:50', Rule::unique('academic_years', 'name')],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],
             'is_current' => ['sometimes', 'boolean'],

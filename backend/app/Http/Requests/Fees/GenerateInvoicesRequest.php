@@ -14,12 +14,11 @@ class GenerateInvoicesRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
             // fee_structure_id itself comes from the route ({feeStructure}),
             // not the body — see FeeStructureController::generateInvoices().
-            'section_id' => ['nullable', Rule::exists('sections', 'id')->where('school_id', $schoolId)],
+            'section_id' => ['nullable', Rule::exists('sections', 'id')],
             'issue_date' => ['required', 'date'],
             'due_date' => ['required', 'date', 'after_or_equal:issue_date'],
         ];

@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('online_test_attempts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('exam_subject_id')->constrained('exam_subjects')->cascadeOnDelete();
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->unsignedTinyInteger('attempt_number')->default(1);

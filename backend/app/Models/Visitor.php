@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['school_id', 'name', 'phone', 'purpose', 'whom_to_meet', 'check_in_time', 'check_out_time', 'notes', 'logged_by'])]
 class Visitor extends Model
 {
-    use BelongsToSchool, HasFactory;
+    use HasFactory;
 
     protected function casts(): array
     {

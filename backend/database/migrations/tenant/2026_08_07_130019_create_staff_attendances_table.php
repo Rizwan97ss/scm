@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('staff_attendances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->date('date');
             $table->string('status');
@@ -20,7 +19,7 @@ return new class extends Migration
             $table->foreignId('marked_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
             $table->unique(['user_id', 'date']);
-            $table->index(['school_id', 'date']);
+            $table->index(['date']);
         });
     }
 

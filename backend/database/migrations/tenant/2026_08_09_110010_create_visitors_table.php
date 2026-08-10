@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('visitors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('name');
             $table->string('phone')->nullable();
             $table->string('purpose');
@@ -20,7 +19,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->foreignId('logged_by')->constrained('users')->restrictOnDelete();
             $table->timestamps();
-            $table->index(['school_id', 'check_in_time']);
+            $table->index(['check_in_time']);
         });
     }
 

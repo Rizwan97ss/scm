@@ -14,10 +14,9 @@ class StoreSalaryStructureRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'user_id' => ['required', Rule::exists('users', 'id')->where('school_id', $schoolId)],
+            'user_id' => ['required', Rule::exists('users', 'id')],
             'basic_salary' => ['required', 'numeric', 'min:0.01'],
             'allowances' => ['sometimes', 'numeric', 'min:0'],
             'deductions' => ['sometimes', 'numeric', 'min:0'],

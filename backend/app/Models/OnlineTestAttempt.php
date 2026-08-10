@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['school_id', 'exam_subject_id', 'student_id', 'attempt_number', 'status', 'started_at', 'submitted_at', 'score', 'max_score'])]
 class OnlineTestAttempt extends Model
 {
-    use BelongsToSchool, HasFactory;
+    use HasFactory;
 
     protected function casts(): array
     {

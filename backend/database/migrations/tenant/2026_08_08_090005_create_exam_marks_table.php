@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('exam_marks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('exam_subject_id')->constrained('exam_subjects')->cascadeOnDelete();
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->decimal('marks_obtained', 6, 2)->nullable();

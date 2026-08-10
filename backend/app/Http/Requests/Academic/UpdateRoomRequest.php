@@ -18,7 +18,7 @@ class UpdateRoomRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:100'],
             'code' => [
                 'sometimes', 'required', 'string', 'max:20',
-                Rule::unique('rooms', 'code')->where('school_id', $this->user()->school_id)->ignore($this->route('room')),
+                Rule::unique('rooms', 'code')->ignore($this->route('room')),
             ],
             'capacity' => ['nullable', 'integer', 'min:1'],
             'type' => ['sometimes', Rule::in(['classroom', 'lab', 'hall', 'other'])],

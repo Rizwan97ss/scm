@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->nullable();
             $table->string('key');
             $table->text('value')->nullable();
             $table->string('type')->default('string');
@@ -18,7 +17,7 @@ return new class extends Migration
             $table->boolean('is_public')->default(false);
             $table->timestamps();
 
-            $table->unique(['school_id', 'key']);
+            $table->unique(['key']);
         });
     }
 

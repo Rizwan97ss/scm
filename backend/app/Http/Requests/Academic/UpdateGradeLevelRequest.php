@@ -18,7 +18,7 @@ class UpdateGradeLevelRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:50'],
             'code' => [
                 'sometimes', 'required', 'string', 'max:20',
-                Rule::unique('grade_levels', 'code')->where('school_id', $this->user()->school_id)->ignore($this->route('gradeLevel')),
+                Rule::unique('grade_levels', 'code')->ignore($this->route('gradeLevel')),
             ],
             'sequence' => ['sometimes', 'integer', 'min:0'],
         ];

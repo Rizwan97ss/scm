@@ -14,10 +14,9 @@ class UpdateLeaveTypeRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'name' => ['required', 'string', 'max:100', Rule::unique('leave_types', 'name')->where('school_id', $schoolId)->ignore($this->route('leave_type'))],
+            'name' => ['required', 'string', 'max:100', Rule::unique('leave_types', 'name')->ignore($this->route('leave_type'))],
             'days_allowed_per_year' => ['nullable', 'integer', 'min:1', 'max:365'],
             'is_paid' => ['sometimes', 'boolean'],
             'description' => ['nullable', 'string'],

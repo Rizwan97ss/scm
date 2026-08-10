@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['school_id', 'hostel_id', 'room_number', 'capacity', 'is_active'])]
 class HostelRoom extends Model
 {
-    use BelongsToSchool, HasFactory;
+    use HasFactory;
 
     protected function casts(): array
     {

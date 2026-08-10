@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('name');
             $table->string('code');
             $table->unsignedInteger('capacity')->nullable();
@@ -18,7 +17,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['school_id', 'code']);
+            $table->unique(['code']);
         });
     }
 

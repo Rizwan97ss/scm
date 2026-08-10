@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\FeeFrequency;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['school_id', 'academic_year_id', 'grade_level_id', 'fee_category_id', 'name', 'amount', 'frequency', 'due_day_of_month', 'is_active'])]
 class FeeStructure extends Model
 {
-    use BelongsToSchool, HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

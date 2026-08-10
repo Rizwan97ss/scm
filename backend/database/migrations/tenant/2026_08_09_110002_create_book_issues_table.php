@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('book_issues', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('book_id')->constrained('books')->cascadeOnDelete();
             // Exactly one of student_id/user_id is set — a book can be
             // borrowed by a student or a staff member, validated at the
@@ -24,7 +23,7 @@ return new class extends Migration
             $table->string('status')->default('issued');
             $table->foreignId('issued_by')->constrained('users')->restrictOnDelete();
             $table->timestamps();
-            $table->index(['school_id', 'status']);
+            $table->index(['status']);
         });
     }
 

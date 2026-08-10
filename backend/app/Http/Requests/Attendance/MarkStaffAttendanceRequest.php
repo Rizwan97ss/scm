@@ -15,12 +15,11 @@ class MarkStaffAttendanceRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
             'date' => ['required', 'date'],
             'entries' => ['required', 'array', 'min:1'],
-            'entries.*.user_id' => ['required', Rule::exists('users', 'id')->where('school_id', $schoolId)],
+            'entries.*.user_id' => ['required', Rule::exists('users', 'id')],
             'entries.*.status' => ['required', Rule::in(array_column(AttendanceStatus::cases(), 'value'))],
             'entries.*.remarks' => ['nullable', 'string', 'max:500'],
         ];

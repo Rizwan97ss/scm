@@ -17,14 +17,13 @@ class MarkStudentAttendanceRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'section_id' => ['required', Rule::exists('sections', 'id')->where('school_id', $schoolId)],
+            'section_id' => ['required', Rule::exists('sections', 'id')],
             'date' => ['required', 'date'],
-            'timetable_period_id' => ['nullable', Rule::exists('timetable_periods', 'id')->where('school_id', $schoolId)],
+            'timetable_period_id' => ['nullable', Rule::exists('timetable_periods', 'id')],
             'entries' => ['required', 'array', 'min:1'],
-            'entries.*.student_id' => ['required', Rule::exists('students', 'id')->where('school_id', $schoolId)],
+            'entries.*.student_id' => ['required', Rule::exists('students', 'id')],
             'entries.*.status' => ['required', Rule::in(array_column(AttendanceStatus::cases(), 'value'))],
             'entries.*.remarks' => ['nullable', 'string', 'max:500'],
         ];

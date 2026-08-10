@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('subject_id')->nullable()->constrained('subjects')->nullOnDelete();
             $table->string('type'); // mcq | true_false — both graded identically via question_options
             $table->text('text');
@@ -19,7 +18,7 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
             $table->softDeletes();
-            $table->index(['school_id', 'subject_id']);
+            $table->index(['subject_id']);
         });
     }
 

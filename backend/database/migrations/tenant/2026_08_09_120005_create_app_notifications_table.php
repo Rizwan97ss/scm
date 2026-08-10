@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('app_notifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('announcement_id')->nullable()->constrained('announcements')->nullOnDelete();
             $table->string('title');
@@ -18,7 +17,7 @@ return new class extends Migration
             $table->boolean('is_read')->default(false);
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
-            $table->index(['school_id', 'user_id', 'is_read']);
+            $table->index(['user_id', 'is_read']);
         });
     }
 

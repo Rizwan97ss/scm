@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('academic_year_id')->constrained('academic_years')->cascadeOnDelete();
             $table->string('invoice_number');
@@ -26,8 +25,8 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->restrictOnDelete();
             $table->timestamps();
             $table->softDeletes();
-            $table->unique(['school_id', 'invoice_number']);
-            $table->index(['school_id', 'student_id', 'status']);
+            $table->unique(['invoice_number']);
+            $table->index(['student_id', 'status']);
         });
     }
 

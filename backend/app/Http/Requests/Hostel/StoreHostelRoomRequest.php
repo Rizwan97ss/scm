@@ -14,10 +14,9 @@ class StoreHostelRoomRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'hostel_id' => ['required', Rule::exists('hostels', 'id')->where('school_id', $schoolId)],
+            'hostel_id' => ['required', Rule::exists('hostels', 'id')],
             'room_number' => ['required', 'string', 'max:50'],
             'capacity' => ['required', 'integer', 'min:1'],
             'is_active' => ['sometimes', 'boolean'],

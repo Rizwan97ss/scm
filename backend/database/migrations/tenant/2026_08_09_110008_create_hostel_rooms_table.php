@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('hostel_rooms', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('hostel_id')->constrained('hostels')->cascadeOnDelete();
             $table->string('room_number');
             $table->unsignedInteger('capacity')->default(1);

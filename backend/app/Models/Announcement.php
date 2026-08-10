@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\Audience;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['school_id', 'title', 'body', 'audience', 'channels', 'recipient_count', 'sent_by', 'sent_at'])]
 class Announcement extends Model
 {
-    use BelongsToSchool, HasFactory;
+    use HasFactory;
 
     protected function casts(): array
     {

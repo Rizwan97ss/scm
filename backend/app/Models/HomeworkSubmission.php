@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\HomeworkSubmissionStatus;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +13,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 #[Fillable(['school_id', 'homework_id', 'student_id', 'status', 'content', 'submitted_at', 'score', 'feedback', 'graded_at', 'graded_by'])]
 class HomeworkSubmission extends Model implements HasMedia
 {
-    use BelongsToSchool, HasFactory, InteractsWithMedia;
+    use HasFactory, InteractsWithMedia;
 
     protected function casts(): array
     {

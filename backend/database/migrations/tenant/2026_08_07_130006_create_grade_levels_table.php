@@ -10,14 +10,13 @@ return new class extends Migration
     {
         Schema::create('grade_levels', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('name');
             $table->string('code');
             $table->unsignedSmallInteger('sequence')->default(0);
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['school_id', 'code']);
+            $table->unique(['code']);
         });
     }
 

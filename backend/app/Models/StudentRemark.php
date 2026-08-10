@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\RemarkCategory;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +15,7 @@ use Spatie\Activitylog\Support\LogOptions;
 #[Fillable(['school_id', 'student_id', 'author_id', 'section_id', 'category', 'body', 'visible_to_guardian'])]
 class StudentRemark extends Model
 {
-    use BelongsToSchool, HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected function casts(): array
     {

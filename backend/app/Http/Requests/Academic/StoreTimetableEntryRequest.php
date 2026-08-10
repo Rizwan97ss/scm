@@ -16,15 +16,14 @@ class StoreTimetableEntryRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')->where('school_id', $schoolId)],
-            'section_id' => ['required', Rule::exists('sections', 'id')->where('school_id', $schoolId)],
-            'subject_id' => ['nullable', Rule::exists('subjects', 'id')->where('school_id', $schoolId)],
-            'teacher_id' => ['nullable', Rule::exists('users', 'id')->where('school_id', $schoolId)],
-            'room_id' => ['nullable', Rule::exists('rooms', 'id')->where('school_id', $schoolId)],
-            'timetable_period_id' => ['required', Rule::exists('timetable_periods', 'id')->where('school_id', $schoolId)],
+            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')],
+            'section_id' => ['required', Rule::exists('sections', 'id')],
+            'subject_id' => ['nullable', Rule::exists('subjects', 'id')],
+            'teacher_id' => ['nullable', Rule::exists('users', 'id')],
+            'room_id' => ['nullable', Rule::exists('rooms', 'id')],
+            'timetable_period_id' => ['required', Rule::exists('timetable_periods', 'id')],
             'day_of_week' => ['required', 'integer', 'between:0,6'],
         ];
     }

@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('student_remarks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('author_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('section_id')->nullable()->constrained('sections')->nullOnDelete();
@@ -19,7 +18,7 @@ return new class extends Migration
             $table->boolean('visible_to_guardian')->default(true);
             $table->timestamps();
             $table->softDeletes();
-            $table->index(['school_id', 'student_id']);
+            $table->index(['student_id']);
         });
     }
 

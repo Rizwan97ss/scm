@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,7 +17,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 #[Fillable(['school_id', 'academic_year_id', 'section_id', 'subject_id', 'teacher_id', 'title', 'description', 'due_date', 'max_score'])]
 class Homework extends Model implements HasMedia
 {
-    use BelongsToSchool, HasFactory, InteractsWithMedia, LogsActivity, SoftDeletes;
+    use HasFactory, InteractsWithMedia, LogsActivity, SoftDeletes;
 
     // "Homework" is grammatically uncountable, so Eloquent's automatic
     // pluralization guesses the table name as `homework` (unchanged), not

@@ -14,11 +14,10 @@ class StoreHostelAllocationRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'student_id' => ['required', Rule::exists('students', 'id')->where('school_id', $schoolId)],
-            'hostel_room_id' => ['required', Rule::exists('hostel_rooms', 'id')->where('school_id', $schoolId)],
+            'student_id' => ['required', Rule::exists('students', 'id')],
+            'hostel_room_id' => ['required', Rule::exists('hostel_rooms', 'id')],
             'bed_number' => ['nullable', 'string', 'max:20'],
             'allocated_date' => ['required', 'date'],
         ];

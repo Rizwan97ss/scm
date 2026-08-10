@@ -16,7 +16,7 @@ class StoreGradingScaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:150', Rule::unique('grading_scales', 'name')->where('school_id', $this->user()->school_id)],
+            'name' => ['required', 'string', 'max:150', Rule::unique('grading_scales', 'name')],
             'is_default' => ['sometimes', 'boolean'],
             'grade_bands' => ['required', 'array', 'min:1'],
             'grade_bands.*.min_percentage' => ['required', 'numeric', 'min:0', 'max:100'],

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\PaymentMethod;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +14,7 @@ use Spatie\Activitylog\Support\LogOptions;
 #[Fillable(['school_id', 'invoice_id', 'student_id', 'payment_number', 'amount', 'method', 'gateway', 'reference_number', 'paid_at', 'notes', 'received_by'])]
 class Payment extends Model
 {
-    use BelongsToSchool, HasFactory, LogsActivity;
+    use HasFactory, LogsActivity;
 
     protected function casts(): array
     {

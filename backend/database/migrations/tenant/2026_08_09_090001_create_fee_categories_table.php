@@ -10,12 +10,11 @@ return new class extends Migration
     {
         Schema::create('fee_categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('name');
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            $table->unique(['school_id', 'name']);
+            $table->unique(['name']);
         });
     }
 

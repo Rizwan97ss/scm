@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('student_attendances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('section_id')->constrained('sections')->cascadeOnDelete();
             $table->foreignId('academic_year_id')->constrained('academic_years')->cascadeOnDelete();
@@ -24,7 +23,7 @@ return new class extends Migration
             // NULL as distinct in unique indexes, so this alone doesn't stop duplicate
             // daily-mode rows — AttendanceService enforces that via updateOrCreate.
             $table->unique(['student_id', 'date', 'timetable_period_id']);
-            $table->index(['school_id', 'date']);
+            $table->index(['date']);
             $table->index(['section_id', 'date']);
         });
     }

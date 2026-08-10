@@ -14,12 +14,11 @@ class StoreHomeworkRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')->where('school_id', $schoolId)],
-            'section_id' => ['required', Rule::exists('sections', 'id')->where('school_id', $schoolId)],
-            'subject_id' => ['required', Rule::exists('subjects', 'id')->where('school_id', $schoolId)],
+            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')],
+            'section_id' => ['required', Rule::exists('sections', 'id')],
+            'subject_id' => ['required', Rule::exists('subjects', 'id')],
             'title' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
             'due_date' => ['required', 'date'],

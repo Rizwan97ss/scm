@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('student_transport_assignments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('route_id')->constrained('routes')->cascadeOnDelete();
             $table->foreignId('route_stop_id')->constrained('route_stops')->cascadeOnDelete();
@@ -22,7 +21,7 @@ return new class extends Migration
             // MySQL's 64-char identifier limit — SQLite has no such limit,
             // so this only surfaces once a real MySQL database is migrated
             // against.
-            $table->index(['school_id', 'student_id', 'is_active'], 'student_transport_assignments_active_index');
+            $table->index(['student_id', 'is_active'], 'student_transport_assignments_active_index');
         });
     }
 

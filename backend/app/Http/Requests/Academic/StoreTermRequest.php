@@ -15,7 +15,7 @@ class StoreTermRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')->where('school_id', $this->user()->school_id)],
+            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')],
             'name' => ['required', 'string', 'max:50', Rule::unique('terms', 'name')->where('academic_year_id', $this->input('academic_year_id'))],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],

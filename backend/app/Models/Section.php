@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['school_id', 'academic_year_id', 'grade_level_id', 'name', 'capacity', 'class_teacher_id', 'room_id'])]
 class Section extends Model
 {
-    use BelongsToSchool, HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     public function academicYear(): BelongsTo
     {

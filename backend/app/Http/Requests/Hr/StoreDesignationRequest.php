@@ -14,10 +14,9 @@ class StoreDesignationRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'name' => ['required', 'string', 'max:100', Rule::unique('designations', 'name')->where('school_id', $schoolId)],
+            'name' => ['required', 'string', 'max:100', Rule::unique('designations', 'name')],
             'description' => ['nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
         ];

@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('salary_structures', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->decimal('basic_salary', 10, 2);
             $table->decimal('allowances', 10, 2)->default(0);
@@ -19,7 +18,7 @@ return new class extends Migration
             $table->date('effective_to')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            $table->index(['school_id', 'user_id', 'is_active']);
+            $table->index(['user_id', 'is_active']);
         });
     }
 

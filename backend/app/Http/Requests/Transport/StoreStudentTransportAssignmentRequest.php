@@ -14,13 +14,12 @@ class StoreStudentTransportAssignmentRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'student_id' => ['required', Rule::exists('students', 'id')->where('school_id', $schoolId)],
-            'route_id' => ['required', Rule::exists('routes', 'id')->where('school_id', $schoolId)],
-            'route_stop_id' => ['required', Rule::exists('route_stops', 'id')->where('school_id', $schoolId)],
-            'vehicle_id' => ['nullable', Rule::exists('vehicles', 'id')->where('school_id', $schoolId)],
+            'student_id' => ['required', Rule::exists('students', 'id')],
+            'route_id' => ['required', Rule::exists('routes', 'id')],
+            'route_stop_id' => ['required', Rule::exists('route_stops', 'id')],
+            'vehicle_id' => ['nullable', Rule::exists('vehicles', 'id')],
             'effective_from' => ['required', 'date'],
         ];
     }

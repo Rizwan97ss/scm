@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['school_id', 'name', 'days_allowed_per_year', 'is_paid', 'description', 'is_active'])]
 class LeaveType extends Model
 {
-    use BelongsToSchool, HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

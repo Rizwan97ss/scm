@@ -18,9 +18,9 @@ class UpdateSubjectRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:100'],
             'code' => [
                 'sometimes', 'required', 'string', 'max:20',
-                Rule::unique('subjects', 'code')->where('school_id', $this->user()->school_id)->ignore($this->route('subject')),
+                Rule::unique('subjects', 'code')->ignore($this->route('subject')),
             ],
-            'department_id' => ['nullable', Rule::exists('departments', 'id')->where('school_id', $this->user()->school_id)],
+            'department_id' => ['nullable', Rule::exists('departments', 'id')],
             'is_elective' => ['sometimes', 'boolean'],
         ];
     }

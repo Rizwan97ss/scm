@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\Audience;
 use App\Enums\NoticeType;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['school_id', 'title', 'body', 'type', 'audience', 'event_date', 'start_time', 'end_time', 'location', 'is_published', 'published_at', 'expires_at', 'created_by'])]
 class Notice extends Model
 {
-    use BelongsToSchool, HasFactory;
+    use HasFactory;
 
     protected function casts(): array
     {

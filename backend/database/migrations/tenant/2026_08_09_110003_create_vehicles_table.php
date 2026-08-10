@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('registration_number');
             $table->unsignedInteger('capacity');
             $table->string('driver_name')->nullable();
@@ -18,7 +17,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
-            $table->unique(['school_id', 'registration_number']);
+            $table->unique(['registration_number']);
         });
     }
 

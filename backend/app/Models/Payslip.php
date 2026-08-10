@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\PayslipStatus;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +14,7 @@ use Spatie\Activitylog\Support\LogOptions;
 #[Fillable(['school_id', 'user_id', 'salary_structure_id', 'payslip_number', 'month', 'year', 'basic_salary', 'allowances', 'deductions', 'net_salary', 'status', 'paid_at', 'generated_by', 'notes'])]
 class Payslip extends Model
 {
-    use BelongsToSchool, HasFactory, LogsActivity;
+    use HasFactory, LogsActivity;
 
     protected function casts(): array
     {

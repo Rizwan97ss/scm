@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('students', function (Blueprint $table) {
             $table->id();
             $table->uuid()->unique();
-            $table->foreignId('school_id');
             $table->string('admission_number');
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('first_name');
@@ -40,8 +39,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['school_id', 'admission_number']);
-            $table->index(['school_id', 'status']);
+            $table->unique(['admission_number']);
+            $table->index(['status']);
             $table->index(['current_section_id']);
         });
     }

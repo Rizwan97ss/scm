@@ -14,10 +14,9 @@ class StoreCertificateTemplateRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'name' => ['required', 'string', 'max:150', Rule::unique('certificate_templates', 'name')->where('school_id', $schoolId)],
+            'name' => ['required', 'string', 'max:150', Rule::unique('certificate_templates', 'name')],
             'type' => ['required', 'string', 'max:100'],
             'body' => ['required', 'string'],
             'is_active' => ['sometimes', 'boolean'],

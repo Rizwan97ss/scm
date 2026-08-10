@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('certificates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('certificate_template_id')->constrained('certificate_templates')->restrictOnDelete();
             $table->string('certificate_number');
@@ -18,8 +17,8 @@ return new class extends Migration
             $table->foreignId('issued_by')->constrained('users')->restrictOnDelete();
             $table->text('content');
             $table->timestamps();
-            $table->unique(['school_id', 'certificate_number']);
-            $table->index(['school_id', 'student_id']);
+            $table->unique(['certificate_number']);
+            $table->index(['student_id']);
         });
     }
 

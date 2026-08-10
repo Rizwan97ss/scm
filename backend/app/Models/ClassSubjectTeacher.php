@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['school_id', 'academic_year_id', 'section_id', 'subject_id', 'teacher_id'])]
 class ClassSubjectTeacher extends Model
 {
-    use BelongsToSchool, HasFactory;
+    use HasFactory;
 
     public function academicYear(): BelongsTo
     {

@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('class_subject_teacher', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('academic_year_id')->constrained('academic_years')->cascadeOnDelete();
             $table->foreignId('section_id')->constrained('sections')->cascadeOnDelete();
             $table->foreignId('subject_id')->constrained('subjects')->cascadeOnDelete();

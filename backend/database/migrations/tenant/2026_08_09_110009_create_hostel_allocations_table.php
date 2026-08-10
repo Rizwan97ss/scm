@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('hostel_allocations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('hostel_room_id')->constrained('hostel_rooms')->cascadeOnDelete();
             $table->string('bed_number')->nullable();
@@ -18,7 +17,7 @@ return new class extends Migration
             $table->date('vacated_date')->nullable();
             $table->string('status')->default('allocated');
             $table->timestamps();
-            $table->index(['school_id', 'student_id', 'status']);
+            $table->index(['student_id', 'status']);
         });
     }
 

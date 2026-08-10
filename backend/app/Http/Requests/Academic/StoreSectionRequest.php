@@ -14,11 +14,10 @@ class StoreSectionRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')->where('school_id', $schoolId)],
-            'grade_level_id' => ['required', Rule::exists('grade_levels', 'id')->where('school_id', $schoolId)],
+            'academic_year_id' => ['required', Rule::exists('academic_years', 'id')],
+            'grade_level_id' => ['required', Rule::exists('grade_levels', 'id')],
             'name' => [
                 'required', 'string', 'max:20',
                 Rule::unique('sections', 'name')
@@ -26,8 +25,8 @@ class StoreSectionRequest extends FormRequest
                     ->where('grade_level_id', $this->input('grade_level_id')),
             ],
             'capacity' => ['nullable', 'integer', 'min:1'],
-            'class_teacher_id' => ['nullable', Rule::exists('users', 'id')->where('school_id', $schoolId)],
-            'room_id' => ['nullable', Rule::exists('rooms', 'id')->where('school_id', $schoolId)],
+            'class_teacher_id' => ['nullable', Rule::exists('users', 'id')],
+            'room_id' => ['nullable', Rule::exists('rooms', 'id')],
         ];
     }
 }

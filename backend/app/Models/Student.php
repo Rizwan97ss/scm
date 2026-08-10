@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\Gender;
 use App\Enums\StudentStatus;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,7 +27,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 ])]
 class Student extends Model implements HasMedia
 {
-    use BelongsToSchool, HasFactory, InteractsWithMedia, LogsActivity, SoftDeletes;
+    use HasFactory, InteractsWithMedia, LogsActivity, SoftDeletes;
 
     public const DOCUMENT_COLLECTIONS = ['photo', 'birth_certificate', 'previous_report_card', 'transfer_certificate', 'other'];
 

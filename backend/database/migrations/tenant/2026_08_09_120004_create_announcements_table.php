@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('announcements', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('title');
             $table->text('body');
             $table->string('audience')->default('all');
@@ -19,7 +18,7 @@ return new class extends Migration
             $table->foreignId('sent_by')->constrained('users')->restrictOnDelete();
             $table->timestamp('sent_at');
             $table->timestamps();
-            $table->index(['school_id', 'sent_at']);
+            $table->index(['sent_at']);
         });
     }
 

@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('payslips', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('salary_structure_id')->nullable()->constrained('salary_structures')->nullOnDelete();
             $table->string('payslip_number');
@@ -25,9 +24,9 @@ return new class extends Migration
             $table->foreignId('generated_by')->constrained('users')->restrictOnDelete();
             $table->text('notes')->nullable();
             $table->timestamps();
-            $table->unique(['school_id', 'payslip_number']);
+            $table->unique(['payslip_number']);
             $table->unique(['user_id', 'month', 'year']);
-            $table->index(['school_id', 'year', 'month']);
+            $table->index(['year', 'month']);
         });
     }
 

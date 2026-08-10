@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\AttendanceStatus;
-use App\Traits\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +13,7 @@ use Spatie\Activitylog\Support\LogOptions;
 #[Fillable(['school_id', 'user_id', 'date', 'status', 'check_in_time', 'check_out_time', 'remarks', 'marked_by'])]
 class StaffAttendance extends Model
 {
-    use BelongsToSchool, HasFactory, LogsActivity;
+    use HasFactory, LogsActivity;
 
     protected function casts(): array
     {

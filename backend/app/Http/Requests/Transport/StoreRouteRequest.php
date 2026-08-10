@@ -14,10 +14,9 @@ class StoreRouteRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'name' => ['required', 'string', 'max:150', Rule::unique('routes', 'name')->where('school_id', $schoolId)],
+            'name' => ['required', 'string', 'max:150', Rule::unique('routes', 'name')],
             'description' => ['nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
             'stops' => ['sometimes', 'array'],

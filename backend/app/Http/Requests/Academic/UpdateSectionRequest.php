@@ -14,13 +14,12 @@ class UpdateSectionRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
             'name' => ['sometimes', 'required', 'string', 'max:20'],
             'capacity' => ['nullable', 'integer', 'min:1'],
-            'class_teacher_id' => ['nullable', Rule::exists('users', 'id')->where('school_id', $schoolId)],
-            'room_id' => ['nullable', Rule::exists('rooms', 'id')->where('school_id', $schoolId)],
+            'class_teacher_id' => ['nullable', Rule::exists('users', 'id')],
+            'room_id' => ['nullable', Rule::exists('rooms', 'id')],
         ];
     }
 }

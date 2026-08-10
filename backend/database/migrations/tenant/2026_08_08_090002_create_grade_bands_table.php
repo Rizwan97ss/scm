@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('grade_bands', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('grading_scale_id')->constrained('grading_scales')->cascadeOnDelete();
             $table->decimal('min_percentage', 5, 2);
             $table->decimal('max_percentage', 5, 2);

@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('exams', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('academic_year_id')->constrained('academic_years')->cascadeOnDelete();
             $table->foreignId('term_id')->nullable()->constrained('terms')->nullOnDelete();
             $table->string('name');
@@ -18,7 +17,7 @@ return new class extends Migration
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            $table->index(['school_id', 'academic_year_id']);
+            $table->index(['academic_year_id']);
         });
     }
 

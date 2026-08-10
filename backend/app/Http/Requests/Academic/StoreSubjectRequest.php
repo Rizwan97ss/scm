@@ -16,8 +16,8 @@ class StoreSubjectRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:100'],
-            'code' => ['required', 'string', 'max:20', Rule::unique('subjects', 'code')->where('school_id', $this->user()->school_id)],
-            'department_id' => ['nullable', Rule::exists('departments', 'id')->where('school_id', $this->user()->school_id)],
+            'code' => ['required', 'string', 'max:20', Rule::unique('subjects', 'code')],
+            'department_id' => ['nullable', Rule::exists('departments', 'id')],
             'is_elective' => ['sometimes', 'boolean'],
         ];
     }

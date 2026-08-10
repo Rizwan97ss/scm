@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('sections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('academic_year_id')->constrained('academic_years')->cascadeOnDelete();
             $table->foreignId('grade_level_id')->constrained('grade_levels')->cascadeOnDelete();
             $table->string('name');

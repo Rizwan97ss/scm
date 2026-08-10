@@ -14,10 +14,9 @@ class UpdateRouteRequest extends FormRequest
 
     public function rules(): array
     {
-        $schoolId = $this->user()->school_id;
 
         return [
-            'name' => ['sometimes', 'required', 'string', 'max:150', Rule::unique('routes', 'name')->where('school_id', $schoolId)->ignore($this->route('route'))],
+            'name' => ['sometimes', 'required', 'string', 'max:150', Rule::unique('routes', 'name')->ignore($this->route('route'))],
             'description' => ['nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
         ];

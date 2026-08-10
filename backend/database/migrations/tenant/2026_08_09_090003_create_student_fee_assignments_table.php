@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('student_fee_assignments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('fee_structure_id')->constrained('fee_structures')->cascadeOnDelete();
             $table->string('discount_type')->default('none');

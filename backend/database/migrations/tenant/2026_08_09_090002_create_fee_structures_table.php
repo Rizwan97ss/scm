@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('fee_structures', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->foreignId('academic_year_id')->constrained('academic_years')->cascadeOnDelete();
             $table->foreignId('grade_level_id')->nullable()->constrained('grade_levels')->nullOnDelete();
             $table->foreignId('fee_category_id')->constrained('fee_categories')->restrictOnDelete();
@@ -21,7 +20,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
-            $table->index(['school_id', 'academic_year_id', 'grade_level_id']);
+            $table->index(['academic_year_id', 'grade_level_id']);
         });
     }
 

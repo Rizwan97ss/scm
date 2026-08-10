@@ -10,13 +10,12 @@ return new class extends Migration
     {
         Schema::create('certificate_templates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('name');
             $table->string('type');
             $table->text('body');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            $table->unique(['school_id', 'name']);
+            $table->unique(['name']);
         });
     }
 

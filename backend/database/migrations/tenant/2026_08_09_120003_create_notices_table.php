@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('notices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('title');
             $table->text('body');
             $table->string('type')->default('general');
@@ -24,7 +23,7 @@ return new class extends Migration
             $table->date('expires_at')->nullable();
             $table->foreignId('created_by')->constrained('users')->restrictOnDelete();
             $table->timestamps();
-            $table->index(['school_id', 'is_published', 'audience']);
+            $table->index(['is_published', 'audience']);
         });
     }
 

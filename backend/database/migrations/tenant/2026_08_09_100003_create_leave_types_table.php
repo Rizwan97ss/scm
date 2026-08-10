@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('leave_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id');
             $table->string('name');
             $table->unsignedSmallInteger('days_allowed_per_year')->nullable();
             $table->boolean('is_paid')->default(true);
@@ -18,7 +17,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
-            $table->unique(['school_id', 'name']);
+            $table->unique(['name']);
         });
     }
 
