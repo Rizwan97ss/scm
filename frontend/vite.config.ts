@@ -13,5 +13,11 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Bind all interfaces and allow any *.localtest.me host — tenant
+    // subdomains (e.g. riverside-demo.localtest.me) resolve to 127.0.0.1 via
+    // wildcard DNS, but Vite's dev-server Host-header check (DNS rebinding
+    // protection) rejects unrecognized hostnames unless explicitly allowed.
+    host: true,
+    allowedHosts: ['localhost', '.localtest.me'],
   },
 })

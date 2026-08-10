@@ -21,7 +21,17 @@ return [
 
     'allowed_origins' => array_filter(explode(',', env('FRONTEND_URLS', 'http://localhost:5173'))),
 
-    'allowed_origins_patterns' => [],
+    /*
+    | Subdomain-per-tenant means the frontend's origin varies per school
+    | (riverside-demo.localtest.me, acme-academy.localtest.me, ...) — an
+    | exact-match list can't express that, so this pattern matches the
+    | central domain and any of its subdomains on the frontend dev port.
+    | TENANCY_FRONTEND_DOMAIN_PATTERN lets this be overridden per-environment
+    | without editing code (e.g. a real wildcard prod domain later).
+    */
+    'allowed_origins_patterns' => array_filter([
+        env('TENANCY_FRONTEND_DOMAIN_PATTERN'),
+    ]),
 
     'allowed_headers' => ['*'],
 
