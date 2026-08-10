@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Platform\PlatformUser;
 use App\Models\User;
 
 return [
@@ -42,6 +43,15 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Super Admin only -- authenticates against the landlord database
+        // (PlatformUser has no school_id/tenant concept at all, see its own
+        // docblock). Not wired to any route/controller yet; Sub-phase E adds
+        // a PlatformLoginController on this guard.
+        'platform' => [
+            'driver' => 'session',
+            'provider' => 'platform_users',
+        ],
     ],
 
     /*
@@ -65,6 +75,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'platform_users' => [
+            'driver' => 'eloquent',
+            'model' => PlatformUser::class,
         ],
 
         // 'users' => [
@@ -96,6 +111,13 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        'platform_users' => [
+            'provider' => 'platform_users',
+            'table' => 'password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],

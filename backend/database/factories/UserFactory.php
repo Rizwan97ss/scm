@@ -10,6 +10,14 @@ use Illuminate\Support\Str;
 
 /**
  * @extends Factory<User>
+ *
+ * TODO(tenancy): 'school_id' below is a straightforwardly broken reference
+ * -- the users table no longer has that column (Sub-phase D). Needs
+ * Sub-phase F's test-infrastructure rewrite: creating a User now means
+ * creating it inside a tenant's own database connection
+ * (tenancy()->initialize($school) / $school->run(...)), not stamping a
+ * foreign key. Left as a known-broken placeholder rather than patched
+ * piecemeal ahead of that rewrite.
  */
 class UserFactory extends Factory
 {

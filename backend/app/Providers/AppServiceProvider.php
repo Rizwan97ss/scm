@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Contracts\PaymentGatewayInterface;
 use App\Contracts\PushGatewayInterface;
 use App\Contracts\SmsGatewayInterface;
+use App\Models\Platform\PlatformUser;
 use App\Models\School;
 use App\Models\User;
 use App\Policies\AuditLogPolicy;
@@ -12,6 +13,7 @@ use App\Policies\RolePolicy;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -81,9 +83,22 @@ class AppServiceProvider extends ServiceProvider
                 : Limit::perMinute(150)->by($request->user()?->id ?: $request->ip());
         });
 
-        // Super Admin (cross-school, school_id === null) bypasses every permission check.
-        Gate::before(function (User $user) {
-            return $user->school_id === null && $user->hasRole('Super Admin') ? true : null;
+        // Super Admin bypasses every permission check. Untyped/Authenticatable
+        // param deliberately, not User or PlatformUser specifically -- Gate's
+        // before-callbacks are invoked for whichever guard resolved the
+        // current request's user (canBeCalledWithUser() does no type
+        // filtering of its own), so a narrower type-hint here would throw a
+        // TypeError the first time this runs against the other user type.
+        // TODO(tenancy): the tenant-User branch below is dead code until/
+        // unless a real cross-tenant tenant-side use case needs it --
+        // Super Admin is PlatformUser now (Sub-phase E wires up the guard
+        // switch via Auth::shouldUse('platform') on platform-only routes).
+        Gate::before(function (Authenticatable $user) {
+            if ($user instanceof PlatformUser) {
+                return true;
+            }
+
+            return $user instanceof User && $user->school_id === null && $user->hasRole('Super Admin') ? true : null;
         });
 
         // Spatie's Role/Activity models live outside App\Models, so policy auto-discovery can't find them.
@@ -107,12 +122,6 @@ class AppServiceProvider extends ServiceProvider
             $frontendUrl = rtrim(config('app.frontend_url'), '/');
 
             return "{$frontendUrl}/reset-password?token={$token}&email=".urlencode($notifiable->getEmailForPasswordReset());
-        });
-
-        // Stamp every audit log row with a school_id so it can be scoped per
-        // tenant, without every loggable model needing to know about it.
-        Activity::creating(function (Activity $activity) {
-            $activity->school_id = $activity->causer?->school_id ?? $activity->subject?->school_id ?? null;
         });
 
         // Billing is per-school, not per-user (a founding admin can leave;
