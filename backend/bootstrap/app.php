@@ -42,6 +42,14 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'school.context' => EnsureSchoolContext::class,
+            // Not yet attached to any route group — Sub-phase E splits
+            // routes.php into a tenant-facing group (gets this) vs a
+            // platform-facing one (must never get it, since Super Admin
+            // isn't inside any tenant). Applying it globally now would break
+            // every request to the central/platform domain: its default
+            // failure mode on an unrecognized-as-tenant host is to throw,
+            // not pass through.
+            'tenancy.subdomain' => \Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain::class,
         ]);
 
         $middleware->appendToGroup('api', EnsureSchoolContext::class);

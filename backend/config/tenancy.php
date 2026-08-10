@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Models\School;
 use Stancl\Tenancy\Database\Models\Domain;
-use Stancl\Tenancy\Database\Models\Tenant;
 
 return [
-    // Sub-phase C switches this to App\Models\School (predefined-columns
-    // mode, School implementing TenantWithDatabase directly) — kept at the
-    // package default here since Sub-phase A is plumbing-only, verified
-    // against this placeholder model, not application models yet.
-    'tenant_model' => Tenant::class,
+    // School IS the tenant model — "predefined columns" mode, see its own
+    // docblock. Not the package's generic Tenant model.
+    'tenant_model' => School::class,
     'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
 
+    // Unused: identification is subdomain-by-School.slug (SlugTenantResolver,
+    // bound in TenancyServiceProvider), not a separate domains table. Kept
+    // pointing at the package default only because this config key must
+    // reference a valid class.
     'domain_model' => Domain::class,
 
     /**
@@ -23,6 +25,7 @@ return [
     'central_domains' => [
         '127.0.0.1',
         'localhost',
+        env('TENANCY_CENTRAL_DOMAIN', 'localtest.me'),
     ],
 
     /**
@@ -33,7 +36,13 @@ return [
      */
     'bootstrappers' => [
         Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
-        Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class,
+        // CacheTenancyBootstrapper needs a taggable cache store (array,
+        // memcached, redis, dynamodb) — this app's CACHE_STORE=database
+        // doesn't support Cache::tags(), so enabling it would throw the
+        // moment tenancy initializes. Cross-tenant cache collisions aren't
+        // a real risk here regardless: physical DB separation is the actual
+        // isolation boundary, cache is just an optimization on top of it.
+        // Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
         // Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class, // Note: phpredis is needed

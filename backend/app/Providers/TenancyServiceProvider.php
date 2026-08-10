@@ -94,7 +94,16 @@ class TenancyServiceProvider extends ServiceProvider
 
     public function register()
     {
-        //
+        // Subdomain identification resolves via DomainTenantResolver by
+        // default, which queries a separate `domains` table we don't have —
+        // School.slug is the tenant key directly. See SlugTenantResolver's
+        // docblock. Bound against the concrete class, not an interface,
+        // because InitializeTenancyBySubdomain's constructor is type-hinted
+        // to DomainTenantResolver specifically.
+        $this->app->bind(
+            \Stancl\Tenancy\Resolvers\DomainTenantResolver::class,
+            \App\Tenancy\SlugTenantResolver::class
+        );
     }
 
     public function boot()
