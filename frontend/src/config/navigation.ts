@@ -43,6 +43,7 @@ import {
   LineChart,
   TrendingUp,
   Activity,
+  HelpCircle,
 } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { routePaths } from '@/routes/routePaths'
@@ -63,7 +64,10 @@ export interface NavGroupConfig {
 export const NAV_GROUPS: NavGroupConfig[] = [
   {
     label: 'Overview',
-    items: [{ label: 'Dashboard', to: routePaths.dashboard, icon: LayoutDashboard }],
+    items: [
+      { label: 'Dashboard', to: routePaths.dashboard, icon: LayoutDashboard },
+      { label: 'Setup Guide', to: routePaths.help, icon: HelpCircle },
+    ],
   },
   {
     label: 'People',
@@ -195,6 +199,7 @@ export const PARENT_NAV_GROUPS: NavGroupConfig[] = [
       { label: 'My Children', to: routePaths.parentChildren, icon: GraduationCap },
       { label: 'Notice Board', to: routePaths.noticeBoard, icon: Newspaper },
       { label: 'Certificates', to: routePaths.certificates, icon: Award },
+      { label: 'Help', to: routePaths.help, icon: HelpCircle },
     ],
   },
 ]
@@ -209,6 +214,7 @@ export const STUDENT_NAV_GROUPS: NavGroupConfig[] = [
       { label: 'My Fees', to: routePaths.invoices, icon: Receipt },
       { label: 'Notice Board', to: routePaths.noticeBoard, icon: Newspaper },
       { label: 'Certificates', to: routePaths.certificates, icon: Award },
+      { label: 'Help', to: routePaths.help, icon: HelpCircle },
     ],
   },
 ]

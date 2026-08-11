@@ -9,6 +9,7 @@ export const routePaths = {
   forbidden: '/forbidden',
 
   dashboard: '/',
+  help: '/help',
 
   users: '/users',
   roles: '/roles',

@@ -18,6 +18,7 @@ const SignupCompletePage = lazy(() => import('@/features/signup/pages/SignupComp
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })))
 const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })))
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })))
+const HelpGuidePage = lazy(() => import('@/features/help/pages/HelpGuidePage').then((m) => ({ default: m.HelpGuidePage })))
 const UsersListPage = lazy(() => import('@/features/users/pages/UsersListPage').then((m) => ({ default: m.UsersListPage })))
 const RolesListPage = lazy(() => import('@/features/roles/pages/RolesListPage').then((m) => ({ default: m.RolesListPage })))
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage').then((m) => ({ default: m.SettingsPage })))
@@ -104,6 +105,7 @@ export function AppRouter() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
             <Route path={routePaths.dashboard} element={<DashboardPage />} />
+            <Route path={routePaths.help} element={<HelpGuidePage />} />
 
             <Route path={routePaths.parentChildren} element={<ParentChildrenPage />} />
             <Route path={routePaths.parentChildProfile()} element={<ParentChildProfilePage />} />
