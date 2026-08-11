@@ -18,8 +18,8 @@ DB_USERNAME=your_db_user
 DB_PASSWORD=your_db_password
 ```
 
-Create the database (`CREATE DATABASE school_management_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`),
-then:
+Create the **landlord** database (`CREATE DATABASE school_management_system
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`), then:
 
 ```bash
 php artisan migrate --force
@@ -30,6 +30,28 @@ php artisan db:seed --force   # only for a fresh install with demo/starter data 
 
 `--force` is required because Laravel blocks destructive commands by
 default when `APP_ENV=production`.
+
+**The MySQL user needs `CREATE DATABASE`/`DROP DATABASE` privileges, not
+just DML on one schema.** Since Sub-phase C-G's database-per-tenant
+conversion, provisioning a school (self-service signup or the platform
+console) physically creates a new database and migrates it synchronously,
+in-request (`stancl/tenancy`'s job pipeline, `shouldBeQueued(false)` — see
+[architecture.md § Multi-tenancy](architecture.md#multi-tenancy)). The
+landlord connection's DB user is what stancl uses to create/migrate/drop
+these tenant databases, so it needs full DDL rights on the MySQL server,
+not just the landlord schema:
+
+```sql
+GRANT ALL PRIVILEGES ON *.* TO 'your_db_user'@'%';
+-- or, narrower: GRANT CREATE, DROP, ALTER, ... ON `tenant\_%`.* TO ...
+-- if your MySQL setup can express a prefix-scoped grant safely.
+```
+
+A user scoped to only the landlord schema will provision a `School` row
+successfully (that write goes through fine) and then fail the moment
+`CreateDatabase`/`MigrateDatabase` runs — visible as a 502 on signup, with
+the compensating rollback (`SchoolProvisioningService::provision()`'s
+catch block) cleaning up the now-orphaned landlord row.
 
 **Gotcha found doing this cutover for real:** two migrations
 (`create_online_test_attempts_table`, `create_student_transport_assignments_table`)
@@ -88,19 +110,60 @@ client-side).
 
 ## 4. Reverse proxy topology
 
-Two supported shapes:
+Database-per-tenant means every school's URL is its own subdomain
+(`{slug}.example.com`) — this isn't optional the way "same origin vs.
+separate subdomains" used to be a style choice; the reverse proxy **must**
+route wildcard subdomains, both for the API and (unless the frontend is
+served some other way) the SPA.
 
-- **Same origin** (recommended — simplest CORS/cookie story): reverse
-  proxy routes `/api/*` and `/sanctum/*` to the Laravel app, everything
-  else to the built SPA's `dist/`. `VITE_API_URL` becomes a relative
-  `/api`, no CORS needed at all.
-- **Separate subdomains** (`app.example.com` frontend, `api.example.com`
-  backend): requires `FRONTEND_URLS`/`SANCTUM_STATEFUL_DOMAINS` to list the
-  frontend's real origin, and `SESSION_DOMAIN=.example.com` so the session
-  cookie is visible to both subdomains.
+- **Wildcard DNS**: an `A`/`ALIAS` record for `*.example.com` (and
+  `example.com` itself, for the central/signup/platform domain) pointing
+  at the reverse proxy. Locally this is `*.localtest.me`, a public DNS
+  service that resolves any subdomain to `127.0.0.1` with zero setup —
+  there is no production equivalent of that convenience; a real wildcard
+  DNS record is required.
+- **Wildcard TLS certificate**: a single cert for `*.example.com` (plus
+  `example.com`) covers every current and future tenant subdomain without
+  reissuing per school. Let's Encrypt issues wildcard certs via DNS-01
+  challenge only (HTTP-01 can't prove control of a wildcard) — automate
+  renewal through your DNS provider's ACME plugin (certbot's DNS
+  plugins, Caddy's built-in ACME + DNS provider module, etc.), since
+  manual DNS-01 renewal every ~90 days doesn't scale past the first
+  renewal.
+- **Same-origin-per-tenant** (recommended — matches how local dev already
+  behaves, and how `App\Http\Client...`/`src/api/client.ts` are written):
+  reverse proxy routes `{slug}.example.com/api/*` and `.../sanctum/*` to
+  Laravel, `{slug}.example.com/*` (everything else) to the built SPA,
+  **preserving the Host header** so `tenancy.subdomain` resolves the
+  right tenant. `VITE_API_URL` becomes a relative `/api` (see `src/api/
+  client.ts`'s `resolveApiUrl()` — a relative value opts out of its
+  runtime-hostname-substitution logic and resolves same-origin instead),
+  no CORS needed at all. The central/platform domain (`example.com`, no
+  subdomain) needs the same routing for the signup and platform-login
+  pages, just with no tenant to resolve.
+- **Separate API subdomain per environment** (`app.example.com` frontend
+  domain pattern, `api.example.com` backend) is possible but loses the
+  "no CORS" simplicity entirely: `FRONTEND_URLS`/`TENANCY_FRONTEND_DOMAIN_PATTERN`
+  need to list/match the frontend's real wildcard origin, and
+  `SESSION_DOMAIN` still needs to stay unset/exact-host (**not**
+  `.example.com`) — a shared parent-domain session cookie would defeat
+  the whole point of subdomain-based tenant isolation (see
+  [architecture.md § Authentication](architecture.md#authentication)).
+  Only reach for this shape if the same-origin-per-tenant proxy routing
+  above is genuinely not achievable in your infrastructure.
 
-Either shape puts a reverse proxy (nginx, Caddy, a load balancer) in
-front of Laravel, which means the app sees the proxy's own connection,
+**`TENANCY_FRONTEND_DOMAIN_PATTERN` gotcha**: this value is a regex
+starting with `#` (used as the PCRE delimiter). In a `.env` file, an
+*unquoted* value starting with `#` is silently treated as a comment and
+discarded entirely — this shipped broken in local dev for a while before
+a live browser test caught it (every tenant-subdomain request failing
+CORS with no `allowed_origins_patterns` configured at all). Always
+single-quote it: `TENANCY_FRONTEND_DOMAIN_PATTERN='#^https://([a-z0-9-]+\.)?example\.com$#'`
+— double quotes also break, differently (the pattern's own backslash
+escapes get interpreted as PHP-style escape sequences and fail to parse).
+
+Any of these shapes puts a reverse proxy (nginx, Caddy, a load balancer)
+in front of Laravel, which means the app sees the proxy's own connection,
 not the real client's — set `TRUSTED_PROXIES` (`backend/.env`) or
 `Request::ip()`, HTTPS detection, and the `Strict-Transport-Security`
 header (see [architecture.md § Security posture](architecture.md#security-posture))
@@ -189,19 +252,53 @@ history and audit logs (see [database.md](database.md),
 are the records a school is least able to reconstruct from anywhere else —
 prioritize their durability specifically, not just "the database" in general.
 
-## 10. Multi-school considerations
+## 10. Multi-school considerations (database-per-tenant)
 
-The system is architecturally multi-school-ready (see
-[architecture.md § Multi-tenancy](architecture.md#multi-tenancy)) but
-Phase 0-3 has been seeded and tested with one demo school. Onboarding a
-second real school onto the same deployment needs no schema/code change —
-create a `School` row (Super Admin → Schools), seed its own
-`RolePermissionSeeder`-equivalent role set if it needs custom roles beyond
-the defaults, and set any school-specific `settings` overrides (branding,
-admission number format). There's no per-school database/schema split by
-design — isolation is enforced by `SchoolScope`, not infrastructure, which
-is what keeps onboarding a new school a data operation rather than a
-deploy.
+Onboarding a new school is a **write**, not a deploy — self-service
+signup or the platform console creating a `School` row triggers the same
+provisioning pipeline either way (`SchoolProvisioningService::provision()`):
+a new physical database, migrated, seeded with default roles, no manual
+step required. But "no per-school database split" is no longer true the
+way it was pre-conversion — the opposite is the whole point now, and it
+has real operational consequences at scale:
+
+- **Backups are N databases, not one.** § 9 above still applies to the
+  landlord database (schools/plans/subscriptions — small, changes
+  rarely), but every tenant database needs its own backup coverage too.
+  A single `mysqldump` of "the database" no longer captures student/
+  academic/financial data at all — script backups to enumerate and dump
+  every `tenant*` (or however tenant databases are named in your MySQL
+  instance) database, not just the landlord one.
+- **Connection overhead scales with tenant count.** Each request that
+  touches a tenant (i.e. almost all of them) opens a connection to that
+  tenant's specific database. At meaningfully large tenant counts, watch
+  MySQL's `max_connections` and consider connection pooling (ProxySQL,
+  RDS Proxy, etc.) — this app doesn't do anything unusual here, but the
+  N+1-databases shape means it's worth checking sooner than a
+  single-database app would need to.
+- **The platform console's cross-tenant reads are an accepted N+1 cost,
+  not yet optimized.** `PlatformSchoolController`/`School::studentCount()`/
+  `staffCount()` open a real connection per school when listing usage
+  across many tenants at once — fine at today's tenant counts, a known
+  future optimization (a landlord-side rollup counter each tenant writes
+  on change, instead of a live cross-database count) if the schools list
+  ever needs to scale past what that N+1 pattern comfortably handles.
+- **A broken/missing tenant database degrades, doesn't crash.**
+  `School::studentCount()`/`staffCount()` check `databaseExists()` before
+  ever switching into a tenant's connection, so one school with a
+  missing or drifted database shows as zero usage in the platform console
+  instead of 500ing the whole schools list. Worth knowing if you ever see
+  a school reporting all-zero usage unexpectedly — check whether its
+  tenant database actually exists before assuming the data itself is
+  wrong.
+- **New role defaults roll out per-tenant, not globally.** Changing
+  `SchoolProvisioningService::SCHOOL_SCOPED_ROLE_PERMISSIONS` (the default
+  role/permission matrix) only affects schools provisioned *after* the
+  change — existing tenants' already-seeded roles aren't retroactively
+  updated. A permission-matrix change that needs to reach existing
+  schools needs its own one-off script iterating `School::all()` and
+  calling `$school->run(fn () => ...)`, the same pattern
+  `SchoolProvisioningService::seedDefaultRoles()` itself uses.
 
 ## 11. Stripe billing (Phase 6)
 
@@ -239,13 +336,29 @@ production — Stripe can reach a real public URL directly:
 
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`
 - [ ] Real `APP_KEY` generated and kept secret (not the dev one)
-- [ ] MySQL configured, migrated, seeded appropriately for the real rollout (not the demo seeder)
-- [ ] HTTPS enforced, `SANCTUM_STATEFUL_DOMAINS`/`FRONTEND_URLS` set to real origins only
-- [ ] `VITE_API_URL` baked into the frontend build for the real backend origin
+- [ ] Landlord MySQL database configured and migrated (`php artisan
+      migrate --force`); the DB user has `CREATE`/`DROP DATABASE` rights
+      for tenant provisioning, not just DML on the landlord schema — see § 1
+- [ ] Wildcard DNS (`*.example.com`) and a wildcard TLS certificate in
+      place and auto-renewing — see § 4
+- [ ] Reverse proxy routes wildcard subdomains, preserving the Host
+      header, to both the API and the SPA — see § 4
+- [ ] `TENANCY_FRONTEND_DOMAIN_PATTERN` single-quoted in `.env` (it starts
+      with `#`, silently discarded as a comment if unquoted) and its regex
+      actually matches the real production frontend origin pattern — see § 4
+- [ ] `SESSION_DOMAIN` left unset/exact-host, **not** a shared parent
+      domain — a shared-domain session cookie defeats subdomain-based
+      tenant isolation, see [architecture.md § Authentication](architecture.md#authentication)
+- [ ] HTTPS enforced, `SANCTUM_STATEFUL_DOMAINS`/`FRONTEND_URLS` set to
+      real wildcard origins only
+- [ ] `VITE_API_URL` baked into the frontend build for the real backend
+      origin (or left relative, `/api`, if using the same-origin-per-
+      tenant proxy shape — see § 4)
 - [ ] Queue worker running under a supervisor, if any queued jobs exist
 - [ ] Mail transport configured (not `log`)
 - [ ] File storage disk decided (local vs. S3) based on deployment topology
-- [ ] Backup schedule in place before real student data enters the system
+- [ ] Backup schedule covers **every tenant database**, not just the
+      landlord one — see § 10
 - [ ] `php artisan test` and `npm run build` both clean on the exact commit being deployed
 - [ ] `TRUSTED_PROXIES` set to the reverse proxy's IP (or `*` only if it's
       unreachable directly from the internet) — see § 4
@@ -254,6 +367,10 @@ production — Stripe can reach a real public URL directly:
 - [ ] `composer audit` and `npm audit` both clean on the exact commit being
       deployed — dependency CVEs surface after code is written, so this is
       a deploy-time check, not a one-time pass
-- [ ] Version control in place (this project has been built without one so
-      far — initialize a git repo and commit before the first real
-      deploy, so a bad release can actually be rolled back)
+- [ ] A live browser pass through signup → Stripe Checkout redirect →
+      tenant login on a real subdomain → platform login, on the actual
+      production domain — not just `php artisan test`/`npm run build`
+      passing. The subdomain/CORS/cookie-scoping interactions this
+      architecture depends on are exactly the class of bug neither catches
+      (see this project's own history: a broken `TENANCY_FRONTEND_DOMAIN_PATTERN`
+      shipped past both for a while before a live pass caught it).

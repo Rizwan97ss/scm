@@ -676,13 +676,39 @@ checklist for what's still a manual step at deploy time (real `APP_KEY`,
 live Stripe keys, HTTPS termination, backups) — none of that is
 something application code can enforce for you.
 
-## What's next (after Phase 13)
+**Done (Phase 14):** Database-per-tenant multi-tenancy conversion. The
+original architecture (Phase 0-13) was row-level: one shared database,
+every tenant table carrying a `school_id` column, a global Eloquent scope
+enforcing isolation. This phase converted the entire application off that
+model to true database-per-tenant — each school gets its own physically
+separate database (`stancl/tenancy`), identified by subdomain
+(`{school-slug}.{central-domain}`), with a landlord (central) database
+holding only genuinely cross-tenant data (schools, plans, billing,
+platform admins). Not an incremental migration — a clean cutover across
+every model, migration, controller, test, and the frontend's entire auth/
+routing assumptions. See [architecture.md § Multi-tenancy](architecture.md#multi-tenancy)
+and [§ Authentication](architecture.md#authentication) for the resulting
+shape, and [deployment.md § 4](deployment.md) and
+[§ 10](deployment.md) for what changed operationally (wildcard DNS/TLS,
+per-tenant backups, N+1 connection considerations). Landed in sub-phases:
+package spike and local wildcard-subdomain dev environment; the
+landlord/tenant migration split; stripping `school_id`/teams and
+splitting Super Admin into a separate `PlatformUser`/guard; provisioning
+and the cross-domain signup handoff; the 249-test suite's migration to
+per-test tenant databases (SQLite, real temp files, not `:memory:`); and
+this phase's own frontend wiring plus a live browser pass, which caught
+several bugs invisible to `php artisan test`/`npm run build` alone
+(a CORS regex silently discarded by an unquoted `.env` value chief among
+them — see deployment.md § 4).
+
+## What's next (after Phase 14)
 
 Every phase on the original roadmap — SaaS platform layer, the full
-domain feature set (Phase 7-12), and hardening (Phase 13) — is done.
-Further work from here is user-directed rather than roadmap-driven:
-real pricing decisions, onboarding real schools, or whatever comes up
-once this is actually in front of users.
+domain feature set (Phase 7-12), hardening (Phase 13), and the
+database-per-tenant conversion (Phase 14) — is done. Further work from
+here is user-directed rather than roadmap-driven: real pricing decisions,
+onboarding real schools, or whatever comes up once this is actually in
+front of users.
 
 ## Conventions a new module should follow
 

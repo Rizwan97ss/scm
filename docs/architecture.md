@@ -59,69 +59,144 @@ so the frontend's response interceptor has one shape to handle universally.
 
 ## Multi-tenancy
 
-Every school-owned table has a `school_id` column. Two pieces enforce
-isolation:
+**Database-per-tenant**, not row-level. Every school has its own, physically
+separate database — there is no shared `school_id` column, trait, or global
+scope left anywhere in the tenant schema (that was the pre-Sub-phase-F
+architecture; the whole application was converted off it, not incrementally
+migrated). Isolation is structural: a query issued against one tenant's
+connection is incapable of returning another tenant's rows, because that
+data lives in a different physical database.
 
-- **`App\Traits\BelongsToSchool`** — applied to tenant-scoped models. Auto-fills
-  `school_id` from the acting user on create, and registers...
-- **`App\Scopes\SchoolScope`** — a global Eloquent scope that adds
-  `WHERE school_id = ?` to every query against that model, scoped to the
-  authenticated user's `school_id`. Super Admin (no `school_id`) bypasses it.
+- **Landlord (central) database** — holds exactly what genuinely is
+  cross-tenant: `schools`, `plans`, Cashier's `subscriptions`/
+  `subscription_items`, `platform_users`, and Laravel's own
+  infrastructure tables (`cache`, `jobs`, `migrations`, ...). Nothing
+  student/staff/academic ever lives here.
+- **Tenant databases** — everything else (users, students, exams,
+  invoices, roles/permissions, settings, ...). One physical MySQL/SQLite
+  database per school, auto-created and migrated by `stancl/tenancy`'s job
+  pipeline the moment a `School` row is created (`School::$dispatchesEvents`
+  maps Eloquent's own create/update events onto stancl's tenant lifecycle
+  events — see `app/Models/School.php`'s docblock).
+- **`App\Models\School`** is the tenant model (stancl's "predefined
+  columns" mode — its own real columns, not the package's default JSON
+  blob) and uses `CentralConnection` to pin `School::query()` to the
+  landlord database regardless of which tenant is currently active.
+  `Plan` and `PlatformUser` do the same, for the same reason: without it,
+  a query against a landlord-only model would silently follow whatever
+  tenant connection happened to be active — a bug that shipped once (see
+  `App\Services\SubscriptionService::swapPlan()`'s and
+  `App\Http\Controllers\Api\V1\BillingController`'s history) before being
+  caught by a live browser test, not the test suite.
+- **Tenant identification is subdomain-based**: `{school-slug}.{central
+  domain}` (`riverside-demo.localtest.me` locally). `App\Tenancy\
+  SlugTenantResolver` resolves the subdomain directly against
+  `School.slug` — there's no separate `domains` table. The
+  `tenancy.subdomain` middleware (wrapping every tenant-facing route in
+  `routes/api.php`) resolves the tenant and swaps the active database
+  connection before the route runs; requests that don't match a real
+  subdomain get a clean 404, not an exception (`TenancyServiceProvider::
+  boot()`'s `InitializeTenancyBySubdomain::$onFail`).
+- **`tenant()` helper**: returns the currently-resolved `School` (or
+  `null` outside a tenant context). Since every model instance lives in
+  exactly one tenant's database, "the current tenant" and "this record's
+  school" are the same thing by construction — this replaced the old
+  `$model->school` relation everywhere.
+- **Cross-tenant reads** (the platform console listing every school's
+  usage) go through `School::run(fn () => ...)` (stancl's `TenantRun`
+  trait) to explicitly step into one tenant's connection, run a query,
+  and step back out — see `School::studentCount()`/`staffCount()` for the
+  pattern, including the defensive `databaseExists()` check a broken/
+  orphaned tenant row requires (its own docblock explains why).
 
-**`User` is the one deliberate exception.** Applying `BelongsToSchool` to
-`User` causes infinite recursion (the scope needs to resolve the acting
-user, which is itself a `User` query). Instead, `User` has a manual
-`scopeInSchool()` that controllers/services call explicitly wherever they
-list or resolve users. If you add a new model that needs to query `User`
-from inside a global scope or policy, be aware of this — don't reach for
-`BelongsToSchool` on `User` again.
-
-New tenant-scoped tables should: add `school_id` (nullable only if the row
-can be legitimately global, like a Setting default), use `BelongsToSchool`,
-and get a policy that checks `belongsToActorsSchool()` (see
-[rbac.md](rbac.md)).
+New tenant-scoped tables just need a normal migration under
+`database/migrations/tenant/` — no `school_id` column, no scope, no
+trait. A model only needs special handling if it's genuinely landlord-
+level (shared across every tenant), in which case give it
+`CentralConnection` like `School`/`Plan`/`PlatformUser`.
 
 ## RBAC
 
-`spatie/laravel-permission` with the **teams** feature enabled
-(`team_foreign_key = 'school_id'` in `config/permission.php`). This means
-role/permission assignments are scoped per school natively — a user can hold
-"Teacher" in School A and "Accountant" in School B without the package
-needing any custom code.
+`spatie/laravel-permission`, **teams disabled** (`'teams' => false` in
+`config/permission.php`). Teams existed to scope one role table across
+many schools sharing a database — with one physical database per school,
+that partitioning is redundant: the table itself is already scoped.
 
-- **Team context per request:** `App\Http\Middleware\EnsureSchoolContext`
-  calls `PermissionRegistrar::setPermissionsTeamId($user->school_id ?? 0)`
-  before every authenticated request, so `$user->can(...)` checks resolve
-  against the right school automatically.
-- **Super Admin** uses the reserved team id `0` — a sentinel, not a real
-  school row (team columns have no FK constraint, so this is safe) — and
-  gets a `Gate::before` bypass for all abilities.
+- **Roles/permissions live in the tenant database**, seeded per-tenant by
+  `App\Services\SchoolProvisioningService::seedDefaultRoles()` (self-
+  service signup and the `PermissionSeeder` it also runs are the same
+  code path — see the class's own docblock).
+- **Super Admin is not a tenant role.** It's `App\Models\Platform\
+  PlatformUser` — a landlord-connection-only model with no
+  roles/permissions of its own at all. Being a `PlatformUser` implies
+  full platform access via a `Gate::before` check in
+  `AppServiceProvider::boot()` (type-checked against
+  `instanceof PlatformUser`, not a role string).
 - **Full detail:** see [rbac.md](rbac.md) for the permission catalogue,
-  default role matrix, and how to add a new role or module.
+  default role matrix, and how to add a new role or module. (Note: as of
+  this pass rbac.md itself still describes the old teams-based model in
+  places — verify against `config/permission.php` and
+  `SchoolProvisioningService` before relying on it for team/teams-related
+  specifics.)
 
 ## Authentication
 
-Laravel Sanctum in **SPA mode** (cookie session, not bearer tokens):
+**Two entirely separate guards, sessions, and frontend auth contexts** —
+a tenant User and a PlatformUser are never the same kind of session, and
+neither can authenticate the other's routes.
+
+**Tenant auth** (`auth:sanctum`, tenant-zone routes only — see
+`routes/api.php`'s TENANT zone, guarded by `tenancy.subdomain`):
 
 1. Frontend calls `GET /sanctum/csrf-cookie` before the first mutating
    request (`ensureCsrfCookie()` in `src/api/client.ts`), which sets the
    `XSRF-TOKEN` cookie.
-2. `POST /api/v1/auth/login` accepts email *or* username + password, verifies
-   via `Hash::check()`, and calls `Auth::login()` — this establishes a
-   server-side session, no token is issued or stored client-side.
-3. Every subsequent request rides on the session cookie; axios sends
-   `withCredentials: true` and Laravel's `statefulApi()` middleware
-   recognizes the frontend's origin as stateful (see
-   `SANCTUM_STATEFUL_DOMAINS` in [configuration.md](configuration.md)).
-4. `AuthContext` (frontend) caches the `UserResource` shape returned by
-   login and re-fetches via `GET /api/v1/auth/me` on app boot to restore
-   session state after a refresh.
+2. `POST /api/v1/auth/login` queries the *current tenant's* `users` table
+   only (email/username uniqueness is therefore per-tenant, not global —
+   a real, desirable side effect of the conversion), verifies via
+   `Hash::check()`, and calls `Auth::login()`.
+3. Every subsequent request rides the session cookie; `SESSION_DOMAIN` is
+   deliberately `null` (exact-host cookies), so a session set on one
+   tenant subdomain is never sent to another — this is itself part of the
+   isolation story, not just cookie hygiene.
+4. `AuthContext` (frontend) re-fetches via `GET /api/v1/auth/me` on app
+   boot. Both this probe and `ThemeContext`'s `/settings/public` probe are
+   tenant-zone-only routes mounted globally in the SPA, so they legitimately
+   404 (not just 401) on any central-domain page (login, signup, the
+   platform console) — both are marked `meta: { silentError: true }` in
+   their `useQuery` calls for exactly that reason.
+
+**Platform auth** (`auth:platform`, central-domain routes — `POST /api/v1/
+auth/platform-login`, `GET .../platform-me`, `POST .../platform-logout`):
+a completely separate session guard (`config/auth.php`'s `platform` guard
++ `platform_users` provider) for `PlatformUser`. The frontend's
+`PlatformAuthContext`/`PlatformLoginPage`/`PlatformProtectedRoute`/
+`PlatformShell` mirror the tenant auth stack but never share state with
+it — see `src/context/PlatformAuthContext.tsx`.
+
+**Signup is a three-request handoff**, not a single login, because of the
+subdomain/cookie boundary above:
+
+1. `POST /api/v1/auth/signup` (central domain, no tenant resolved yet)
+   provisions the school + admin synchronously and starts a Stripe
+   Checkout session. It does **not** log the admin in — a session cookie
+   set on the central domain can't carry over to the new tenant's own
+   subdomain, which doesn't exist yet at this point anyway.
+2. Stripe's `success_url` points at the new tenant's own subdomain
+   (`School::frontendUrl()`), carrying a one-time token
+   (`Password::broker()->createToken()`, reused rather than inventing a
+   new mechanism).
+3. `POST /api/v1/auth/signup/complete`, made from that subdomain,
+   exchanges the token for a real session — this is what actually logs
+   the admin in, on the correct origin. `SignupCompletePage` (frontend)
+   is the page that makes this call; it is deliberately a public route,
+   not behind `ProtectedRoute`, since there is no session yet when it
+   loads.
 
 This is deliberately session-based rather than token-based: no token to
-leak from `localStorage`, no manual expiry/refresh logic, and it matches
-how a same-origin-in-production SPA should authenticate. If a future phase
-needs a public/mobile API, that would be a separate token-issuing guard
-alongside this one, not a replacement for it.
+leak from `localStorage`, no manual expiry/refresh logic. If a future
+phase needs a public/mobile API, that would be a separate token-issuing
+guard alongside these two, not a replacement for either.
 
 ## Frontend architecture
 
@@ -139,11 +214,14 @@ src/
                 Tabs, ...), each with a Vitest test
     layout/     AppShell, Sidebar, Topbar, RoleBasedNav
     feedback/   ErrorBoundary, NotFound, Forbidden, LoadingScreen
-  context/      AuthContext (session + hasRole/hasPermission), ThemeContext
+  context/      AuthContext (tenant session + hasRole/hasPermission),
+                PlatformAuthContext (separate `platform` guard session,
+                Super Admin — see § Authentication), ThemeContext
                 (runtime branding)
   features/     One folder per business module
   hooks/        useCrudResource, usePagination, usePermission, useDebounce, ...
-  routes/       AppRouter (React.lazy per page), ProtectedRoute, PermissionRoute
+  routes/       AppRouter (React.lazy per page), ProtectedRoute,
+                PlatformProtectedRoute, PermissionRoute
   types/        Shared TypeScript types mirroring backend API Resources
   config/       env.ts (import.meta.env wrapper), constants.ts, navigation.ts
 ```
