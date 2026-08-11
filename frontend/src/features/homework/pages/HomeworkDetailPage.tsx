@@ -147,7 +147,7 @@ export function HomeworkDetailPage() {
                           size="sm"
                           variant="outline"
                           aria-label={`Save grade for ${student.full_name}`}
-                          isLoading={gradeMutation.isPending}
+                          isLoading={gradeMutation.isPending && gradeMutation.variables?.submissionId === submission.id}
                           onClick={() => gradeMutation.mutate({ submissionId: submission.id, score: draft.score, feedback: draft.feedback })}
                         >
                           <Save className="h-3.5 w-3.5" />

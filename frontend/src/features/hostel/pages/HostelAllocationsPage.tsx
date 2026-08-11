@@ -45,7 +45,12 @@ export function HostelAllocationsPage() {
       align: 'right',
       render: (row) =>
         canManage && row.status === 'allocated' ? (
-          <Button variant="outline" size="sm" isLoading={vacateMutation.isPending} onClick={() => vacateMutation.mutate(row.id)}>
+          <Button
+            variant="outline"
+            size="sm"
+            isLoading={vacateMutation.isPending && vacateMutation.variables === row.id}
+            onClick={() => vacateMutation.mutate(row.id)}
+          >
             <LogOut className="h-3.5 w-3.5" /> Vacate
           </Button>
         ) : null,

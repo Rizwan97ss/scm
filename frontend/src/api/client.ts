@@ -24,7 +24,8 @@ function resolveApiUrl(): string {
   return `${configured.protocol}//${window.location.hostname}${port}${configured.pathname}`
 }
 
-const apiUrl = resolveApiUrl()
+/** Runtime-resolved API base (scheme+host+port+path, no trailing /v1) — see resolveApiUrl() above for why this can't just be env.apiUrl directly. Exported for apiFileUrl.ts, which builds plain <a href> links outside of httpClient and must follow the exact same host resolution. */
+export const apiUrl = resolveApiUrl()
 
 /** Origin the API is served from, e.g. "http://myschool.localtest.me:8000". */
 const apiOrigin = apiUrl.startsWith('/') ? window.location.origin : new URL(apiUrl).origin

@@ -45,7 +45,12 @@ export function VisitorsPage() {
       align: 'right',
       render: (row) =>
         canManage && !row.check_out_time ? (
-          <Button variant="outline" size="sm" isLoading={checkOutMutation.isPending} onClick={() => checkOutMutation.mutate(row.id)}>
+          <Button
+            variant="outline"
+            size="sm"
+            isLoading={checkOutMutation.isPending && checkOutMutation.variables === row.id}
+            onClick={() => checkOutMutation.mutate(row.id)}
+          >
             <LogOut className="h-3.5 w-3.5" /> Check Out
           </Button>
         ) : null,

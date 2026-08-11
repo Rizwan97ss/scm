@@ -106,7 +106,12 @@ export function NoticeBoardPage() {
               {canManage && (
                 <div className="flex shrink-0 gap-2">
                   {!notice.is_published && can('notice-board.publish') && (
-                    <Button variant="outline" size="sm" isLoading={publishMutation.isPending} onClick={() => publishMutation.mutate(notice.id)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      isLoading={publishMutation.isPending && publishMutation.variables === notice.id}
+                      onClick={() => publishMutation.mutate(notice.id)}
+                    >
                       Publish
                     </Button>
                   )}

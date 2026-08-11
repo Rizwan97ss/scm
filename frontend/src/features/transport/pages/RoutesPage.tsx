@@ -188,7 +188,13 @@ function ManageStopsModal({ route, open, onOpenChange }: { route: TransportRoute
               <span>
                 {stop.sequence}. {stop.name}
               </span>
-              <Button variant="outline" size="icon" isLoading={removeMutation.isPending} onClick={() => removeMutation.mutate(stop.id)} aria-label={`Remove ${stop.name}`}>
+              <Button
+                variant="outline"
+                size="icon"
+                isLoading={removeMutation.isPending && removeMutation.variables === stop.id}
+                onClick={() => removeMutation.mutate(stop.id)}
+                aria-label={`Remove ${stop.name}`}
+              >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </li>

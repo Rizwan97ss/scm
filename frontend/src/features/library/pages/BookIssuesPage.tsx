@@ -49,7 +49,12 @@ export function BookIssuesPage() {
       align: 'right',
       render: (row) =>
         canManage && row.status !== 'returned' ? (
-          <Button variant="outline" size="sm" isLoading={returnMutation.isPending} onClick={() => returnMutation.mutate(row.id)}>
+          <Button
+            variant="outline"
+            size="sm"
+            isLoading={returnMutation.isPending && returnMutation.variables === row.id}
+            onClick={() => returnMutation.mutate(row.id)}
+          >
             <RotateCcw className="h-3.5 w-3.5" /> Return
           </Button>
         ) : null,

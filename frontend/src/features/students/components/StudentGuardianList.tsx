@@ -84,7 +84,12 @@ export function StudentGuardianList({ student }: { student: Student }) {
               </div>
               <div className="flex gap-2">
                 {can('guardians.edit') && (
-                  <Button variant="outline" size="sm" onClick={() => inviteMutation.mutate(guardian.id)} isLoading={inviteMutation.isPending}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => inviteMutation.mutate(guardian.id)}
+                    isLoading={inviteMutation.isPending && inviteMutation.variables === guardian.id}
+                  >
                     <Send className="h-3.5 w-3.5" /> Invite
                   </Button>
                 )}

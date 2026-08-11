@@ -78,7 +78,12 @@ export function AcademicYearsPage() {
       render: (row) => (
         <div className="flex justify-end gap-2">
           {!row.is_current && can('academic-years.edit') && (
-            <Button variant="outline" size="sm" onClick={() => activateMutation.mutate(row.id)} isLoading={activateMutation.isPending}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => activateMutation.mutate(row.id)}
+              isLoading={activateMutation.isPending && activateMutation.variables === row.id}
+            >
               <CheckCircle2 className="h-3.5 w-3.5" /> Activate
             </Button>
           )}

@@ -49,7 +49,12 @@ export function GuardiansListPage() {
         can('guardians.edit') &&
         !row.has_portal_access &&
         row.email && (
-          <Button variant="outline" size="sm" onClick={() => inviteMutation.mutate(row.id)} isLoading={inviteMutation.isPending}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => inviteMutation.mutate(row.id)}
+            isLoading={inviteMutation.isPending && inviteMutation.variables === row.id}
+          >
             <Send className="h-3.5 w-3.5" /> Invite
           </Button>
         ),

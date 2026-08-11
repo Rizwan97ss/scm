@@ -60,7 +60,12 @@ export function PayslipsPage() {
             <Download className="h-3.5 w-3.5" /> PDF
           </a>
           {canManage && row.status === 'generated' && (
-            <Button variant="outline" size="sm" isLoading={markPaidMutation.isPending} onClick={() => markPaidMutation.mutate(row.id)}>
+            <Button
+              variant="outline"
+              size="sm"
+              isLoading={markPaidMutation.isPending && markPaidMutation.variables === row.id}
+              onClick={() => markPaidMutation.mutate(row.id)}
+            >
               Mark Paid
             </Button>
           )}
