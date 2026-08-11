@@ -82,6 +82,7 @@ use App\Http\Controllers\Api\V1\TimetablePeriodController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Controllers\Api\V1\VehicleController;
 use App\Http\Controllers\Api\V1\VisitorController;
+use Illuminate\Broadcasting\BroadcastController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -155,6 +156,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::middleware('auth:sanctum')->group(function () {
 
             Route::get('dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
+
+            // Pusher channel-authorization endpoint (routes/channels.php),
+            // registered manually rather than via withRouting()'s `channels:`
+            // option — see AppServiceProvider::boot()'s comment. Living here
+            // (tenant zone, auth:sanctum) rather than Laravel's default
+            // unprefixed /broadcasting/auth is what makes Echo's private-
+            // channel subscription actually resolve the correct tenant User,
+            // the same way every other authenticated endpoint does.
+            Route::post('broadcasting/auth', [BroadcastController::class, 'authenticate'])->name('broadcasting.auth');
 
             // ---- Billing (school-scoped — a School Admin's own plan/trial) --
             Route::prefix('billing')->name('billing.')->group(function () {

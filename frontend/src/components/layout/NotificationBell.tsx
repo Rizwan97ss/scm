@@ -1,19 +1,50 @@
+import { useEffect } from 'react'
 import * as RadixDropdown from '@radix-ui/react-dropdown-menu'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bell, CheckCheck } from 'lucide-react'
+import { toast } from 'sonner'
 import { notificationsApi } from '@/api/endpoints/communication'
 import { queryKeys } from '@/api/queryKeys'
 import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/context/AuthContext'
+import { getEcho } from '@/lib/echo'
 import { formatDateTime } from '@/utils/formatDate'
 import { cn } from '@/utils/cn'
+import type { AppNotification } from '@/types/notifications'
 
 export function NotificationBell() {
   const queryClient = useQueryClient()
+  const { user } = useAuth()
   const { data } = useQuery({
     queryKey: queryKeys.notifications({ per_page: 8 }),
     queryFn: () => notificationsApi.list({ per_page: 8 }),
+    // Pusher (below) delivers new notifications the moment they're sent —
+    // this poll is only the fallback for when Pusher isn't configured or a
+    // connection drops silently, so it can stay slow.
     refetchInterval: 60_000,
   })
+
+  // Live delivery: subscribe once per session (user.id + their tenant's
+  // school.id, matching the channel name routes/channels.php authorizes —
+  // see App\Events\NotificationCreated's docblock for why the school id is
+  // required, not just the user id: tenant DB user ids restart per school
+  // and every tenant shares the same Pusher app).
+  useEffect(() => {
+    if (!user?.school?.id) return
+
+    const echo = getEcho()
+    if (!echo) return
+
+    const channel = echo.private(`tenant.${user.school.id}.user.${user.id}`)
+    channel.listen('.notification.created', (notification: AppNotification) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications().slice(0, 1) })
+      toast.info(notification.title, { description: notification.body })
+    })
+
+    return () => {
+      echo.leave(`tenant.${user.school!.id}.user.${user.id}`)
+    }
+  }, [user?.id, user?.school?.id, queryClient])
 
   const markReadMutation = useMutation({
     mutationFn: (id: number) => notificationsApi.markRead(id),

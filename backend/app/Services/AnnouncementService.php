@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\PushGatewayInterface;
 use App\Contracts\SmsGatewayInterface;
+use App\Events\NotificationCreated;
 use App\Mail\AnnouncementMail;
 use App\Models\Announcement;
 use App\Models\School;
@@ -31,9 +32,10 @@ class AnnouncementService
      */
     public function send(array $data, User $sender): Announcement
     {
-        $recipients = $this->resolveRecipients(tenant(), $data['audience']);
+        $school = tenant();
+        $recipients = $this->resolveRecipients($school, $data['audience']);
 
-        $announcement = DB::transaction(function () use ($data, $sender, $recipients) {
+        [$announcement, $notifications] = DB::transaction(function () use ($data, $sender, $recipients) {
             $announcement = Announcement::query()->create([
                 'title' => $data['title'],
                 'body' => $data['body'],
@@ -44,16 +46,22 @@ class AnnouncementService
                 'sent_at' => now(),
             ]);
 
-            foreach ($recipients as $recipient) {
-                $announcement->notifications()->create([
-                    'user_id' => $recipient->id,
-                    'title' => $data['title'],
-                    'body' => $data['body'],
-                ]);
-            }
+            $notifications = $recipients->map(fn (User $recipient) => $announcement->notifications()->create([
+                'user_id' => $recipient->id,
+                'title' => $data['title'],
+                'body' => $data['body'],
+            ]));
 
-            return $announcement;
+            return [$announcement, $notifications];
         });
+
+        // Broadcast only after the transaction actually commits -- this
+        // fires synchronously (ShouldBroadcastNow, no queue worker exists
+        // to defer it to), so broadcasting from inside the transaction
+        // could tell a browser about a notification a rollback then erases.
+        foreach ($notifications as $notification) {
+            event(new NotificationCreated($notification, $school->id));
+        }
 
         $this->dispatchChannels($announcement, $recipients, $data['channels']);
 

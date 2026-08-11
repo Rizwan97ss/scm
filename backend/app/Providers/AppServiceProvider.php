@@ -84,21 +84,16 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Super Admin bypasses every permission check. Untyped/Authenticatable
-        // param deliberately, not User or PlatformUser specifically -- Gate's
+        // param deliberately, not PlatformUser specifically -- Gate's
         // before-callbacks are invoked for whichever guard resolved the
         // current request's user (canBeCalledWithUser() does no type
         // filtering of its own), so a narrower type-hint here would throw a
-        // TypeError the first time this runs against the other user type.
-        // TODO(tenancy): the tenant-User branch below is dead code until/
-        // unless a real cross-tenant tenant-side use case needs it --
-        // Super Admin is PlatformUser now (Sub-phase E wires up the guard
-        // switch via Auth::shouldUse('platform') on platform-only routes).
+        // TypeError the first time this runs against a tenant User instead.
+        // No tenant-User branch: Super Admin is PlatformUser only now (a
+        // tenant User can never hold a "Super Admin" role at all -- it isn't
+        // among SchoolProvisioningService::SCHOOL_SCOPED_ROLE_PERMISSIONS).
         Gate::before(function (Authenticatable $user) {
-            if ($user instanceof PlatformUser) {
-                return true;
-            }
-
-            return $user instanceof User && $user->school_id === null && $user->hasRole('Super Admin') ? true : null;
+            return $user instanceof PlatformUser ? true : null;
         });
 
         // Spatie's Role/Activity models live outside App\Models, so policy auto-discovery can't find them.
@@ -133,5 +128,15 @@ class AppServiceProvider extends ServiceProvider
         // syncs schools.billing_status on top of Cashier's own handling) —
         // routes/api.php registers ours manually instead.
         Cashier::ignoreRoutes();
+
+        // Loaded directly (just the Broadcast::channel() authorization
+        // callback, no routes) rather than via withRouting()'s `channels:`
+        // option — that option unconditionally also calls Broadcast::routes(),
+        // registering POST /broadcasting/auth on the `web` middleware group
+        // with no tenant resolution at all. This app's own POST
+        // /api/v1/broadcasting/auth (routes/api.php, tenant zone) is used
+        // instead, so channel authorization runs through tenancy.subdomain
+        // + auth:sanctum like every other authenticated tenant endpoint.
+        require base_path('routes/channels.php');
     }
 }

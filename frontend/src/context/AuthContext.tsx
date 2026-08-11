@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useMemo, type ReactNode } from 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { fetchMe, login as loginRequest, logout as logoutRequest } from '@/api/endpoints/auth'
 import { queryKeys } from '@/api/queryKeys'
+import { disconnectEcho } from '@/lib/echo'
 import type { LoginPayload, User } from '@/types/auth'
 import type { ApiError } from '@/api/client'
 
@@ -52,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await logoutRequest()
+    disconnectEcho()
     queryClient.setQueryData(queryKeys.me, null)
     queryClient.clear()
   }, [queryClient])
