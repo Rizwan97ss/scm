@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Enums\HostelAllocationStatus;
 use App\Models\HostelRoom;
-use App\Models\School;
 use App\Models\Student;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -13,7 +12,6 @@ class HostelAllocationFactory extends Factory
     public function definition(): array
     {
         return [
-            'school_id' => School::factory(),
             'student_id' => Student::factory(),
             'hostel_room_id' => HostelRoom::factory(),
             'bed_number' => (string) fake()->numberBetween(1, 4),

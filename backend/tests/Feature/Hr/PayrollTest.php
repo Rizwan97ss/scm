@@ -39,20 +39,22 @@ class PayrollTest extends TestCase
         $teacherA = $this->createUserWithRole($school, 'Teacher');
         $teacherB = $this->createUserWithRole($school, 'Teacher');
 
-        SalaryStructure::factory()->for($school)->create(['user_id' => $teacherA->id, 'basic_salary' => 3000, 'allowances' => 200, 'deductions' => 50]);
-        SalaryStructure::factory()->for($school)->create(['user_id' => $teacherB->id, 'basic_salary' => 4000, 'allowances' => 0, 'deductions' => 0]);
+        tenancy()->initialize($school);
+        SalaryStructure::factory()->create(['user_id' => $teacherA->id, 'basic_salary' => 3000, 'allowances' => 200, 'deductions' => 50]);
+        tenancy()->initialize($school);
+        SalaryStructure::factory()->create(['user_id' => $teacherB->id, 'basic_salary' => 4000, 'allowances' => 0, 'deductions' => 0]);
 
         $payload = ['month' => now()->month, 'year' => now()->year];
 
         $first = $this->actingAsInSchool($hr)->postJson('/api/v1/payslips/generate', $payload);
         $first->assertOk()->assertJsonPath('data.created_count', 2);
 
-        $this->assertDatabaseHas('payslips', ['school_id' => $school->id, 'user_id' => $teacherA->id, 'net_salary' => 3150]);
+        $this->assertDatabaseHas('payslips', ['user_id' => $teacherA->id, 'net_salary' => 3150]);
 
         $second = $this->actingAsInSchool($hr)->postJson('/api/v1/payslips/generate', $payload);
         $second->assertOk()->assertJsonPath('data.created_count', 0)->assertJsonPath('data.skipped_count', 2);
 
-        $this->assertSame(2, Payslip::query()->where('school_id', $school->id)->count());
+        $this->assertSame(2, Payslip::query()->count());
     }
 
     public function test_staff_member_sees_only_their_own_payslips(): void
@@ -62,8 +64,10 @@ class PayrollTest extends TestCase
         $teacherA = $this->createUserWithRole($school, 'Teacher');
         $teacherB = $this->createUserWithRole($school, 'Teacher');
 
-        Payslip::factory()->for($school)->create(['user_id' => $teacherA->id, 'generated_by' => $hr->id]);
-        Payslip::factory()->for($school)->create(['user_id' => $teacherB->id, 'generated_by' => $hr->id]);
+        tenancy()->initialize($school);
+        Payslip::factory()->create(['user_id' => $teacherA->id, 'generated_by' => $hr->id]);
+        tenancy()->initialize($school);
+        Payslip::factory()->create(['user_id' => $teacherB->id, 'generated_by' => $hr->id]);
 
         $response = $this->actingAsInSchool($teacherA)->getJson('/api/v1/payslips?per_page=50');
 
@@ -84,7 +88,8 @@ class PayrollTest extends TestCase
     {
         $school = $this->createSchool();
         $hr = $this->createUserWithRole($school, 'HR Staff');
-        $payslip = Payslip::factory()->for($school)->create(['generated_by' => $hr->id]);
+        tenancy()->initialize($school);
+        $payslip = Payslip::factory()->create(['generated_by' => $hr->id]);
 
         $this->actingAsInSchool($hr)->postJson("/api/v1/payslips/{$payslip->id}/mark-paid")->assertOk()->assertJsonPath('data.status', 'paid');
 

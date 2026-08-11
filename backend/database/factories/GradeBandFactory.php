@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\GradingScale;
-use App\Models\School;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class GradeBandFactory extends Factory
@@ -11,7 +10,6 @@ class GradeBandFactory extends Factory
     public function definition(): array
     {
         return [
-            'school_id' => School::factory(),
             'grading_scale_id' => GradingScale::factory(),
             'min_percentage' => 0,
             'max_percentage' => 100,

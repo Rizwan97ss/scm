@@ -27,8 +27,10 @@ class ReportTest extends TestCase
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
         $section = $this->makeSection($school);
-        $student = Student::factory()->for($school)->create(['academic_year_id' => $section->academic_year_id, 'current_section_id' => $section->id]);
-        StudentAttendance::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $student = Student::factory()->create(['academic_year_id' => $section->academic_year_id, 'current_section_id' => $section->id]);
+        tenancy()->initialize($school);
+        StudentAttendance::factory()->create([
             'student_id' => $student->id, 'section_id' => $section->id, 'academic_year_id' => $section->academic_year_id,
             'marked_by' => $admin->id, 'date' => now()->toDateString(), 'status' => 'present',
         ]);
@@ -67,15 +69,22 @@ class ReportTest extends TestCase
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
         $section = $this->makeSection($school);
-        $scale = GradingScale::factory()->for($school)->create();
-        $exam = Exam::factory()->for($school)->create(['academic_year_id' => $section->academic_year_id, 'is_published' => true]);
-        $examSubject = ExamSubject::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $scale = GradingScale::factory()->create();
+        tenancy()->initialize($school);
+        $exam = Exam::factory()->create(['academic_year_id' => $section->academic_year_id, 'is_published' => true]);
+        tenancy()->initialize($school);
+        $examSubject = ExamSubject::factory()->create([
             'exam_id' => $exam->id, 'section_id' => $section->id, 'grading_scale_id' => $scale->id, 'max_marks' => 100, 'passing_marks' => 40,
         ]);
-        $studentA = Student::factory()->for($school)->create(['academic_year_id' => $section->academic_year_id, 'current_section_id' => $section->id]);
-        $studentB = Student::factory()->for($school)->create(['academic_year_id' => $section->academic_year_id, 'current_section_id' => $section->id]);
-        ExamMark::factory()->for($school)->create(['exam_subject_id' => $examSubject->id, 'student_id' => $studentA->id, 'marks_obtained' => 80, 'is_absent' => false]);
-        ExamMark::factory()->for($school)->create(['exam_subject_id' => $examSubject->id, 'student_id' => $studentB->id, 'marks_obtained' => 20, 'is_absent' => false]);
+        tenancy()->initialize($school);
+        $studentA = Student::factory()->create(['academic_year_id' => $section->academic_year_id, 'current_section_id' => $section->id]);
+        tenancy()->initialize($school);
+        $studentB = Student::factory()->create(['academic_year_id' => $section->academic_year_id, 'current_section_id' => $section->id]);
+        tenancy()->initialize($school);
+        ExamMark::factory()->create(['exam_subject_id' => $examSubject->id, 'student_id' => $studentA->id, 'marks_obtained' => 80, 'is_absent' => false]);
+        tenancy()->initialize($school);
+        ExamMark::factory()->create(['exam_subject_id' => $examSubject->id, 'student_id' => $studentB->id, 'marks_obtained' => 20, 'is_absent' => false]);
 
         $response = $this->actingAsInSchool($admin)->getJson('/api/v1/reports/academic-performance');
 
@@ -91,7 +100,8 @@ class ReportTest extends TestCase
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
         $section = $this->makeSection($school);
-        Student::factory()->for($school)->count(2)->create([
+        tenancy()->initialize($school);
+        Student::factory()->count(2)->create([
             'academic_year_id' => $section->academic_year_id, 'current_grade_level_id' => $section->grade_level_id, 'current_section_id' => $section->id, 'status' => 'active',
         ]);
 
@@ -104,10 +114,13 @@ class ReportTest extends TestCase
     {
         $school = $this->createSchool();
         $librarian = $this->createUserWithRole($school, 'Librarian');
-        $book = Book::factory()->for($school)->create(['total_copies' => 2, 'available_copies' => 1]);
+        tenancy()->initialize($school);
+        $book = Book::factory()->create(['total_copies' => 2, 'available_copies' => 1]);
         $section = $this->makeSection($school);
-        $student = Student::factory()->for($school)->create(['academic_year_id' => $section->academic_year_id, 'current_section_id' => $section->id]);
-        BookIssue::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $student = Student::factory()->create(['academic_year_id' => $section->academic_year_id, 'current_section_id' => $section->id]);
+        tenancy()->initialize($school);
+        BookIssue::factory()->create([
             'book_id' => $book->id, 'student_id' => $student->id, 'user_id' => null,
             'status' => 'issued', 'due_date' => now()->subDays(2)->toDateString(), 'issued_by' => $librarian->id,
         ]);
@@ -121,9 +134,12 @@ class ReportTest extends TestCase
 
     private function makeSection(School $school): Section
     {
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
 
-        return Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        return Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
     }
 }

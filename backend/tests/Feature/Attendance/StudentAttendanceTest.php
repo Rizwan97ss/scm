@@ -19,15 +19,19 @@ class StudentAttendanceTest extends TestCase
 
     private function makeSectionWithStudents(School $school, int $count = 3, ?int $classTeacherId = null): array
     {
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create([
             'academic_year_id' => $year->id,
             'grade_level_id' => $gradeLevel->id,
             'class_teacher_id' => $classTeacherId,
         ]);
 
-        $students = Student::factory()->for($school)->count($count)->create([
+        tenancy()->initialize($school);
+        $students = Student::factory()->count($count)->create([
             'academic_year_id' => $year->id,
             'current_grade_level_id' => $gradeLevel->id,
             'current_section_id' => $section->id,
@@ -127,11 +131,13 @@ class StudentAttendanceTest extends TestCase
         $admin = $this->createUserWithRole($school, 'School Admin');
         [$section, $students] = $this->makeSectionWithStudents($school, 1);
 
-        StudentAttendance::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        StudentAttendance::factory()->create([
             'student_id' => $students[0]->id, 'section_id' => $section->id,
             'academic_year_id' => $section->academic_year_id, 'marked_by' => $admin->id, 'date' => '2026-08-10',
         ]);
-        StudentAttendance::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        StudentAttendance::factory()->create([
             'student_id' => $students[0]->id, 'section_id' => $section->id,
             'academic_year_id' => $section->academic_year_id, 'marked_by' => $admin->id, 'date' => '2026-08-11',
         ]);
@@ -151,11 +157,13 @@ class StudentAttendanceTest extends TestCase
         [$mySection, $myStudents] = $this->makeSectionWithStudents($school, 1, $teacher->id);
         [$otherSection, $otherStudents] = $this->makeSectionWithStudents($school, 1, $otherTeacher->id);
 
-        StudentAttendance::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        StudentAttendance::factory()->create([
             'student_id' => $myStudents[0]->id, 'section_id' => $mySection->id,
             'academic_year_id' => $mySection->academic_year_id, 'marked_by' => $teacher->id, 'date' => '2026-08-10',
         ]);
-        StudentAttendance::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        StudentAttendance::factory()->create([
             'student_id' => $otherStudents[0]->id, 'section_id' => $otherSection->id,
             'academic_year_id' => $otherSection->academic_year_id, 'marked_by' => $otherTeacher->id, 'date' => '2026-08-10',
         ]);
@@ -176,7 +184,8 @@ class StudentAttendanceTest extends TestCase
         $student = $students[0];
         $student->update(['user_id' => $studentUser->id]);
 
-        StudentAttendance::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        StudentAttendance::factory()->create([
             'student_id' => $student->id, 'section_id' => $section->id, 'academic_year_id' => $section->academic_year_id,
             'marked_by' => $studentUser->id, 'date' => now()->toDateString(), 'status' => 'present',
         ]);
@@ -202,12 +211,14 @@ class StudentAttendanceTest extends TestCase
     {
         $school = $this->createSchool();
         $parentUser = $this->createUserWithRole($school, 'Parent');
-        $guardian = Guardian::factory()->for($school)->create(['user_id' => $parentUser->id]);
+        tenancy()->initialize($school);
+        $guardian = Guardian::factory()->create(['user_id' => $parentUser->id]);
         [$section, $students] = $this->makeSectionWithStudents($school, 1);
         $child = $students[0];
         $guardian->students()->attach($child->id, ['relationship_type' => 'mother', 'is_primary' => true]);
 
-        StudentAttendance::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        StudentAttendance::factory()->create([
             'student_id' => $child->id, 'section_id' => $section->id, 'academic_year_id' => $section->academic_year_id,
             'marked_by' => $parentUser->id, 'date' => now()->toDateString(), 'status' => 'present',
         ]);
@@ -232,7 +243,8 @@ class StudentAttendanceTest extends TestCase
         $student = $students[0];
 
         foreach ([['2026-08-01', 'present'], ['2026-08-02', 'present'], ['2026-08-03', 'absent'], ['2026-08-04', 'half_day']] as [$date, $status]) {
-            StudentAttendance::factory()->for($school)->create([
+            tenancy()->initialize($school);
+            StudentAttendance::factory()->create([
                 'student_id' => $student->id, 'section_id' => $section->id, 'academic_year_id' => $section->academic_year_id,
                 'marked_by' => $admin->id, 'date' => $date, 'status' => $status,
             ]);
@@ -248,11 +260,13 @@ class StudentAttendanceTest extends TestCase
         $schoolA = $this->createSchool();
         $schoolB = $this->createSchool();
         $adminA = $this->createUserWithRole($schoolA, 'School Admin');
+        $teacherB = $this->createUserWithRole($schoolB, 'Teacher');
         [$sectionB, $studentsB] = $this->makeSectionWithStudents($schoolB, 1);
 
-        $recordB = StudentAttendance::factory()->for($schoolB)->create([
+        tenancy()->initialize($schoolB);
+        $recordB = StudentAttendance::factory()->create([
             'student_id' => $studentsB[0]->id, 'section_id' => $sectionB->id, 'academic_year_id' => $sectionB->academic_year_id,
-            'marked_by' => $studentsB[0]->id, 'date' => '2026-08-10',
+            'marked_by' => $teacherB->id, 'date' => '2026-08-10',
         ]);
 
         $response = $this->actingAsInSchool($adminA)->putJson("/api/v1/attendance/students/{$recordB->id}", ['status' => 'present']);

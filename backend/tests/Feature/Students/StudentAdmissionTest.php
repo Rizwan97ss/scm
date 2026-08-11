@@ -17,9 +17,12 @@ class StudentAdmissionTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
 
         $response = $this->actingAsInSchool($admin)->postJson('/api/v1/students', [
             'first_name' => 'Sam',
@@ -49,16 +52,19 @@ class StudentAdmissionTest extends TestCase
 
         $this->assertNotEmpty($response->json('data.admission_number'));
         $this->assertDatabaseHas('student_enrollment_histories', ['action' => 'admission']);
-        $this->assertDatabaseHas('guardians', ['email' => 'gina@example.com', 'school_id' => $school->id]);
+        $this->assertDatabaseHas('guardians', ['email' => 'gina@example.com']);
     }
 
     public function test_admission_number_is_sequential_and_formatted(): void
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
 
         $payload = fn (string $first) => [
             'first_name' => $first,
@@ -86,12 +92,16 @@ class StudentAdmissionTest extends TestCase
         $otherTeacher = $this->createUserWithRole($school, 'Teacher');
         $admin = $this->createUserWithRole($school, 'School Admin');
 
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $mySection = Section::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $mySection = Section::factory()->create([
             'academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'A', 'class_teacher_id' => $teacher->id,
         ]);
-        $otherSection = Section::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $otherSection = Section::factory()->create([
             'academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'B', 'class_teacher_id' => $otherTeacher->id,
         ]);
 

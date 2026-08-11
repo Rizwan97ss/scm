@@ -20,7 +20,8 @@ class SearchTest extends TestCase
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
         $section = $this->makeSection($school);
-        Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        Student::factory()->create([
             'academic_year_id' => $section->academic_year_id, 'current_section_id' => $section->id,
             'first_name' => 'Zephyrine', 'last_name' => 'Quibble',
         ]);
@@ -37,7 +38,8 @@ class SearchTest extends TestCase
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
         $section = $this->makeSection($school);
-        Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        Student::factory()->create([
             'academic_year_id' => $section->academic_year_id, 'current_section_id' => $section->id,
             'first_name' => 'Sam', 'last_name' => 'Student',
         ]);
@@ -82,7 +84,8 @@ class SearchTest extends TestCase
         $schoolB = $this->createSchool();
         $adminA = $this->createUserWithRole($schoolA, 'School Admin');
         $sectionB = $this->makeSection($schoolB);
-        Student::factory()->for($schoolB)->create([
+        tenancy()->initialize($schoolB);
+        Student::factory()->create([
             'academic_year_id' => $sectionB->academic_year_id, 'current_section_id' => $sectionB->id,
             'first_name' => 'Xanthippe', 'last_name' => 'Wobblesworth',
         ]);
@@ -95,9 +98,12 @@ class SearchTest extends TestCase
 
     private function makeSection(School $school): Section
     {
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
 
-        return Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        return Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
     }
 }

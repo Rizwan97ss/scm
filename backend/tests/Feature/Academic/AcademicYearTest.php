@@ -23,7 +23,7 @@ class AcademicYearTest extends TestCase
         ]);
 
         $response->assertCreated()->assertJsonPath('data.name', '2026-2027');
-        $this->assertDatabaseHas('academic_years', ['school_id' => $school->id, 'name' => '2026-2027']);
+        $this->assertDatabaseHas('academic_years', ['name' => '2026-2027']);
     }
 
     public function test_end_date_must_be_after_start_date(): void
@@ -45,8 +45,10 @@ class AcademicYearTest extends TestCase
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
 
-        $current = AcademicYear::factory()->for($school)->create(['is_current' => true]);
-        $next = AcademicYear::factory()->for($school)->create(['is_current' => false]);
+        tenancy()->initialize($school);
+        $current = AcademicYear::factory()->create(['is_current' => true]);
+        tenancy()->initialize($school);
+        $next = AcademicYear::factory()->create(['is_current' => false]);
 
         $response = $this->actingAsInSchool($admin)->postJson("/api/v1/academic-years/{$next->id}/activate");
 
@@ -59,7 +61,8 @@ class AcademicYearTest extends TestCase
     {
         $school = $this->createSchool();
         $teacher = $this->createUserWithRole($school, 'Teacher');
-        AcademicYear::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        AcademicYear::factory()->create();
 
         $this->actingAsInSchool($teacher)->getJson('/api/v1/academic-years')->assertOk();
 

@@ -74,9 +74,9 @@ class EnsureSchoolIsUsableTest extends TestCase
     public function test_super_admin_is_never_gated(): void
     {
         $this->createSchool(['billing_status' => 'canceled']);
-        $superAdmin = $this->createSuperAdmin();
+        $platformUser = $this->createPlatformUser();
 
-        $response = $this->actingAsInSchool($superAdmin)->getJson('/api/v1/platform/schools');
+        $response = $this->actingAsPlatform($platformUser)->getJson('/api/v1/platform/schools');
 
         $response->assertOk();
     }

@@ -28,7 +28,7 @@ class LibraryTest extends TestCase
 
         $response->assertCreated();
         $response->assertJsonPath('data.available_copies', 3);
-        $this->assertDatabaseHas('books', ['school_id' => $school->id, 'title' => 'Introduction to Algorithms', 'available_copies' => 3]);
+        $this->assertDatabaseHas('books', ['title' => 'Introduction to Algorithms', 'available_copies' => 3]);
     }
 
     public function test_teacher_cannot_create_a_book(): void
@@ -45,7 +45,8 @@ class LibraryTest extends TestCase
     {
         $school = $this->createSchool();
         $librarian = $this->createUserWithRole($school, 'Librarian');
-        $book = Book::factory()->for($school)->create(['total_copies' => 2, 'available_copies' => 2]);
+        tenancy()->initialize($school);
+        $book = Book::factory()->create(['total_copies' => 2, 'available_copies' => 2]);
         $student = $this->makeStudent($school);
 
         $issue = $this->actingAsInSchool($librarian)->postJson("/api/v1/books/{$book->id}/issue", [
@@ -64,10 +65,12 @@ class LibraryTest extends TestCase
         $school = $this->createSchool();
         $librarian = $this->createUserWithRole($school, 'Librarian');
         app(SettingsService::class)->set('library.fine_per_day', 5, $school->id, SettingType::Integer, 'library');
-        $book = Book::factory()->for($school)->create(['total_copies' => 1, 'available_copies' => 1]);
+        tenancy()->initialize($school);
+        $book = Book::factory()->create(['total_copies' => 1, 'available_copies' => 1]);
         $student = $this->makeStudent($school);
 
-        $issue = BookIssue::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $issue = BookIssue::factory()->create([
             'book_id' => $book->id, 'student_id' => $student->id, 'user_id' => null,
             'due_date' => now()->subDays(3)->toDateString(), 'issued_by' => $librarian->id,
         ]);
@@ -82,7 +85,8 @@ class LibraryTest extends TestCase
     {
         $school = $this->createSchool();
         $librarian = $this->createUserWithRole($school, 'Librarian');
-        $book = Book::factory()->for($school)->create(['total_copies' => 1, 'available_copies' => 0]);
+        tenancy()->initialize($school);
+        $book = Book::factory()->create(['total_copies' => 1, 'available_copies' => 0]);
         $student = $this->makeStudent($school);
 
         $response = $this->actingAsInSchool($librarian)->postJson("/api/v1/books/{$book->id}/issue", [
@@ -96,7 +100,8 @@ class LibraryTest extends TestCase
     {
         $school = $this->createSchool();
         $librarian = $this->createUserWithRole($school, 'Librarian');
-        $book = Book::factory()->for($school)->create(['total_copies' => 1, 'available_copies' => 1]);
+        tenancy()->initialize($school);
+        $book = Book::factory()->create(['total_copies' => 1, 'available_copies' => 1]);
         $student = $this->makeStudent($school);
 
         $response = $this->actingAsInSchool($librarian)->postJson("/api/v1/books/{$book->id}/issue", [
@@ -108,8 +113,10 @@ class LibraryTest extends TestCase
 
     private function makeStudent(School $school): Student
     {
-        $year = AcademicYear::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
 
-        return Student::factory()->for($school)->create(['academic_year_id' => $year->id]);
+        tenancy()->initialize($school);
+        return Student::factory()->create(['academic_year_id' => $year->id]);
     }
 }

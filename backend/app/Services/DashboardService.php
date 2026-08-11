@@ -11,7 +11,6 @@ use App\Models\HomeworkSubmission;
 use App\Models\Invoice;
 use App\Models\LeaveRequest;
 use App\Models\Payment;
-use App\Models\School;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\StudentAttendance;
@@ -31,11 +30,6 @@ class DashboardService
 
     public function summaryFor(User $user): array
     {
-        // TODO(tenancy): Super Admin detection needs PlatformUser (Sub-phase E) -- do not guess at a replacement.
-        if ($user->school_id === null && $user->hasRole('Super Admin')) {
-            return $this->superAdminSummary();
-        }
-
         if ($user->hasRole('Student')) {
             return $this->studentSummary($user);
         }
@@ -49,21 +43,6 @@ class DashboardService
         }
 
         return $this->staffSummary($user);
-    }
-
-    /**
-     * Cross-tenant, not school-scoped — mirrors PlatformMetricsController's
-     * own aggregates rather than calling it, since there's no per-school
-     * `$user->school` to hand a normal report service here.
-     */
-    private function superAdminSummary(): array
-    {
-        return [
-            'role_context' => 'super-admin',
-            'total_schools' => School::query()->count(),
-            'active_schools' => School::query()->whereIn('billing_status', ['active', 'trialing'])->count(),
-            'trialing_schools' => School::query()->where('billing_status', 'trialing')->count(),
-        ];
     }
 
     private function staffSummary(User $user): array

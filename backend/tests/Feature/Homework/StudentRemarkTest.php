@@ -21,19 +21,24 @@ class StudentRemarkTest extends TestCase
 
     private function makeStudentInSection(School $school, ?int $teacherId = null): array
     {
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
 
         if ($teacherId) {
-            $subject = Subject::factory()->for($school)->create();
+            tenancy()->initialize($school);
+            $subject = Subject::factory()->create();
             ClassSubjectTeacher::query()->create([
-                'school_id' => $school->id, 'academic_year_id' => $year->id,
+                'academic_year_id' => $year->id,
                 'section_id' => $section->id, 'subject_id' => $subject->id, 'teacher_id' => $teacherId,
             ]);
         }
 
-        $student = Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $student = Student::factory()->create([
             'academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $section->id,
         ]);
 
@@ -78,7 +83,8 @@ class StudentRemarkTest extends TestCase
         [, $student] = $this->makeStudentInSection($school);
         $student->update(['user_id' => $studentUser->id]);
 
-        StudentRemark::factory()->for($school)->create(['student_id' => $student->id, 'author_id' => $teacher->id]);
+        tenancy()->initialize($school);
+        StudentRemark::factory()->create(['student_id' => $student->id, 'author_id' => $teacher->id]);
 
         $response = $this->actingAsInSchool($studentUser)->getJson('/api/v1/student-remarks?per_page=50');
 
@@ -91,11 +97,14 @@ class StudentRemarkTest extends TestCase
         $parentUser = $this->createUserWithRole($school, 'Parent');
         $teacher = $this->createUserWithRole($school, 'Teacher');
         [, $student] = $this->makeStudentInSection($school);
-        $guardian = Guardian::factory()->for($school)->create(['user_id' => $parentUser->id]);
+        tenancy()->initialize($school);
+        $guardian = Guardian::factory()->create(['user_id' => $parentUser->id]);
         $guardian->students()->attach($student->id, ['relationship_type' => 'father', 'is_primary' => true]);
 
-        StudentRemark::factory()->for($school)->create(['student_id' => $student->id, 'author_id' => $teacher->id, 'visible_to_guardian' => true]);
-        StudentRemark::factory()->for($school)->create(['student_id' => $student->id, 'author_id' => $teacher->id, 'visible_to_guardian' => false]);
+        tenancy()->initialize($school);
+        StudentRemark::factory()->create(['student_id' => $student->id, 'author_id' => $teacher->id, 'visible_to_guardian' => true]);
+        tenancy()->initialize($school);
+        StudentRemark::factory()->create(['student_id' => $student->id, 'author_id' => $teacher->id, 'visible_to_guardian' => false]);
 
         $response = $this->actingAsInSchool($parentUser)->getJson("/api/v1/parent/children/{$student->id}/remarks");
 
@@ -110,8 +119,10 @@ class StudentRemarkTest extends TestCase
         [, $studentA] = $this->makeStudentInSection($school);
         [, $studentB] = $this->makeStudentInSection($school);
 
-        StudentRemark::factory()->for($school)->create(['student_id' => $studentA->id, 'author_id' => $teacher->id]);
-        StudentRemark::factory()->for($school)->create(['student_id' => $studentB->id, 'author_id' => $teacher->id]);
+        tenancy()->initialize($school);
+        StudentRemark::factory()->create(['student_id' => $studentA->id, 'author_id' => $teacher->id]);
+        tenancy()->initialize($school);
+        StudentRemark::factory()->create(['student_id' => $studentB->id, 'author_id' => $teacher->id]);
 
         $response = $this->actingAsInSchool($admin)->getJson("/api/v1/student-remarks?filter[student_id]={$studentA->id}");
 

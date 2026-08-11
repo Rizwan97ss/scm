@@ -28,7 +28,7 @@ class UserCrudTest extends TestCase
             ->assertJsonPath('data.email', 'tina.teacher@example.com')
             ->assertJsonPath('data.roles.0', 'Teacher');
 
-        $this->assertDatabaseHas('users', ['email' => 'tina.teacher@example.com', 'school_id' => $school->id]);
+        $this->assertDatabaseHas('users', ['email' => 'tina.teacher@example.com']);
     }
 
     public function test_teacher_cannot_create_a_user(): void

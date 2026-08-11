@@ -41,8 +41,10 @@ class NoticeTest extends TestCase
     {
         $school = $this->createSchool();
         $teacher = $this->createUserWithRole($school, 'Teacher');
-        Notice::factory()->for($school)->create(['is_published' => false]);
-        Notice::factory()->for($school)->create(['is_published' => true, 'audience' => 'all']);
+        tenancy()->initialize($school);
+        Notice::factory()->create(['is_published' => false]);
+        tenancy()->initialize($school);
+        Notice::factory()->create(['is_published' => true, 'audience' => 'all']);
 
         $response = $this->actingAsInSchool($teacher)->getJson('/api/v1/notices?per_page=50');
 
@@ -53,8 +55,10 @@ class NoticeTest extends TestCase
     {
         $school = $this->createSchool();
         $parent = $this->createUserWithRole($school, 'Parent');
-        Notice::factory()->for($school)->create(['is_published' => true, 'audience' => 'students']);
-        Notice::factory()->for($school)->create(['is_published' => true, 'audience' => 'all']);
+        tenancy()->initialize($school);
+        Notice::factory()->create(['is_published' => true, 'audience' => 'students']);
+        tenancy()->initialize($school);
+        Notice::factory()->create(['is_published' => true, 'audience' => 'all']);
 
         $response = $this->actingAsInSchool($parent)->getJson('/api/v1/notices?per_page=50');
 
@@ -65,7 +69,8 @@ class NoticeTest extends TestCase
     {
         $school = $this->createSchool();
         $principal = $this->createUserWithRole($school, 'Principal');
-        Notice::factory()->for($school)->create(['is_published' => false]);
+        tenancy()->initialize($school);
+        Notice::factory()->create(['is_published' => false]);
 
         $response = $this->actingAsInSchool($principal)->getJson('/api/v1/notices?per_page=50');
 
@@ -76,7 +81,8 @@ class NoticeTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $notice = Notice::factory()->for($school)->create(['is_published' => true]);
+        tenancy()->initialize($school);
+        $notice = Notice::factory()->create(['is_published' => true]);
 
         $response = $this->actingAsInSchool($admin)->postJson("/api/v1/notices/{$notice->id}/publish");
 

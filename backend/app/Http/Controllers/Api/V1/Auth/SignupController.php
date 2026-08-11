@@ -10,7 +10,6 @@ use App\Services\SchoolProvisioningService;
 use App\Services\SubscriptionService;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -80,7 +79,7 @@ class SignupController extends Controller
             // soft-deleted School whose tenant database still physically
             // exists and is still loginable is a worse failure state than
             // no tenant at all, and nothing of value exists in it yet.
-            DB::statement('DROP DATABASE IF EXISTS `'.$school->database()->getName().'`');
+            $school->database()->manager()->deleteDatabase($school);
             $school->forceDelete();
 
             return ApiResponse::error('We could not start checkout. Please try again.', 502);

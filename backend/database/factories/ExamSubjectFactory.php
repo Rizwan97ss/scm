@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Exam;
-use App\Models\School;
 use App\Models\Section;
 use App\Models\Subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -13,7 +12,6 @@ class ExamSubjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'school_id' => School::factory(),
             'exam_id' => Exam::factory(),
             'subject_id' => Subject::factory(),
             'section_id' => Section::factory(),

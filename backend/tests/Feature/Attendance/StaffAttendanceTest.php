@@ -72,7 +72,8 @@ class StaffAttendanceTest extends TestCase
         $teacher = $this->createUserWithRole($school, 'Teacher');
         $admin = $this->createUserWithRole($school, 'School Admin');
 
-        StaffAttendance::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        StaffAttendance::factory()->create([
             'user_id' => $teacher->id, 'marked_by' => $admin->id, 'date' => '2026-08-10', 'status' => 'present',
         ]);
 
@@ -89,7 +90,8 @@ class StaffAttendanceTest extends TestCase
         $otherTeacher = $this->createUserWithRole($school, 'Teacher');
         $admin = $this->createUserWithRole($school, 'School Admin');
 
-        StaffAttendance::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        StaffAttendance::factory()->create([
             'user_id' => $otherTeacher->id, 'marked_by' => $admin->id, 'date' => '2026-08-10',
         ]);
 
@@ -114,8 +116,10 @@ class StaffAttendanceTest extends TestCase
         $admin = $this->createUserWithRole($school, 'School Admin');
         $teacher = $this->createUserWithRole($school, 'Teacher');
 
-        StaffAttendance::factory()->for($school)->create(['user_id' => $teacher->id, 'marked_by' => $admin->id, 'date' => '2026-08-10']);
-        StaffAttendance::factory()->for($school)->create(['user_id' => $teacher->id, 'marked_by' => $admin->id, 'date' => '2026-08-11']);
+        tenancy()->initialize($school);
+        StaffAttendance::factory()->create(['user_id' => $teacher->id, 'marked_by' => $admin->id, 'date' => '2026-08-10']);
+        tenancy()->initialize($school);
+        StaffAttendance::factory()->create(['user_id' => $teacher->id, 'marked_by' => $admin->id, 'date' => '2026-08-11']);
 
         $response = $this->actingAsInSchool($admin)->getJson('/api/v1/attendance/staff?filter[date]=2026-08-10');
 
@@ -130,7 +134,8 @@ class StaffAttendanceTest extends TestCase
         $admin = $this->createUserWithRole($school, 'School Admin');
         $teacher = $this->createUserWithRole($school, 'Teacher');
 
-        $record = StaffAttendance::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $record = StaffAttendance::factory()->create([
             'user_id' => $teacher->id, 'marked_by' => $admin->id, 'date' => '2026-08-10', 'status' => 'absent',
         ]);
 

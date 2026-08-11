@@ -27,7 +27,7 @@ class TransportTest extends TestCase
         ]);
 
         $response->assertCreated();
-        $this->assertDatabaseHas('vehicles', ['school_id' => $school->id, 'registration_number' => 'AB-12-CD-3456']);
+        $this->assertDatabaseHas('vehicles', ['registration_number' => 'AB-12-CD-3456']);
     }
 
     public function test_teacher_cannot_create_a_vehicle(): void
@@ -67,11 +67,15 @@ class TransportTest extends TestCase
         $school = $this->createSchool();
         $staff = $this->createUserWithRole($school, 'Transport Staff');
         $student = $this->makeStudent($school);
-        $route = Route::factory()->for($school)->create();
-        $stop = RouteStop::factory()->for($school)->create(['route_id' => $route->id]);
-        $vehicle = Vehicle::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $route = Route::factory()->create();
+        tenancy()->initialize($school);
+        $stop = RouteStop::factory()->create(['route_id' => $route->id]);
+        tenancy()->initialize($school);
+        $vehicle = Vehicle::factory()->create();
 
-        $first = StudentTransportAssignment::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $first = StudentTransportAssignment::factory()->create([
             'student_id' => $student->id, 'route_id' => $route->id, 'route_stop_id' => $stop->id,
             'vehicle_id' => $vehicle->id, 'is_active' => true,
         ]);
@@ -88,8 +92,10 @@ class TransportTest extends TestCase
 
     private function makeStudent(School $school): Student
     {
-        $year = AcademicYear::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
 
-        return Student::factory()->for($school)->create(['academic_year_id' => $year->id]);
+        tenancy()->initialize($school);
+        return Student::factory()->create(['academic_year_id' => $year->id]);
     }
 }

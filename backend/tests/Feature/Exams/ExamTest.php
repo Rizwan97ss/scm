@@ -25,23 +25,30 @@ class ExamTest extends TestCase
 
     private function makeExamSubject(School $school, ?int $teacherId = null): array
     {
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
-        $subject = Subject::factory()->for($school)->create();
-        $exam = Exam::factory()->for($school)->create(['academic_year_id' => $year->id]);
-        $examSubject = ExamSubject::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $subject = Subject::factory()->create();
+        tenancy()->initialize($school);
+        $exam = Exam::factory()->create(['academic_year_id' => $year->id]);
+        tenancy()->initialize($school);
+        $examSubject = ExamSubject::factory()->create([
             'exam_id' => $exam->id, 'subject_id' => $subject->id, 'section_id' => $section->id, 'max_marks' => 100,
         ]);
 
         if ($teacherId) {
             ClassSubjectTeacher::query()->create([
-                'school_id' => $school->id, 'academic_year_id' => $year->id,
+                'academic_year_id' => $year->id,
                 'section_id' => $section->id, 'subject_id' => $subject->id, 'teacher_id' => $teacherId,
             ]);
         }
 
-        $student = Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $student = Student::factory()->create([
             'academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $section->id,
         ]);
 
@@ -52,10 +59,14 @@ class ExamTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
-        $subject = Subject::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $subject = Subject::factory()->create();
 
         $response = $this->actingAsInSchool($admin)->postJson('/api/v1/exams', [
             'academic_year_id' => $year->id,
@@ -66,7 +77,7 @@ class ExamTest extends TestCase
         ]);
 
         $response->assertCreated()->assertJsonCount(1, 'data.exam_subjects');
-        $this->assertDatabaseHas('exams', ['school_id' => $school->id, 'name' => 'Midterm Exam']);
+        $this->assertDatabaseHas('exams', ['name' => 'Midterm Exam']);
     }
 
     public function test_updating_an_exam_preserves_marks_on_unchanged_exam_subjects(): void
@@ -75,7 +86,8 @@ class ExamTest extends TestCase
         $admin = $this->createUserWithRole($school, 'School Admin');
         [$exam, $examSubject, $student] = $this->makeExamSubject($school);
 
-        ExamMark::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        ExamMark::factory()->create([
             'exam_subject_id' => $examSubject->id, 'student_id' => $student->id, 'marks_obtained' => 88, 'entered_by' => $admin->id,
         ]);
 
@@ -155,11 +167,15 @@ class ExamTest extends TestCase
         $admin = $this->createUserWithRole($school, 'School Admin');
         [$exam, $examSubject, $student] = $this->makeExamSubject($school);
 
-        $scale = GradingScale::factory()->for($school)->create(['is_default' => true]);
-        GradeBand::factory()->for($school)->create(['grading_scale_id' => $scale->id, 'min_percentage' => 80, 'max_percentage' => 100, 'grade_label' => 'A', 'grade_point' => 4.0]);
-        GradeBand::factory()->for($school)->create(['grading_scale_id' => $scale->id, 'min_percentage' => 0, 'max_percentage' => 79.99, 'grade_label' => 'B', 'grade_point' => 3.0]);
+        tenancy()->initialize($school);
+        $scale = GradingScale::factory()->create(['is_default' => true]);
+        tenancy()->initialize($school);
+        GradeBand::factory()->create(['grading_scale_id' => $scale->id, 'min_percentage' => 80, 'max_percentage' => 100, 'grade_label' => 'A', 'grade_point' => 4.0]);
+        tenancy()->initialize($school);
+        GradeBand::factory()->create(['grading_scale_id' => $scale->id, 'min_percentage' => 0, 'max_percentage' => 79.99, 'grade_label' => 'B', 'grade_point' => 3.0]);
 
-        ExamMark::factory()->for($school)->create(['exam_subject_id' => $examSubject->id, 'student_id' => $student->id, 'marks_obtained' => 85, 'entered_by' => $admin->id]);
+        tenancy()->initialize($school);
+        ExamMark::factory()->create(['exam_subject_id' => $examSubject->id, 'student_id' => $student->id, 'marks_obtained' => 85, 'entered_by' => $admin->id]);
 
         $response = $this->actingAsInSchool($admin)->getJson("/api/v1/exams/{$exam->id}/report-card?student_id={$student->id}");
 
@@ -225,7 +241,8 @@ class ExamTest extends TestCase
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
         $parentUser = $this->createUserWithRole($school, 'Parent');
-        $guardian = Guardian::factory()->for($school)->create(['user_id' => $parentUser->id]);
+        tenancy()->initialize($school);
+        $guardian = Guardian::factory()->create(['user_id' => $parentUser->id]);
         [$exam, $examSubject, $student] = $this->makeExamSubject($school);
         $guardian->students()->attach($student->id, ['relationship_type' => 'mother', 'is_primary' => true]);
 

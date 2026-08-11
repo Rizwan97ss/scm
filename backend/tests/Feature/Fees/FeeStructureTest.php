@@ -21,11 +21,15 @@ class FeeStructureTest extends TestCase
 
     private function makeSectionWithStudents(School $school, int $count = 2): array
     {
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
 
-        $students = Student::factory()->for($school)->count($count)->create([
+        tenancy()->initialize($school);
+        $students = Student::factory()->count($count)->create([
             'academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $section->id, 'status' => 'active',
         ]);
 
@@ -36,8 +40,10 @@ class FeeStructureTest extends TestCase
     {
         $school = $this->createSchool();
         $accountant = $this->createUserWithRole($school, 'Accountant');
-        $year = AcademicYear::factory()->for($school)->create();
-        $category = FeeCategory::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $category = FeeCategory::factory()->create();
 
         $response = $this->actingAsInSchool($accountant)->postJson('/api/v1/fee-structures', [
             'academic_year_id' => $year->id,
@@ -48,7 +54,7 @@ class FeeStructureTest extends TestCase
         ]);
 
         $response->assertCreated();
-        $this->assertDatabaseHas('fee_structures', ['school_id' => $school->id, 'name' => 'Grade 5 Tuition', 'amount' => 4000]);
+        $this->assertDatabaseHas('fee_structures', ['name' => 'Grade 5 Tuition', 'amount' => 4000]);
     }
 
     public function test_generating_invoices_bulk_creates_one_per_active_student_in_the_section(): void
@@ -56,8 +62,10 @@ class FeeStructureTest extends TestCase
         $school = $this->createSchool();
         $accountant = $this->createUserWithRole($school, 'Accountant');
         [$year, $gradeLevel, $section, $students] = $this->makeSectionWithStudents($school, 3);
-        $category = FeeCategory::factory()->for($school)->create();
-        $structure = FeeStructure::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $category = FeeCategory::factory()->create();
+        tenancy()->initialize($school);
+        $structure = FeeStructure::factory()->create([
             'academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'fee_category_id' => $category->id, 'amount' => 1000,
         ]);
 
@@ -69,7 +77,7 @@ class FeeStructureTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonPath('data.created_count', 3);
-        $this->assertSame(3, Invoice::query()->where('school_id', $school->id)->count());
+        $this->assertSame(3, Invoice::query()->count());
     }
 
     public function test_generating_invoices_twice_skips_already_invoiced_students(): void
@@ -77,8 +85,10 @@ class FeeStructureTest extends TestCase
         $school = $this->createSchool();
         $accountant = $this->createUserWithRole($school, 'Accountant');
         [$year, $gradeLevel, $section] = $this->makeSectionWithStudents($school, 2);
-        $category = FeeCategory::factory()->for($school)->create();
-        $structure = FeeStructure::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $category = FeeCategory::factory()->create();
+        tenancy()->initialize($school);
+        $structure = FeeStructure::factory()->create([
             'academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'fee_category_id' => $category->id, 'amount' => 1000,
         ]);
 
@@ -91,7 +101,7 @@ class FeeStructureTest extends TestCase
 
         $response->assertJsonPath('data.created_count', 0);
         $response->assertJsonPath('data.skipped_count', 2);
-        $this->assertSame(2, Invoice::query()->where('school_id', $school->id)->count());
+        $this->assertSame(2, Invoice::query()->count());
     }
 
     public function test_generating_invoices_applies_a_students_fee_discount(): void
@@ -99,12 +109,15 @@ class FeeStructureTest extends TestCase
         $school = $this->createSchool();
         $accountant = $this->createUserWithRole($school, 'Accountant');
         [$year, $gradeLevel, $section, $students] = $this->makeSectionWithStudents($school, 1);
-        $category = FeeCategory::factory()->for($school)->create();
-        $structure = FeeStructure::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $category = FeeCategory::factory()->create();
+        tenancy()->initialize($school);
+        $structure = FeeStructure::factory()->create([
             'academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'fee_category_id' => $category->id, 'amount' => 1000,
         ]);
 
-        StudentFeeAssignment::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        StudentFeeAssignment::factory()->create([
             'student_id' => $students->first()->id,
             'fee_structure_id' => $structure->id,
             'discount_type' => 'percentage',

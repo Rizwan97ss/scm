@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -113,21 +112,6 @@ class School extends Model implements TenantWithDatabase
         });
     }
 
-    public function users(): HasMany
-    {
-        return $this->hasMany(User::class);
-    }
-
-    public function students(): HasMany
-    {
-        return $this->hasMany(Student::class);
-    }
-
-    public function academicYears(): HasMany
-    {
-        return $this->hasMany(AcademicYear::class);
-    }
-
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
@@ -148,28 +132,32 @@ class School extends Model implements TenantWithDatabase
         return "{$central['scheme']}://{$this->slug}.{$central['host']}{$port}";
     }
 
+    /**
+     * Students/staff live in this school's own tenant database, not a
+     * queryable relation off the landlord-only School row — run() switches
+     * into that database for the query and reverts afterward, safe to call
+     * from a context where a different (or no) tenant is currently active,
+     * e.g. the platform console listing usage across many schools at once.
+     */
     public function studentCount(): int
     {
-        return $this->students()->whereNull('deleted_at')->count();
+        return $this->run(fn () => Student::query()->count());
     }
 
     /**
      * "Staff seat" = a user holding any role except Student/Parent (see
      * docs/roadmap.md's Phase 6 notes). Queries model_has_roles directly
-     * with an explicit team_id filter rather than the roles() relation,
-     * which would otherwise depend on the CURRENT global permission team
-     * context (Spatie's teams mode) — this needs to read another school's
-     * usage without mutating that shared context, e.g. from the platform
-     * admin console listing many schools at once.
+     * rather than the roles() relation for the same reason as above — one
+     * tenant database per school means the table itself is already scoped,
+     * no team/school filter needed (config('permission.teams') is false).
      */
     public function staffCount(): int
     {
-        return DB::table('model_has_roles')
+        return $this->run(fn () => DB::table('model_has_roles')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-            ->where('model_has_roles.school_id', $this->id)
             ->where('model_has_roles.model_type', User::class)
             ->whereNotIn('roles.name', ['Student', 'Parent'])
             ->distinct()
-            ->count('model_has_roles.model_id');
+            ->count('model_has_roles.model_id'));
     }
 }

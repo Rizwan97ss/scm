@@ -18,8 +18,10 @@ class InvoiceTest extends TestCase
 
     private function makeStudent(School $school): array
     {
-        $year = AcademicYear::factory()->for($school)->create();
-        $student = Student::factory()->for($school)->create(['academic_year_id' => $year->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $student = Student::factory()->create(['academic_year_id' => $year->id]);
 
         return [$year, $student];
     }
@@ -29,7 +31,8 @@ class InvoiceTest extends TestCase
         $school = $this->createSchool();
         $accountant = $this->createUserWithRole($school, 'Accountant');
         [$year, $student] = $this->makeStudent($school);
-        $category = FeeCategory::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $category = FeeCategory::factory()->create();
 
         $response = $this->actingAsInSchool($accountant)->postJson('/api/v1/invoices', [
             'student_id' => $student->id,
@@ -45,7 +48,7 @@ class InvoiceTest extends TestCase
         $response->assertCreated();
         $response->assertJsonPath('data.total', 6000);
         $response->assertJsonPath('data.status', 'issued');
-        $this->assertDatabaseHas('invoices', ['school_id' => $school->id, 'student_id' => $student->id, 'total' => 6000]);
+        $this->assertDatabaseHas('invoices', ['student_id' => $student->id, 'total' => 6000]);
         $this->assertSame(2, $response->json('data.items') ? count($response->json('data.items')) : 0);
     }
 
@@ -54,7 +57,8 @@ class InvoiceTest extends TestCase
         $school = $this->createSchool();
         $principal = $this->createUserWithRole($school, 'Principal');
         [$year, $student] = $this->makeStudent($school);
-        $category = FeeCategory::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $category = FeeCategory::factory()->create();
 
         $response = $this->actingAsInSchool($principal)->postJson('/api/v1/invoices', [
             'student_id' => $student->id,
@@ -71,7 +75,8 @@ class InvoiceTest extends TestCase
     {
         $school = $this->createSchool();
         $accountant = $this->createUserWithRole($school, 'Accountant');
-        $invoice = Invoice::factory()->for($school)->create(['total' => 1000, 'subtotal' => 1000]);
+        tenancy()->initialize($school);
+        $invoice = Invoice::factory()->create(['total' => 1000, 'subtotal' => 1000]);
 
         $response = $this->actingAsInSchool($accountant)->postJson("/api/v1/invoices/{$invoice->id}/payments", [
             'amount' => 400,
@@ -98,7 +103,8 @@ class InvoiceTest extends TestCase
     {
         $school = $this->createSchool();
         $accountant = $this->createUserWithRole($school, 'Accountant');
-        $invoice = Invoice::factory()->for($school)->create(['total' => 1000, 'subtotal' => 1000]);
+        tenancy()->initialize($school);
+        $invoice = Invoice::factory()->create(['total' => 1000, 'subtotal' => 1000]);
 
         $response = $this->actingAsInSchool($accountant)->postJson("/api/v1/invoices/{$invoice->id}/payments", [
             'amount' => 1500, 'method' => 'cash', 'paid_at' => now()->toDateString(),
@@ -112,7 +118,8 @@ class InvoiceTest extends TestCase
     {
         $school = $this->createSchool();
         $accountant = $this->createUserWithRole($school, 'Accountant');
-        $invoice = Invoice::factory()->for($school)->create(['total' => 1000, 'subtotal' => 1000]);
+        tenancy()->initialize($school);
+        $invoice = Invoice::factory()->create(['total' => 1000, 'subtotal' => 1000]);
 
         $response = $this->actingAsInSchool($accountant)->postJson("/api/v1/invoices/{$invoice->id}/credit-notes", [
             'amount' => 300, 'reason' => 'Sibling discount applied late',
@@ -130,7 +137,8 @@ class InvoiceTest extends TestCase
     {
         $school = $this->createSchool();
         $accountant = $this->createUserWithRole($school, 'Accountant');
-        $invoice = Invoice::factory()->for($school)->create(['total' => 1000, 'subtotal' => 1000, 'amount_paid' => 200]);
+        tenancy()->initialize($school);
+        $invoice = Invoice::factory()->create(['total' => 1000, 'subtotal' => 1000, 'amount_paid' => 200]);
 
         $response = $this->actingAsInSchool($accountant)->postJson("/api/v1/invoices/{$invoice->id}/void");
 
@@ -142,7 +150,8 @@ class InvoiceTest extends TestCase
     {
         $school = $this->createSchool();
         $accountant = $this->createUserWithRole($school, 'Accountant');
-        $invoice = Invoice::factory()->for($school)->create(['total' => 1000, 'subtotal' => 1000]);
+        tenancy()->initialize($school);
+        $invoice = Invoice::factory()->create(['total' => 1000, 'subtotal' => 1000]);
 
         $response = $this->actingAsInSchool($accountant)->postJson("/api/v1/invoices/{$invoice->id}/void");
 
@@ -157,9 +166,11 @@ class InvoiceTest extends TestCase
         [, $student] = $this->makeStudent($school);
         $student->update(['user_id' => $studentUser->id]);
 
-        Invoice::factory()->for($school)->create(['student_id' => $student->id]);
+        tenancy()->initialize($school);
+        Invoice::factory()->create(['student_id' => $student->id]);
         [, $otherStudent] = $this->makeStudent($school);
-        Invoice::factory()->for($school)->create(['student_id' => $otherStudent->id]);
+        tenancy()->initialize($school);
+        Invoice::factory()->create(['student_id' => $otherStudent->id]);
 
         $response = $this->actingAsInSchool($studentUser)->getJson('/api/v1/invoices?per_page=50');
 
@@ -171,10 +182,12 @@ class InvoiceTest extends TestCase
         $school = $this->createSchool();
         $parentUser = $this->createUserWithRole($school, 'Parent');
         [, $student] = $this->makeStudent($school);
-        $guardian = Guardian::factory()->for($school)->create(['user_id' => $parentUser->id]);
+        tenancy()->initialize($school);
+        $guardian = Guardian::factory()->create(['user_id' => $parentUser->id]);
         $guardian->students()->attach($student->id, ['relationship_type' => 'mother', 'is_primary' => true]);
 
-        Invoice::factory()->for($school)->create(['student_id' => $student->id, 'total' => 1200, 'subtotal' => 1200]);
+        tenancy()->initialize($school);
+        Invoice::factory()->create(['student_id' => $student->id, 'total' => 1200, 'subtotal' => 1200]);
 
         $response = $this->actingAsInSchool($parentUser)->getJson("/api/v1/parent/children/{$student->id}/invoices");
 
@@ -187,7 +200,8 @@ class InvoiceTest extends TestCase
         $schoolA = $this->createSchool();
         $schoolB = $this->createSchool();
         $accountantA = $this->createUserWithRole($schoolA, 'Accountant');
-        $invoiceB = Invoice::factory()->for($schoolB)->create();
+        tenancy()->initialize($schoolB);
+        $invoiceB = Invoice::factory()->create();
 
         $response = $this->actingAsInSchool($accountantA)->getJson("/api/v1/invoices/{$invoiceB->id}");
 

@@ -21,10 +21,14 @@ class RoleScopedAccessTest extends TestCase
 
         $adminA = $this->createUserWithRole($schoolA, 'School Admin');
 
-        $yearB = AcademicYear::factory()->for($schoolB)->create();
-        $gradeLevelB = GradeLevel::factory()->for($schoolB)->create();
-        $sectionB = Section::factory()->for($schoolB)->create(['academic_year_id' => $yearB->id, 'grade_level_id' => $gradeLevelB->id]);
-        Student::factory()->for($schoolB)->create([
+        tenancy()->initialize($schoolB);
+        $yearB = AcademicYear::factory()->create();
+        tenancy()->initialize($schoolB);
+        $gradeLevelB = GradeLevel::factory()->create();
+        tenancy()->initialize($schoolB);
+        $sectionB = Section::factory()->create(['academic_year_id' => $yearB->id, 'grade_level_id' => $gradeLevelB->id]);
+        tenancy()->initialize($schoolB);
+        Student::factory()->create([
             'academic_year_id' => $yearB->id, 'current_grade_level_id' => $gradeLevelB->id, 'current_section_id' => $sectionB->id,
             'first_name' => 'FromSchoolB',
         ]);
@@ -43,10 +47,14 @@ class RoleScopedAccessTest extends TestCase
 
         $adminA = $this->createUserWithRole($schoolA, 'School Admin');
 
-        $yearB = AcademicYear::factory()->for($schoolB)->create();
-        $gradeLevelB = GradeLevel::factory()->for($schoolB)->create();
-        $sectionB = Section::factory()->for($schoolB)->create(['academic_year_id' => $yearB->id, 'grade_level_id' => $gradeLevelB->id]);
-        $studentB = Student::factory()->for($schoolB)->create([
+        tenancy()->initialize($schoolB);
+        $yearB = AcademicYear::factory()->create();
+        tenancy()->initialize($schoolB);
+        $gradeLevelB = GradeLevel::factory()->create();
+        tenancy()->initialize($schoolB);
+        $sectionB = Section::factory()->create(['academic_year_id' => $yearB->id, 'grade_level_id' => $gradeLevelB->id]);
+        tenancy()->initialize($schoolB);
+        $studentB = Student::factory()->create([
             'academic_year_id' => $yearB->id, 'current_grade_level_id' => $gradeLevelB->id, 'current_section_id' => $sectionB->id,
         ]);
 
@@ -55,40 +63,4 @@ class RoleScopedAccessTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_super_admin_can_see_students_across_every_school(): void
-    {
-        $schoolA = $this->createSchool();
-        $schoolB = $this->createSchool();
-        $superAdmin = $this->createSuperAdmin();
-
-        foreach ([$schoolA, $schoolB] as $school) {
-            $year = AcademicYear::factory()->for($school)->create();
-            $gradeLevel = GradeLevel::factory()->for($school)->create();
-            $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
-            Student::factory()->for($school)->create([
-                'academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $section->id,
-            ]);
-        }
-
-        $response = $this->actingAsInSchool($superAdmin)->getJson('/api/v1/students?per_page=50');
-
-        $response->assertOk();
-        $this->assertCount(2, $response->json('data'));
-    }
-
-    public function test_user_from_school_a_cannot_update_role_from_school_b(): void
-    {
-        $schoolA = $this->createSchool();
-        $schoolB = $this->createSchool();
-
-        $adminA = $this->createUserWithRole($schoolA, 'School Admin');
-        $roleB = \Spatie\Permission\Models\Role::query()->where('school_id', $schoolB->id)->where('name', 'Teacher')->firstOrFail();
-
-        $response = $this->actingAsInSchool($adminA)->putJson("/api/v1/roles/{$roleB->id}", ['name' => 'Hacked']);
-
-        // adminA's permission team context is school A, so school B's Teacher role
-        // is simply not "theirs" to touch — RolePolicy still says "you have
-        // roles.edit", but the row itself belongs to a different tenant.
-        $response->assertStatus(403);
-    }
 }

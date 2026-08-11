@@ -16,9 +16,9 @@ class PlatformSchoolTest extends TestCase
     {
         $schoolA = $this->createSchool(['name' => 'Alpha School']);
         $schoolB = $this->createSchool(['name' => 'Beta School']);
-        $superAdmin = $this->createSuperAdmin();
+        $platformUser = $this->createPlatformUser();
 
-        $response = $this->actingAsInSchool($superAdmin)->getJson('/api/v1/platform/schools');
+        $response = $this->actingAsPlatform($platformUser)->getJson('/api/v1/platform/schools');
 
         $response->assertOk();
         $names = collect($response->json('data'))->pluck('name');
@@ -33,7 +33,10 @@ class PlatformSchoolTest extends TestCase
 
         $response = $this->actingAsInSchool($admin)->getJson('/api/v1/platform/schools');
 
-        $response->assertForbidden();
+        // A tenant User was never authenticated on the `platform` guard at
+        // all (separate guard, separate session) — this is a missing
+        // credential, not a denied permission.
+        $response->assertUnauthorized();
     }
 
     public function test_super_admin_can_view_a_schools_detail_with_usage_counts(): void
@@ -42,9 +45,9 @@ class PlatformSchoolTest extends TestCase
         $school = $this->createSchool(['plan_id' => $plan->id]);
         $this->createUserWithRole($school, 'Teacher');
         $this->createUserWithRole($school, 'Student');
-        $superAdmin = $this->createSuperAdmin();
+        $platformUser = $this->createPlatformUser();
 
-        $response = $this->actingAsInSchool($superAdmin)->getJson("/api/v1/platform/schools/{$school->id}");
+        $response = $this->actingAsPlatform($platformUser)->getJson("/api/v1/platform/schools/{$school->id}");
 
         $response->assertOk()
             ->assertJsonPath('data.plan.id', $plan->id)
@@ -57,10 +60,10 @@ class PlatformSchoolTest extends TestCase
     public function test_super_admin_can_change_a_schools_plan(): void
     {
         $school = $this->createSchool();
-        $superAdmin = $this->createSuperAdmin();
+        $platformUser = $this->createPlatformUser();
         $newPlan = Plan::factory()->create(['key' => 'scale']);
 
-        $response = $this->actingAsInSchool($superAdmin)
+        $response = $this->actingAsPlatform($platformUser)
             ->postJson("/api/v1/platform/schools/{$school->id}/plan", ['plan_id' => $newPlan->id]);
 
         $response->assertOk()->assertJsonPath('data.plan.key', 'scale');
@@ -70,10 +73,10 @@ class PlatformSchoolTest extends TestCase
     public function test_change_plan_rejects_an_inactive_plan(): void
     {
         $school = $this->createSchool();
-        $superAdmin = $this->createSuperAdmin();
+        $platformUser = $this->createPlatformUser();
         $inactivePlan = Plan::factory()->create(['is_active' => false]);
 
-        $response = $this->actingAsInSchool($superAdmin)
+        $response = $this->actingAsPlatform($platformUser)
             ->postJson("/api/v1/platform/schools/{$school->id}/plan", ['plan_id' => $inactivePlan->id]);
 
         $response->assertStatus(422);
@@ -82,13 +85,13 @@ class PlatformSchoolTest extends TestCase
     public function test_metrics_returns_counts_by_billing_status_and_an_approximate_mrr(): void
     {
         $this->createSchool();
-        $superAdmin = $this->createSuperAdmin();
+        $platformUser = $this->createPlatformUser();
         $plan = Plan::factory()->create(['price_cents' => 5000]);
         School::factory()->create(['billing_status' => 'active', 'plan_id' => $plan->id]);
         School::factory()->create(['billing_status' => 'active', 'plan_id' => $plan->id]);
         School::factory()->create(['billing_status' => 'trialing', 'plan_id' => $plan->id]);
 
-        $response = $this->actingAsInSchool($superAdmin)->getJson('/api/v1/platform/metrics');
+        $response = $this->actingAsPlatform($platformUser)->getJson('/api/v1/platform/metrics');
 
         $response->assertOk()
             ->assertJsonPath('data.by_billing_status.active', 2)

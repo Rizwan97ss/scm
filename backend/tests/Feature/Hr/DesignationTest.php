@@ -19,7 +19,7 @@ class DesignationTest extends TestCase
         $response = $this->actingAsInSchool($hr)->postJson('/api/v1/designations', ['name' => 'Math Teacher']);
 
         $response->assertCreated();
-        $this->assertDatabaseHas('designations', ['school_id' => $school->id, 'name' => 'Math Teacher']);
+        $this->assertDatabaseHas('designations', ['name' => 'Math Teacher']);
     }
 
     public function test_teacher_cannot_create_a_designation(): void
@@ -37,7 +37,8 @@ class DesignationTest extends TestCase
         $school = $this->createSchool();
         $hr = $this->createUserWithRole($school, 'HR Staff');
         $teacher = $this->createUserWithRole($school, 'Teacher');
-        $designation = Designation::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $designation = Designation::factory()->create();
 
         $response = $this->actingAsInSchool($hr)->putJson("/api/v1/users/{$teacher->id}", [
             'designation_id' => $designation->id,

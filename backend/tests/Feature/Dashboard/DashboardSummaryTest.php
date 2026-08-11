@@ -21,10 +21,14 @@ class DashboardSummaryTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
-        Student::factory()->for($school)->count(3)->create([
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        Student::factory()->count(3)->create([
             'academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $section->id, 'status' => 'active',
         ]);
 
@@ -46,14 +50,19 @@ class DashboardSummaryTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
-        $student = Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $student = Student::factory()->create([
             'academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $section->id,
         ]);
 
-        StudentAttendance::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        StudentAttendance::factory()->create([
             'student_id' => $student->id, 'section_id' => $section->id, 'academic_year_id' => $year->id,
             'marked_by' => $admin->id, 'date' => now()->toDateString(), 'status' => 'present',
         ]);
@@ -67,13 +76,19 @@ class DashboardSummaryTest extends TestCase
     {
         $school = $this->createSchool();
         $teacher = $this->createUserWithRole($school, 'Teacher');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $mySection = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'A', 'class_teacher_id' => $teacher->id]);
-        $otherSection = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'B']);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $mySection = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'A', 'class_teacher_id' => $teacher->id]);
+        tenancy()->initialize($school);
+        $otherSection = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'B']);
 
-        Student::factory()->for($school)->count(2)->create(['academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $mySection->id]);
-        Student::factory()->for($school)->create(['academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $otherSection->id]);
+        tenancy()->initialize($school);
+        Student::factory()->count(2)->create(['academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $mySection->id]);
+        tenancy()->initialize($school);
+        Student::factory()->create(['academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $otherSection->id]);
 
         $response = $this->actingAsInSchool($teacher)->getJson('/api/v1/dashboard/summary');
 
@@ -86,11 +101,16 @@ class DashboardSummaryTest extends TestCase
     {
         $school = $this->createSchool();
         $parentUser = $this->createUserWithRole($school, 'Parent');
-        $guardian = Guardian::factory()->for($school)->create(['user_id' => $parentUser->id]);
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
-        $child = Student::factory()->for($school)->create(['academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $section->id]);
+        tenancy()->initialize($school);
+        $guardian = Guardian::factory()->create(['user_id' => $parentUser->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $child = Student::factory()->create(['academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $section->id]);
         $guardian->students()->attach($child->id, ['relationship_type' => 'mother', 'is_primary' => true]);
 
         $response = $this->actingAsInSchool($parentUser)->getJson('/api/v1/dashboard/summary');
@@ -98,20 +118,6 @@ class DashboardSummaryTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('data.role_context', 'parent')
             ->assertJsonPath('data.children_count', 1);
-    }
-
-    public function test_super_admin_dashboard_reports_cross_tenant_school_counts(): void
-    {
-        $this->createSchool(['billing_status' => 'active']);
-        $this->createSchool(['billing_status' => 'trialing']);
-        $superAdmin = $this->createSuperAdmin();
-
-        $response = $this->actingAsInSchool($superAdmin)->getJson('/api/v1/dashboard/summary');
-
-        $response->assertOk()
-            ->assertJsonPath('data.role_context', 'super-admin')
-            ->assertJsonPath('data.total_schools', 2)
-            ->assertJsonPath('data.trialing_schools', 1);
     }
 
     public function test_staff_dashboard_widgets_are_null_without_the_matching_permission(): void
@@ -132,7 +138,8 @@ class DashboardSummaryTest extends TestCase
         $school = $this->createSchool();
         $hr = $this->createUserWithRole($school, 'HR Staff');
         $teacher = $this->createUserWithRole($school, 'Teacher');
-        LeaveRequest::factory()->for($school)->create(['user_id' => $teacher->id, 'status' => 'pending']);
+        tenancy()->initialize($school);
+        LeaveRequest::factory()->create(['user_id' => $teacher->id, 'status' => 'pending']);
 
         $response = $this->actingAsInSchool($hr)->getJson('/api/v1/dashboard/summary');
 

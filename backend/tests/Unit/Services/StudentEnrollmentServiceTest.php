@@ -20,15 +20,23 @@ class StudentEnrollmentServiceTest extends TestCase
     public function test_promote_updates_student_and_records_history(): void
     {
         $school = School::factory()->create();
-        $performedBy = User::factory()->for($school)->create();
-        $year = AcademicYear::factory()->for($school)->create();
-        $nextYear = AcademicYear::factory()->for($school)->create();
-        $fromGradeLevel = GradeLevel::factory()->for($school)->create();
-        $toGradeLevel = GradeLevel::factory()->for($school)->create();
-        $fromSection = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $fromGradeLevel->id]);
-        $toSection = Section::factory()->for($school)->create(['academic_year_id' => $nextYear->id, 'grade_level_id' => $toGradeLevel->id]);
+        tenancy()->initialize($school);
+        $performedBy = User::factory()->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $nextYear = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $fromGradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $toGradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $fromSection = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $fromGradeLevel->id]);
+        tenancy()->initialize($school);
+        $toSection = Section::factory()->create(['academic_year_id' => $nextYear->id, 'grade_level_id' => $toGradeLevel->id]);
 
-        $student = Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $student = Student::factory()->create([
             'academic_year_id' => $year->id,
             'current_grade_level_id' => $fromGradeLevel->id,
             'current_section_id' => $fromSection->id,
@@ -53,11 +61,16 @@ class StudentEnrollmentServiceTest extends TestCase
     public function test_withdraw_clears_current_section_and_sets_status(): void
     {
         $school = School::factory()->create();
-        $performedBy = User::factory()->for($school)->create();
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
-        $student = Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $performedBy = User::factory()->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $student = Student::factory()->create([
             'academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $section->id, 'status' => 'active',
         ]);
 
@@ -72,11 +85,16 @@ class StudentEnrollmentServiceTest extends TestCase
     public function test_graduate_sets_alumni_status(): void
     {
         $school = School::factory()->create();
-        $performedBy = User::factory()->for($school)->create();
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
-        $student = Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $performedBy = User::factory()->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $student = Student::factory()->create([
             'academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $section->id, 'status' => 'active',
         ]);
 

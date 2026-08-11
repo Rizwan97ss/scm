@@ -18,11 +18,15 @@ class GuardianLinkTest extends TestCase
 
     private function student($school): Student
     {
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
 
-        return Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        return Student::factory()->create([
             'academic_year_id' => $year->id,
             'current_grade_level_id' => $gradeLevel->id,
             'current_section_id' => $section->id,
@@ -34,7 +38,8 @@ class GuardianLinkTest extends TestCase
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
         $student = $this->student($school);
-        $guardian = Guardian::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $guardian = Guardian::factory()->create();
 
         $response = $this->actingAsInSchool($admin)->postJson("/api/v1/students/{$student->id}/guardians", [
             'guardian_id' => $guardian->id,
@@ -55,7 +60,8 @@ class GuardianLinkTest extends TestCase
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
         $student = $this->student($school);
-        $guardian = Guardian::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $guardian = Guardian::factory()->create();
         $student->guardians()->attach($guardian->id, ['relationship_type' => 'mother', 'is_primary' => true]);
 
         $response = $this->actingAsInSchool($admin)->deleteJson("/api/v1/students/{$student->id}/guardians/{$guardian->id}");
@@ -70,7 +76,8 @@ class GuardianLinkTest extends TestCase
 
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $guardian = Guardian::factory()->for($school)->create(['email' => 'parent@example.com', 'user_id' => null]);
+        tenancy()->initialize($school);
+        $guardian = Guardian::factory()->create(['email' => 'parent@example.com', 'user_id' => null]);
 
         $response = $this->actingAsInSchool($admin)->postJson("/api/v1/guardians/{$guardian->id}/invite");
 
@@ -86,7 +93,8 @@ class GuardianLinkTest extends TestCase
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
         $parentUser = $this->createUserWithRole($school, 'Parent');
-        $guardian = Guardian::factory()->for($school)->create(['user_id' => $parentUser->id]);
+        tenancy()->initialize($school);
+        $guardian = Guardian::factory()->create(['user_id' => $parentUser->id]);
 
         $myChild = $this->student($school);
         $someoneElsesChild = $this->student($school);

@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Enums\PayslipStatus;
-use App\Models\School;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -16,7 +15,6 @@ class PayslipFactory extends Factory
         $deductions = fake()->randomFloat(2, 0, 200);
 
         return [
-            'school_id' => School::factory(),
             'user_id' => User::factory(),
             'salary_structure_id' => null,
             'payslip_number' => 'PS-'.fake()->unique()->numerify('####'),

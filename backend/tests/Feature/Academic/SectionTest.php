@@ -17,8 +17,10 @@ class SectionTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
 
         $this->actingAsInSchool($admin)->getJson('/api/v1/sections')->assertOk();
 
@@ -30,7 +32,7 @@ class SectionTest extends TestCase
         ]);
 
         $response->assertCreated()->assertJsonPath('data.name', 'A');
-        $this->assertDatabaseHas('sections', ['school_id' => $school->id, 'name' => 'A']);
+        $this->assertDatabaseHas('sections', ['name' => 'A']);
     }
 
     /**
@@ -45,9 +47,12 @@ class SectionTest extends TestCase
     {
         $school = $this->createSchool();
         $classTeacher = $this->createUserWithRole($school, 'Class Teacher');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create([
             'academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'class_teacher_id' => $classTeacher->id,
         ]);
 
@@ -62,9 +67,12 @@ class SectionTest extends TestCase
     {
         $school = $this->createSchool();
         $teacher = $this->createUserWithRole($school, 'Teacher');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
 
         $response = $this->actingAsInSchool($teacher)->putJson("/api/v1/sections/{$section->id}", [
             'academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'B',

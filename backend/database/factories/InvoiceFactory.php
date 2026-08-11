@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Enums\InvoiceStatus;
 use App\Models\AcademicYear;
-use App\Models\School;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -16,7 +15,6 @@ class InvoiceFactory extends Factory
         $total = fake()->randomFloat(2, 1000, 10000);
 
         return [
-            'school_id' => School::factory(),
             'student_id' => Student::factory(),
             'academic_year_id' => AcademicYear::factory(),
             'invoice_number' => 'INV-'.fake()->unique()->numerify('####'),

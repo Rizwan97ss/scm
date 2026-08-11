@@ -26,7 +26,7 @@ class CertificateTest extends TestCase
         ]);
 
         $response->assertCreated();
-        $this->assertDatabaseHas('certificate_templates', ['school_id' => $school->id, 'name' => 'Bonafide Certificate']);
+        $this->assertDatabaseHas('certificate_templates', ['name' => 'Bonafide Certificate']);
     }
 
     public function test_teacher_cannot_create_a_certificate_template(): void
@@ -45,7 +45,8 @@ class CertificateTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $template = CertificateTemplate::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $template = CertificateTemplate::factory()->create([
             'body' => 'This certifies that {{student_name}} ({{admission_number}}) is a student of {{school_name}}.',
         ]);
         $student = $this->makeStudent($school);
@@ -65,7 +66,8 @@ class CertificateTest extends TestCase
     {
         $school = $this->createSchool();
         $receptionist = $this->createUserWithRole($school, 'Receptionist');
-        $template = CertificateTemplate::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $template = CertificateTemplate::factory()->create();
         $student = $this->makeStudent($school);
 
         $response = $this->actingAsInSchool($receptionist)->postJson("/api/v1/certificate-templates/{$template->id}/issue", [
@@ -79,7 +81,8 @@ class CertificateTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $template = CertificateTemplate::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $template = CertificateTemplate::factory()->create();
         $studentA = $this->makeStudent($school);
         $studentB = $this->makeStudent($school);
         $studentAUser = $this->createUserWithRole($school, 'Student');
@@ -97,7 +100,8 @@ class CertificateTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $template = CertificateTemplate::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $template = CertificateTemplate::factory()->create();
         $student = $this->makeStudent($school);
 
         $issue = $this->actingAsInSchool($admin)->postJson("/api/v1/certificate-templates/{$template->id}/issue", ['student_id' => $student->id]);
@@ -134,8 +138,10 @@ class CertificateTest extends TestCase
 
     private function makeStudent(School $school): Student
     {
-        $year = AcademicYear::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
 
-        return Student::factory()->for($school)->create(['academic_year_id' => $year->id]);
+        tenancy()->initialize($school);
+        return Student::factory()->create(['academic_year_id' => $year->id]);
     }
 }

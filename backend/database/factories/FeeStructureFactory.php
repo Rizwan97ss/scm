@@ -5,7 +5,6 @@ namespace Database\Factories;
 use App\Enums\FeeFrequency;
 use App\Models\AcademicYear;
 use App\Models\FeeCategory;
-use App\Models\School;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class FeeStructureFactory extends Factory
@@ -13,7 +12,6 @@ class FeeStructureFactory extends Factory
     public function definition(): array
     {
         return [
-            'school_id' => School::factory(),
             'academic_year_id' => AcademicYear::factory(),
             'grade_level_id' => null,
             'fee_category_id' => FeeCategory::factory(),

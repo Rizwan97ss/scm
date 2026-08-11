@@ -18,27 +18,31 @@ class StudentIdGeneratorServiceTest extends TestCase
         $school = School::factory()->create(['short_name' => 'demo']);
         $service = new StudentIdGeneratorService(app(SettingsService::class), app(IdSequenceService::class));
 
-        $first = $service->generate($school, \Carbon\Carbon::create(2026, 1, 1));
-        $second = $service->generate($school, \Carbon\Carbon::create(2026, 6, 1));
-        $thirdDifferentYear = $service->generate($school, \Carbon\Carbon::create(2027, 1, 1));
+        $school->run(function () use ($service, $school) {
+            $first = $service->generate($school, \Carbon\Carbon::create(2026, 1, 1));
+            $second = $service->generate($school, \Carbon\Carbon::create(2026, 6, 1));
+            $thirdDifferentYear = $service->generate($school, \Carbon\Carbon::create(2027, 1, 1));
 
-        $this->assertEquals('2026-0001', $first);
-        $this->assertEquals('2026-0002', $second);
-        $this->assertEquals('2027-0001', $thirdDifferentYear);
+            $this->assertEquals('2026-0001', $first);
+            $this->assertEquals('2026-0002', $second);
+            $this->assertEquals('2027-0001', $thirdDifferentYear);
+        });
     }
 
     public function test_respects_custom_format_and_padding_settings(): void
     {
         $school = School::factory()->create(['short_name' => 'riv']);
         $settings = app(SettingsService::class);
-        $settings->set('students.admission_number_format', '{SCHOOL}-{YEAR}-{SEQ}', $school->id);
-        $settings->set('students.admission_number_padding', 3, $school->id);
-
         $service = new StudentIdGeneratorService($settings, app(IdSequenceService::class));
 
-        $admissionNumber = $service->generate($school, \Carbon\Carbon::create(2026, 1, 1));
+        $school->run(function () use ($settings, $service, $school) {
+            $settings->set('students.admission_number_format', '{SCHOOL}-{YEAR}-{SEQ}', $school->id);
+            $settings->set('students.admission_number_padding', 3, $school->id);
 
-        $this->assertEquals('riv-2026-001', $admissionNumber);
+            $admissionNumber = $service->generate($school, \Carbon\Carbon::create(2026, 1, 1));
+
+            $this->assertEquals('riv-2026-001', $admissionNumber);
+        });
     }
 
     public function test_sequences_are_isolated_per_school(): void
@@ -47,8 +51,8 @@ class StudentIdGeneratorServiceTest extends TestCase
         $schoolB = School::factory()->create();
         $service = new StudentIdGeneratorService(app(SettingsService::class), app(IdSequenceService::class));
 
-        $service->generate($schoolA, \Carbon\Carbon::create(2026, 1, 1));
-        $firstForB = $service->generate($schoolB, \Carbon\Carbon::create(2026, 1, 1));
+        $schoolA->run(fn () => $service->generate($schoolA, \Carbon\Carbon::create(2026, 1, 1)));
+        $firstForB = $schoolB->run(fn () => $service->generate($schoolB, \Carbon\Carbon::create(2026, 1, 1)));
 
         $this->assertEquals('2026-0001', $firstForB);
     }

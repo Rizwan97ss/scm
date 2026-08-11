@@ -70,7 +70,12 @@ class LibraryService
             return 0.0;
         }
 
-        $perDay = (float) $this->settings->get('library.fine_per_day', 0);
+        // The schoolId here namespaces the settings cache key, not which row
+        // gets read (that's already the active tenant connection's own row)
+        // — but omitting it collides every tenant's read onto the same
+        // "settings:global" cache entry, since CACHE_STORE isn't tenant-
+        // scoped (see config/tenancy.php's CacheTenancyBootstrapper note).
+        $perDay = (float) $this->settings->get('library.fine_per_day', 0, tenant()?->id);
 
         return round($daysLate * $perDay, 2);
     }

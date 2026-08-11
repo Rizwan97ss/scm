@@ -44,7 +44,15 @@ class SubscriptionService
         $school->subscription('default')?->swap($plan->stripe_price_id);
 
         $school->update(['plan_id' => $plan->id]);
-        $this->provisioning->applyPlanLimits($school, $plan);
+
+        // applyPlanLimits() writes to Settings, which lives in the school's
+        // own tenant database (see SettingsService's docblock). Today's only
+        // caller (SchoolPlanController) is platform-guarded -- no tenant is
+        // ever active there -- and a future School-Admin-facing "change
+        // plan" action would call this from a tenant-zone request instead;
+        // run() makes swapPlan() correct from either without relying on
+        // whichever caller happens to invoke it to get tenancy right first.
+        $school->run(fn () => $this->provisioning->applyPlanLimits($school, $plan));
     }
 
     /**

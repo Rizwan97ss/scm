@@ -22,12 +22,16 @@ class PlanLimitEnforcementTest extends TestCase
         $plan = Plan::factory()->create(['max_students' => 1]);
         $school = $this->createSchool(['plan_id' => $plan->id]);
         app(SettingsService::class)->set('billing.max_students', 1, $school->id, SettingType::Integer, 'billing');
-        Student::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        Student::factory()->create();
 
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
 
         $response = $this->actingAsInSchool($admin)->postJson('/api/v1/students', [
             'first_name' => 'Overflow', 'last_name' => 'Student', 'gender' => 'male', 'date_of_birth' => '2018-01-15',

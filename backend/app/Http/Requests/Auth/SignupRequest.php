@@ -31,7 +31,12 @@ class SignupRequest extends FormRequest
 
             'admin.first_name' => ['required', 'string', 'max:100'],
             'admin.last_name' => ['required', 'string', 'max:100'],
-            'admin.email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
+            // No Rule::unique('users', ...) here -- there is no single `users`
+            // table to check against (each tenant has its own, and this
+            // request runs on the central domain with no tenant resolved at
+            // all). Every signup provisions a brand-new, empty tenant, so
+            // the new admin's email is trivially unique within it regardless.
+            'admin.email' => ['required', 'string', 'email', 'max:255'],
             'admin.password' => ['required', 'confirmed', Password::defaults()],
 
             'plan_id' => ['required', 'integer', Rule::exists('plans', 'id')->where('is_active', true)],

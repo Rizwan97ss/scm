@@ -25,7 +25,6 @@ class SettingCrudTest extends TestCase
         $this->assertEquals('#ff0000', $response->json('data')['branding.primary_color']);
 
         $this->assertDatabaseHas('settings', [
-            'school_id' => $school->id,
             'key' => 'branding.primary_color',
             'value' => '#ff0000',
         ]);

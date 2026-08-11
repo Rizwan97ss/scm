@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\School;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,7 +14,6 @@ class AcademicYearFactory extends Factory
         $end = $start->copy()->addMonths(10);
 
         return [
-            'school_id' => School::factory(),
             'name' => "{$start->year}-{$end->year}",
             'start_date' => $start->toDateString(),
             'end_date' => $end->toDateString(),

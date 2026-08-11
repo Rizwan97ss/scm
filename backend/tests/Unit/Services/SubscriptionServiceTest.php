@@ -29,9 +29,11 @@ class SubscriptionServiceTest extends TestCase
 
         $this->assertEquals($newPlan->id, $school->fresh()->plan_id);
 
-        $settings = app(SettingsService::class)->allForSchool($school->id);
-        $this->assertNull($settings['billing.max_students']);
-        $this->assertEquals('scale', $settings['billing.plan_key']);
+        $school->run(function () use ($school) {
+            $settings = app(SettingsService::class)->allForSchool($school->id);
+            $this->assertNull($settings['billing.max_students']);
+            $this->assertEquals('scale', $settings['billing.plan_key']);
+        });
     }
 
     public function test_cancel_does_not_throw_when_school_has_no_active_subscription(): void

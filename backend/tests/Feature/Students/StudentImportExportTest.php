@@ -25,9 +25,12 @@ class StudentImportExportTest extends TestCase
 
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create(['is_current' => true]);
-        $gradeLevel = GradeLevel::factory()->for($school)->create(['code' => 'G1']);
-        Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'A']);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create(['is_current' => true]);
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create(['code' => 'G1']);
+        tenancy()->initialize($school);
+        Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'A']);
 
         $rows = [
             ['Valid', 'Student', 'female', '2018-05-01', 'G1', 'A', '', now()->toDateString(), '', '', '', '', ''],
@@ -68,7 +71,7 @@ class StudentImportExportTest extends TestCase
         $response->assertOk();
         $this->assertEquals(1, $response->json('data.imported_count'));
         $this->assertEquals(1, $response->json('data.failed_count'));
-        $this->assertDatabaseHas('students', ['first_name' => 'Valid', 'school_id' => $school->id]);
+        $this->assertDatabaseHas('students', ['first_name' => 'Valid']);
         $this->assertDatabaseMissing('students', ['first_name' => 'Invalid']);
     }
 
@@ -76,10 +79,14 @@ class StudentImportExportTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
-        Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        Student::factory()->create([
             'academic_year_id' => $year->id,
             'current_grade_level_id' => $gradeLevel->id,
             'current_section_id' => $section->id,

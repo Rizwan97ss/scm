@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\AcademicYear;
-use App\Models\School;
 use App\Models\Section;
 use App\Models\Subject;
 use App\Models\User;
@@ -14,7 +13,6 @@ class HomeworkFactory extends Factory
     public function definition(): array
     {
         return [
-            'school_id' => School::factory(),
             'academic_year_id' => AcademicYear::factory(),
             'section_id' => Section::factory(),
             'subject_id' => Subject::factory(),

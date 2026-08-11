@@ -26,7 +26,7 @@ class GradingScaleTest extends TestCase
         ]);
 
         $response->assertCreated()->assertJsonCount(3, 'data.grade_bands');
-        $this->assertDatabaseHas('grading_scales', ['school_id' => $school->id, 'name' => 'Standard Percentage']);
+        $this->assertDatabaseHas('grading_scales', ['name' => 'Standard Percentage']);
         $this->assertDatabaseCount('grade_bands', 3);
     }
 

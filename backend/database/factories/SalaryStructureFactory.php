@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\School;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -11,7 +10,6 @@ class SalaryStructureFactory extends Factory
     public function definition(): array
     {
         return [
-            'school_id' => School::factory(),
             'user_id' => User::factory(),
             'basic_salary' => fake()->randomFloat(2, 2000, 8000),
             'allowances' => fake()->randomFloat(2, 100, 500),

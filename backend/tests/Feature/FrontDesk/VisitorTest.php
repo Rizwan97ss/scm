@@ -42,7 +42,8 @@ class VisitorTest extends TestCase
     {
         $school = $this->createSchool();
         $receptionist = $this->createUserWithRole($school, 'Receptionist');
-        $visitor = Visitor::factory()->for($school)->create(['check_out_time' => null]);
+        tenancy()->initialize($school);
+        $visitor = Visitor::factory()->create(['check_out_time' => null]);
 
         $response = $this->actingAsInSchool($receptionist)->postJson("/api/v1/visitors/{$visitor->id}/check-out");
         $response->assertOk();
@@ -56,8 +57,10 @@ class VisitorTest extends TestCase
     {
         $school = $this->createSchool();
         $receptionist = $this->createUserWithRole($school, 'Receptionist');
-        Visitor::factory()->for($school)->create(['check_out_time' => null]);
-        Visitor::factory()->for($school)->create(['check_out_time' => now()]);
+        tenancy()->initialize($school);
+        Visitor::factory()->create(['check_out_time' => null]);
+        tenancy()->initialize($school);
+        Visitor::factory()->create(['check_out_time' => now()]);
 
         $response = $this->actingAsInSchool($receptionist)->getJson('/api/v1/visitors?filter[status]=checked_in');
 

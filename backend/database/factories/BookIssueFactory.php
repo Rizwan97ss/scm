@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Enums\BookIssueStatus;
 use App\Models\Book;
-use App\Models\School;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -13,7 +12,6 @@ class BookIssueFactory extends Factory
     public function definition(): array
     {
         return [
-            'school_id' => School::factory(),
             'book_id' => Book::factory(),
             'student_id' => null,
             'user_id' => null,

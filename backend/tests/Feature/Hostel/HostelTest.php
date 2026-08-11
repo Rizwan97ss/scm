@@ -30,7 +30,7 @@ class HostelTest extends TestCase
             'hostel_id' => $hostel->json('data.id'), 'room_number' => '101', 'capacity' => 2,
         ]);
         $room->assertCreated();
-        $this->assertDatabaseHas('hostel_rooms', ['school_id' => $school->id, 'room_number' => '101']);
+        $this->assertDatabaseHas('hostel_rooms', ['room_number' => '101']);
     }
 
     public function test_teacher_cannot_create_a_hostel(): void
@@ -47,8 +47,10 @@ class HostelTest extends TestCase
     {
         $school = $this->createSchool();
         $hr = $this->createUserWithRole($school, 'HR Staff');
-        $hostel = Hostel::factory()->for($school)->create();
-        $room = HostelRoom::factory()->for($school)->create(['hostel_id' => $hostel->id, 'capacity' => 2]);
+        tenancy()->initialize($school);
+        $hostel = Hostel::factory()->create();
+        tenancy()->initialize($school);
+        $room = HostelRoom::factory()->create(['hostel_id' => $hostel->id, 'capacity' => 2]);
         $studentA = $this->makeStudent($school);
         $studentB = $this->makeStudent($school);
 
@@ -74,8 +76,10 @@ class HostelTest extends TestCase
     {
         $school = $this->createSchool();
         $hr = $this->createUserWithRole($school, 'HR Staff');
-        $room = HostelRoom::factory()->for($school)->create(['capacity' => 1]);
-        HostelAllocation::factory()->for($school)->create(['hostel_room_id' => $room->id, 'student_id' => $this->makeStudent($school)->id, 'status' => 'allocated']);
+        tenancy()->initialize($school);
+        $room = HostelRoom::factory()->create(['capacity' => 1]);
+        tenancy()->initialize($school);
+        HostelAllocation::factory()->create(['hostel_room_id' => $room->id, 'student_id' => $this->makeStudent($school)->id, 'status' => 'allocated']);
         $studentB = $this->makeStudent($school);
 
         $response = $this->actingAsInSchool($hr)->postJson('/api/v1/hostel-allocations', [
@@ -89,9 +93,12 @@ class HostelTest extends TestCase
     {
         $school = $this->createSchool();
         $hr = $this->createUserWithRole($school, 'HR Staff');
-        $hostel = Hostel::factory()->for($school)->create();
-        $room = HostelRoom::factory()->for($school)->create(['hostel_id' => $hostel->id]);
-        $allocation = HostelAllocation::factory()->for($school)->create(['hostel_room_id' => $room->id, 'status' => 'allocated']);
+        tenancy()->initialize($school);
+        $hostel = Hostel::factory()->create();
+        tenancy()->initialize($school);
+        $room = HostelRoom::factory()->create(['hostel_id' => $hostel->id]);
+        tenancy()->initialize($school);
+        $allocation = HostelAllocation::factory()->create(['hostel_room_id' => $room->id, 'status' => 'allocated']);
 
         $response = $this->actingAsInSchool($hr)->postJson("/api/v1/hostel-allocations/{$allocation->id}/vacate");
         $response->assertOk()->assertJsonPath('data.status', 'vacated');
@@ -102,8 +109,10 @@ class HostelTest extends TestCase
 
     private function makeStudent(School $school): Student
     {
-        $year = AcademicYear::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
 
-        return Student::factory()->for($school)->create(['academic_year_id' => $year->id]);
+        tenancy()->initialize($school);
+        return Student::factory()->create(['academic_year_id' => $year->id]);
     }
 }

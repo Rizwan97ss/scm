@@ -20,11 +20,16 @@ class TimetableConflictTest extends TestCase
         $admin = $this->createUserWithRole($school, 'School Admin');
         $teacher = $this->createUserWithRole($school, 'Teacher');
 
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $sectionA = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'A']);
-        $sectionB = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'B']);
-        $period = TimetablePeriod::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $sectionA = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'A']);
+        tenancy()->initialize($school);
+        $sectionB = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'name' => 'B']);
+        tenancy()->initialize($school);
+        $period = TimetablePeriod::factory()->create();
 
         $first = $this->actingAsInSchool($admin)->postJson('/api/v1/timetable-entries', [
             'academic_year_id' => $year->id,
@@ -52,11 +57,16 @@ class TimetableConflictTest extends TestCase
         $admin = $this->createUserWithRole($school, 'School Admin');
         $teacher = $this->createUserWithRole($school, 'Teacher');
 
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
-        $periodOne = TimetablePeriod::factory()->for($school)->create(['sequence' => 1]);
-        $periodTwo = TimetablePeriod::factory()->for($school)->create(['sequence' => 2]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $periodOne = TimetablePeriod::factory()->create(['sequence' => 1]);
+        tenancy()->initialize($school);
+        $periodTwo = TimetablePeriod::factory()->create(['sequence' => 2]);
 
         $this->actingAsInSchool($admin)->postJson('/api/v1/timetable-entries', [
             'academic_year_id' => $year->id,

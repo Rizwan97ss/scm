@@ -16,7 +16,8 @@ class LeaveRequestTest extends TestCase
     {
         $school = $this->createSchool();
         $teacher = $this->createUserWithRole($school, 'Teacher');
-        $leaveType = LeaveType::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $leaveType = LeaveType::factory()->create();
 
         $response = $this->actingAsInSchool($teacher)->postJson('/api/v1/leave-requests', [
             'leave_type_id' => $leaveType->id,
@@ -28,14 +29,15 @@ class LeaveRequestTest extends TestCase
         $response->assertCreated();
         $response->assertJsonPath('data.days', 3);
         $response->assertJsonPath('data.status', 'pending');
-        $this->assertDatabaseHas('leave_requests', ['school_id' => $school->id, 'user_id' => $teacher->id, 'status' => 'pending']);
+        $this->assertDatabaseHas('leave_requests', ['user_id' => $teacher->id, 'status' => 'pending']);
     }
 
     public function test_student_cannot_apply_for_leave(): void
     {
         $school = $this->createSchool();
         $student = $this->createUserWithRole($school, 'Student');
-        $leaveType = LeaveType::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $leaveType = LeaveType::factory()->create();
 
         $response = $this->actingAsInSchool($student)->postJson('/api/v1/leave-requests', [
             'leave_type_id' => $leaveType->id,
@@ -52,7 +54,8 @@ class LeaveRequestTest extends TestCase
         $school = $this->createSchool();
         $teacherA = $this->createUserWithRole($school, 'Teacher');
         $teacherB = $this->createUserWithRole($school, 'Teacher');
-        $leaveType = LeaveType::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $leaveType = LeaveType::factory()->create();
 
         $this->actingAsInSchool($teacherA)->postJson('/api/v1/leave-requests', [
             'leave_type_id' => $leaveType->id, 'start_date' => now()->toDateString(), 'end_date' => now()->toDateString(), 'reason' => 'A',
@@ -71,7 +74,8 @@ class LeaveRequestTest extends TestCase
         $school = $this->createSchool();
         $teacher = $this->createUserWithRole($school, 'Teacher');
         $hr = $this->createUserWithRole($school, 'HR Staff');
-        $leaveType = LeaveType::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $leaveType = LeaveType::factory()->create();
 
         $this->actingAsInSchool($teacher)->postJson('/api/v1/leave-requests', [
             'leave_type_id' => $leaveType->id, 'start_date' => now()->toDateString(), 'end_date' => now()->toDateString(), 'reason' => 'A',
@@ -87,7 +91,8 @@ class LeaveRequestTest extends TestCase
         $school = $this->createSchool();
         $teacher = $this->createUserWithRole($school, 'Teacher');
         $hr = $this->createUserWithRole($school, 'HR Staff');
-        $leaveType = LeaveType::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $leaveType = LeaveType::factory()->create();
 
         $start = now()->addWeek()->startOfWeek();
         $end = (clone $start)->addDays(1);
@@ -112,7 +117,8 @@ class LeaveRequestTest extends TestCase
     {
         $school = $this->createSchool();
         $teacher = $this->createUserWithRole($school, 'Teacher');
-        $leaveType = LeaveType::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $leaveType = LeaveType::factory()->create();
 
         $create = $this->actingAsInSchool($teacher)->postJson('/api/v1/leave-requests', [
             'leave_type_id' => $leaveType->id, 'start_date' => now()->toDateString(), 'end_date' => now()->toDateString(), 'reason' => 'A',
@@ -131,7 +137,8 @@ class LeaveRequestTest extends TestCase
         $school = $this->createSchool();
         $teacher = $this->createUserWithRole($school, 'Teacher');
         $hr = $this->createUserWithRole($school, 'HR Staff');
-        $leaveType = LeaveType::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $leaveType = LeaveType::factory()->create();
 
         $create = $this->actingAsInSchool($teacher)->postJson('/api/v1/leave-requests', [
             'leave_type_id' => $leaveType->id, 'start_date' => now()->toDateString(), 'end_date' => now()->toDateString(), 'reason' => 'A',

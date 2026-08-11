@@ -16,7 +16,8 @@ class StudentEnrollmentTest extends TestCase
 
     private function admittedStudent($school, $year, $gradeLevel, $section): Student
     {
-        return Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        return Student::factory()->create([
             'academic_year_id' => $year->id,
             'current_grade_level_id' => $gradeLevel->id,
             'current_section_id' => $section->id,
@@ -28,12 +29,18 @@ class StudentEnrollmentTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create();
-        $nextYear = AcademicYear::factory()->for($school)->create();
-        $gradeLevel1 = GradeLevel::factory()->for($school)->create(['sequence' => 1]);
-        $gradeLevel2 = GradeLevel::factory()->for($school)->create(['sequence' => 2]);
-        $section1 = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel1->id]);
-        $section2 = Section::factory()->for($school)->create(['academic_year_id' => $nextYear->id, 'grade_level_id' => $gradeLevel2->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $nextYear = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel1 = GradeLevel::factory()->create(['sequence' => 1]);
+        tenancy()->initialize($school);
+        $gradeLevel2 = GradeLevel::factory()->create(['sequence' => 2]);
+        tenancy()->initialize($school);
+        $section1 = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel1->id]);
+        tenancy()->initialize($school);
+        $section2 = Section::factory()->create(['academic_year_id' => $nextYear->id, 'grade_level_id' => $gradeLevel2->id]);
 
         $student = $this->admittedStudent($school, $year, $gradeLevel1, $section1);
 
@@ -73,9 +80,12 @@ class StudentEnrollmentTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
         $student = $this->admittedStudent($school, $year, $gradeLevel, $section);
 
         $response = $this->actingAsInSchool($admin)->postJson("/api/v1/students/{$student->id}/transfer", ['reason' => 'Moving abroad']);
@@ -88,9 +98,12 @@ class StudentEnrollmentTest extends TestCase
     {
         $school = $this->createSchool();
         $teacher = $this->createUserWithRole($school, 'Teacher');
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'class_teacher_id' => $teacher->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id, 'class_teacher_id' => $teacher->id]);
         $student = $this->admittedStudent($school, $year, $gradeLevel, $section);
 
         $response = $this->actingAsInSchool($teacher)->postJson("/api/v1/students/{$student->id}/promote", [
@@ -106,12 +119,18 @@ class StudentEnrollmentTest extends TestCase
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
-        $year = AcademicYear::factory()->for($school)->create();
-        $nextYear = AcademicYear::factory()->for($school)->create();
-        $gradeLevel1 = GradeLevel::factory()->for($school)->create(['sequence' => 1]);
-        $gradeLevel2 = GradeLevel::factory()->for($school)->create(['sequence' => 2]);
-        $section1 = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel1->id]);
-        $section2 = Section::factory()->for($school)->create(['academic_year_id' => $nextYear->id, 'grade_level_id' => $gradeLevel2->id]);
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $nextYear = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel1 = GradeLevel::factory()->create(['sequence' => 1]);
+        tenancy()->initialize($school);
+        $gradeLevel2 = GradeLevel::factory()->create(['sequence' => 2]);
+        tenancy()->initialize($school);
+        $section1 = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel1->id]);
+        tenancy()->initialize($school);
+        $section2 = Section::factory()->create(['academic_year_id' => $nextYear->id, 'grade_level_id' => $gradeLevel2->id]);
 
         $studentA = $this->admittedStudent($school, $year, $gradeLevel1, $section1);
         $studentB = $this->admittedStudent($school, $year, $gradeLevel1, $section1);

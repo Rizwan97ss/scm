@@ -29,22 +29,6 @@ class RoleCrudTest extends TestCase
         );
     }
 
-    public function test_super_admin_role_cannot_be_edited_by_non_super_admins(): void
-    {
-        // Super Admin itself bypasses every check by design (Gate::before), so this
-        // guard specifically protects the role from everyone ELSE — School Admin here.
-        $school = $this->createSchool();
-        $admin = $this->createUserWithRole($school, 'School Admin');
-
-        $role = \Spatie\Permission\Models\Role::query()->where('name', 'Super Admin')->firstOrFail();
-
-        $updateAsAdmin = $this->actingAsInSchool($admin)->putJson("/api/v1/roles/{$role->id}", ['name' => 'Hacked']);
-        $updateAsAdmin->assertStatus(403);
-
-        $deleteAsAdmin = $this->actingAsInSchool($admin)->deleteJson("/api/v1/roles/{$role->id}");
-        $deleteAsAdmin->assertStatus(403);
-    }
-
     public function test_role_permissions_are_scoped_per_school(): void
     {
         $schoolA = $this->createSchool();
@@ -58,11 +42,11 @@ class RoleCrudTest extends TestCase
         $roleNames = collect($response->json('data'))->pluck('name');
 
         $this->assertTrue($roleNames->contains('School Admin'));
-        // Every role returned must belong to school A's own team scope, not leak school B's copy.
-        $this->assertCount(
-            \Spatie\Permission\Models\Role::query()->where('school_id', $schoolA->id)->count(),
-            $roleNames
-        );
+        // Every role returned must be school A's own — physical database
+        // separation is what guarantees this now, not a school_id filter
+        // (school B's identically-named roles live in a different database
+        // entirely, there's no shared `roles` table left to leak across).
+        $this->assertCount(\Spatie\Permission\Models\Role::query()->count(), $roleNames);
     }
 
     public function test_teacher_cannot_view_roles(): void

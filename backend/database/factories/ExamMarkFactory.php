@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\ExamSubject;
-use App\Models\School;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -13,7 +12,6 @@ class ExamMarkFactory extends Factory
     public function definition(): array
     {
         return [
-            'school_id' => School::factory(),
             'exam_subject_id' => ExamSubject::factory(),
             'student_id' => Student::factory(),
             'marks_obtained' => fake()->numberBetween(40, 100),

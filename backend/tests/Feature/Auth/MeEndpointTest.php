@@ -20,13 +20,20 @@ class MeEndpointTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('data.first_name', 'Alice')
             ->assertJsonPath('data.roles.0', 'School Admin')
-            ->assertJsonPath('data.school_id', $school->id);
+            ->assertJsonPath('data.school.id', $school->id);
 
         $this->assertContains('students.view', $response->json('data.permissions'));
     }
 
     public function test_guest_cannot_fetch_profile(): void
     {
+        // /api/v1/auth/me is tenant-zone-only -- hitting it from the central
+        // domain (no createSchool()) 404s regardless of auth state, since
+        // tenancy.subdomain rejects the request before auth:sanctum even
+        // runs. A real school's own subdomain is what actually exercises
+        // the "authenticated but nobody's logged in" 401 path.
+        $this->createSchool();
+
         $response = $this->getJson('/api/v1/auth/me');
 
         $response->assertStatus(401)->assertJsonPath('success', false);

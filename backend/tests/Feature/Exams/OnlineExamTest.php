@@ -24,26 +24,34 @@ class OnlineExamTest extends TestCase
 
     private function makeOnlineExamSubject(School $school, ?int $teacherId = null, array $attrs = []): array
     {
-        $year = AcademicYear::factory()->for($school)->create();
-        $gradeLevel = GradeLevel::factory()->for($school)->create();
-        $section = Section::factory()->for($school)->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
-        $subject = Subject::factory()->for($school)->create();
-        $exam = Exam::factory()->for($school)->create(['academic_year_id' => $year->id]);
-        $examSubject = ExamSubject::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+        tenancy()->initialize($school);
+        $subject = Subject::factory()->create();
+        tenancy()->initialize($school);
+        $exam = Exam::factory()->create(['academic_year_id' => $year->id]);
+        tenancy()->initialize($school);
+        $examSubject = ExamSubject::factory()->create([
             'exam_id' => $exam->id, 'subject_id' => $subject->id, 'section_id' => $section->id,
             'max_marks' => 10, 'is_online' => true, 'max_attempts' => 1, ...$attrs,
         ]);
 
         if ($teacherId) {
             ClassSubjectTeacher::query()->create([
-                'school_id' => $school->id, 'academic_year_id' => $year->id,
+                'academic_year_id' => $year->id,
                 'section_id' => $section->id, 'subject_id' => $subject->id, 'teacher_id' => $teacherId,
             ]);
         }
 
-        $studentUser = User::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $studentUser = User::factory()->create();
         $studentUser->assignRole('Student');
-        $student = Student::factory()->for($school)->create([
+        tenancy()->initialize($school);
+        $student = Student::factory()->create([
             'academic_year_id' => $year->id, 'current_grade_level_id' => $gradeLevel->id, 'current_section_id' => $section->id,
             'user_id' => $studentUser->id,
         ]);
@@ -53,10 +61,12 @@ class OnlineExamTest extends TestCase
 
     private function makeQuestion(School $school, int $createdBy, int $correctIndex = 0, float $marks = 5): Question
     {
-        $question = Question::factory()->for($school)->create(['created_by' => $createdBy, 'type' => 'mcq', 'default_marks' => $marks]);
+        tenancy()->initialize($school);
+        $question = Question::factory()->create(['created_by' => $createdBy, 'type' => 'mcq', 'default_marks' => $marks]);
 
         foreach (['A', 'B', 'C', 'D'] as $i => $label) {
-            QuestionOption::factory()->for($school)->create([
+            tenancy()->initialize($school);
+            QuestionOption::factory()->create([
                 'question_id' => $question->id, 'option_text' => $label, 'is_correct' => $i === $correctIndex, 'sequence' => $i,
             ]);
         }
@@ -80,7 +90,7 @@ class OnlineExamTest extends TestCase
         ]);
 
         $response->assertCreated()->assertJsonCount(2, 'data.options');
-        $this->assertDatabaseHas('questions', ['school_id' => $school->id, 'text' => 'The sky is blue.']);
+        $this->assertDatabaseHas('questions', ['text' => 'The sky is blue.']);
     }
 
     public function test_question_must_have_exactly_one_correct_option(): void
@@ -174,9 +184,11 @@ class OnlineExamTest extends TestCase
     {
         $school = $this->createSchool();
         [$examSubject] = $this->makeOnlineExamSubject($school);
-        $otherStudentUser = User::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $otherStudentUser = User::factory()->create();
         $otherStudentUser->assignRole('Student');
-        Student::factory()->for($school)->create(['user_id' => $otherStudentUser->id, 'academic_year_id' => AcademicYear::factory()->for($school)->create()->id]);
+        tenancy()->initialize($school);
+        Student::factory()->create(['user_id' => $otherStudentUser->id, 'academic_year_id' => AcademicYear::factory()->create()->id]);
 
         $response = $this->actingAsInSchool($otherStudentUser)->postJson("/api/v1/exam-subjects/{$examSubject->id}/attempts");
 
@@ -215,7 +227,8 @@ class OnlineExamTest extends TestCase
     {
         $school = $this->createSchool();
         [$examSubject, , $studentUserA] = $this->makeOnlineExamSubject($school);
-        $studentUserB = User::factory()->for($school)->create();
+        tenancy()->initialize($school);
+        $studentUserB = User::factory()->create();
         $studentUserB->assignRole('Student');
 
         $attemptId = $this->actingAsInSchool($studentUserA)->postJson("/api/v1/exam-subjects/{$examSubject->id}/attempts")->json('data.attempt.id');

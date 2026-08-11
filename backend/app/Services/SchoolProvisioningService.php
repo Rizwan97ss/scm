@@ -7,7 +7,6 @@ use App\Models\Plan;
 use App\Models\School;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -302,7 +301,16 @@ class SchoolProvisioningService
                 return ['admin' => $admin, 'login_token' => Password::broker()->createToken($admin)];
             });
         } catch (Throwable $e) {
-            DB::statement('DROP DATABASE IF EXISTS `'.$school->database()->getName().'`');
+            // run()'s own callback threw, so it never got to revert tenancy —
+            // it's still pointed at the half-provisioned tenant. End it
+            // (disconnects the connection) before deleting the database:
+            // for the SQLite manager that's a real file, and Windows won't
+            // let you delete one that's still open.
+            if (tenancy()->initialized) {
+                tenancy()->end();
+            }
+
+            $school->database()->manager()->deleteDatabase($school);
             $school->forceDelete();
 
             throw $e;

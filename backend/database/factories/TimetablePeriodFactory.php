@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\School;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TimetablePeriodFactory extends Factory
@@ -12,7 +11,6 @@ class TimetablePeriodFactory extends Factory
         $n = fake()->unique()->numberBetween(1, 10);
 
         return [
-            'school_id' => School::factory(),
             'name' => "Period {$n}",
             'start_time' => sprintf('%02d:00', 7 + $n),
             'end_time' => sprintf('%02d:00', 8 + $n),
