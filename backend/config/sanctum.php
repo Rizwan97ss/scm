@@ -2,7 +2,6 @@
 
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
-use Laravel\Sanctum\Http\Middleware\AuthenticateSession;
 use Laravel\Sanctum\Sanctum;
 
 return [
@@ -78,8 +77,24 @@ return [
     |
     */
 
+    /*
+     * authenticate_session deliberately disabled -- EnsureFrontendRequestsAreStateful
+     * applies it globally to every stateful api/* request via $middleware->statefulApi()
+     * in bootstrap/app.php, with no way to scope it per route zone. Its handle() always
+     * resolves $request->user() against the *default* ('web') guard/connection before
+     * checking anything else -- fine for tenant-zone routes (tenancy.subdomain already
+     * switched the connection by the time it runs, thanks to stancl's own middleware
+     * priority), but central-zone routes (platform-me, platform-login, schools) never
+     * run tenancy.subdomain at all. If a browser also carries a leftover tenant 'web'
+     * session cookie (same host:port serves both zones), this middleware tried
+     * resolving that tenant user id against the *central* connection's `users` table,
+     * which doesn't exist there since Sub-phase D moved it tenant-only -- a 500 on
+     * every central-zone request, surfaced to users as a raw SQL error toast blocking
+     * the app header. Losing this middleware only loses "auto-logout other sessions
+     * when the password changes", which nothing else in this app relies on.
+     */
     'middleware' => [
-        'authenticate_session' => AuthenticateSession::class,
+        'authenticate_session' => null,
         'encrypt_cookies' => EncryptCookies::class,
         'validate_csrf_token' => ValidateCsrfToken::class,
     ],
