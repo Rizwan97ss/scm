@@ -43,7 +43,7 @@ describe('LoginForm', () => {
         return HttpResponse.json({
           success: true,
           message: 'Logged in successfully.',
-          data: { id: 1, uuid: 'u1', school_id: 1, first_name: 'Alice', last_name: 'Admin', full_name: 'Alice Admin', email: 'alice@example.com', username: null, phone: null, gender: null, date_of_birth: null, status: 'active', must_change_password: false, last_login_at: null, avatar_url: null, roles: ['School Admin'], created_at: '2026-01-01T00:00:00Z' },
+          data: { id: 1, uuid: 'u1', first_name: 'Alice', last_name: 'Admin', full_name: 'Alice Admin', email: 'alice@example.com', username: null, phone: null, gender: null, date_of_birth: null, status: 'active', must_change_password: false, last_login_at: null, avatar_url: null, roles: ['School Admin'], created_at: '2026-01-01T00:00:00Z' },
         })
       })
     )

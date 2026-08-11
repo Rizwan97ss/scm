@@ -1,6 +1,7 @@
 /** Every route path in the app, in one place, so nav links/redirects/tests never hand-type a URL string. */
 export const routePaths = {
   login: '/login',
+  platformLogin: '/platform-login',
   signup: '/signup',
   signupComplete: '/signup/complete',
   forgotPassword: '/forgot-password',

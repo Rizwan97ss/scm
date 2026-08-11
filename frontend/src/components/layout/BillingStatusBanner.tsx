@@ -20,7 +20,7 @@ export function BillingStatusBanner() {
   const { can } = usePermission()
   const school = user?.school
 
-  if (!school?.billing_status || user?.school_id === null) return null
+  if (!school?.billing_status) return null
 
   const isLocked = LOCKED_STATUSES.includes(school.billing_status)
   const isPastDue = school.billing_status === 'past_due'

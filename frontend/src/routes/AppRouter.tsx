@@ -1,15 +1,18 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
+import { PlatformProtectedRoute } from './PlatformProtectedRoute'
 import { PermissionRoute } from './PermissionRoute'
 import { routePaths } from './routePaths'
 import { AppShell } from '@/components/layout/AppShell'
+import { PlatformShell } from '@/components/layout/PlatformShell'
 import { NotFound } from '@/components/feedback/NotFound'
 import { LoadingScreen } from '@/components/feedback/LoadingScreen'
 
 // Route-level code splitting: each feature page ships as its own chunk instead
 // of one large bundle, so the initial load only pays for the login screen.
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage })))
+const PlatformLoginPage = lazy(() => import('@/features/platform/pages/PlatformLoginPage').then((m) => ({ default: m.PlatformLoginPage })))
 const SignupPage = lazy(() => import('@/features/signup/pages/SignupPage').then((m) => ({ default: m.SignupPage })))
 const SignupCompletePage = lazy(() => import('@/features/signup/pages/SignupCompletePage').then((m) => ({ default: m.SignupCompletePage })))
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })))
@@ -89,14 +92,18 @@ export function AppRouter() {
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
         <Route path={routePaths.login} element={<LoginPage />} />
+        <Route path={routePaths.platformLogin} element={<PlatformLoginPage />} />
         <Route path={routePaths.signup} element={<SignupPage />} />
+        {/* Public, not ProtectedRoute — landed on unauthenticated (see
+            SignupCompletePage's own docblock), it's what establishes the
+            session in the first place. */}
+        <Route path={routePaths.signupComplete} element={<SignupCompletePage />} />
         <Route path={routePaths.forgotPassword} element={<ForgotPasswordPage />} />
         <Route path={routePaths.resetPassword} element={<ResetPasswordPage />} />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
             <Route path={routePaths.dashboard} element={<DashboardPage />} />
-            <Route path={routePaths.signupComplete} element={<SignupCompletePage />} />
 
             <Route path={routePaths.parentChildren} element={<ParentChildrenPage />} />
             <Route path={routePaths.parentChildProfile()} element={<ParentChildProfilePage />} />
@@ -119,10 +126,6 @@ export function AppRouter() {
 
             <Route element={<PermissionRoute permissions={['audit-logs.view']} />}>
               <Route path={routePaths.auditLogs} element={<AuditLogsPage />} />
-            </Route>
-
-            <Route element={<PermissionRoute permissions={['schools.manage']} />}>
-              <Route path={routePaths.schools} element={<SchoolsListPage />} />
             </Route>
 
             <Route element={<PermissionRoute permissions={['academic-years.view']} />}>
@@ -267,14 +270,17 @@ export function AppRouter() {
             <Route element={<PermissionRoute permissions={['library.view', 'transport.view', 'hostel.view']} />}>
               <Route path={routePaths.reportsOperations} element={<OperationsReportPage />} />
             </Route>
+          </Route>
+        </Route>
 
-            <Route element={<PermissionRoute permissions={['platform.view-tenants']} />}>
-              <Route path={routePaths.platformSchools} element={<PlatformSchoolsListPage />} />
-              <Route path={routePaths.platformSchoolDetail()} element={<PlatformSchoolDetailPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['platform.view-metrics']} />}>
-              <Route path={routePaths.platformMetrics} element={<PlatformMetricsPage />} />
-            </Route>
+        {/* Platform console — auth:platform guard, entirely separate from
+            the tenant session/permissions above (see PlatformAuthContext). */}
+        <Route element={<PlatformProtectedRoute />}>
+          <Route element={<PlatformShell />}>
+            <Route path={routePaths.schools} element={<SchoolsListPage />} />
+            <Route path={routePaths.platformSchools} element={<PlatformSchoolsListPage />} />
+            <Route path={routePaths.platformSchoolDetail()} element={<PlatformSchoolDetailPage />} />
+            <Route path={routePaths.platformMetrics} element={<PlatformMetricsPage />} />
           </Route>
         </Route>
 

@@ -11,7 +11,6 @@ export interface UserSchoolSnapshot {
 export interface User {
   id: number
   uuid: string
-  school_id: number | null
   first_name: string
   last_name: string
   full_name: string

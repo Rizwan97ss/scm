@@ -8,8 +8,8 @@ import { routePaths } from '@/routes/routePaths'
 
 export function Sidebar() {
   const { appName, logoUrl } = useTheme()
-  const { hasRole, user } = useAuth()
-  const groups = resolveNavGroups(hasRole, user?.school_id)
+  const { hasRole } = useAuth()
+  const groups = resolveNavGroups(hasRole)
 
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">

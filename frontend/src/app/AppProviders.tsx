@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { queryClient } from './queryClient'
 import { AuthProvider } from '@/context/AuthContext'
+import { PlatformAuthProvider } from '@/context/PlatformAuthContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 
 export function AppProviders({ children }: { children: ReactNode }) {
@@ -13,8 +14,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <BrowserRouter>
         <ThemeProvider>
           <AuthProvider>
-            {children}
-            <Toaster position="top-right" richColors closeButton />
+            <PlatformAuthProvider>
+              {children}
+              <Toaster position="top-right" richColors closeButton />
+            </PlatformAuthProvider>
           </AuthProvider>
         </ThemeProvider>
       </BrowserRouter>

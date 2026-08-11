@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Cashier\Billable;
@@ -141,7 +142,7 @@ class School extends Model implements TenantWithDatabase
      */
     public function studentCount(): int
     {
-        return $this->run(fn () => Student::query()->count());
+        return $this->runOrZero(fn () => Student::query()->count());
     }
 
     /**
@@ -153,11 +154,58 @@ class School extends Model implements TenantWithDatabase
      */
     public function staffCount(): int
     {
-        return $this->run(fn () => DB::table('model_has_roles')
+        return $this->runOrZero(fn () => DB::table('model_has_roles')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->where('model_has_roles.model_type', User::class)
             ->whereNotIn('roles.name', ['Student', 'Parent'])
             ->distinct()
             ->count('model_has_roles.model_id'));
+    }
+
+    /**
+     * One tenant with a missing/corrupt physical database (a restore gap,
+     * a botched manual DROP, orphaned test data) must not 500 the whole
+     * platform console's schools list just because it's rendered alongside
+     * every other, healthy tenant in the same response.
+     *
+     * The databaseExists() check below isn't just an optimization — it
+     * avoids a real correctness trap. tenancy()->initialize() runs its
+     * bootstrappers (Database, then Filesystem, ...) via a single event;
+     * if DatabaseTenancyBootstrapper::bootstrap() throws (a missing
+     * database — the same check it itself does, in local envs, as a
+     * "better debugging" convenience), that exception fires from inside
+     * run(), before run() ever reaches its own "revert to whatever tenant
+     * was active before" cleanup. Left alone, Tenancy's singleton stays
+     * dangling, "initialized" as THIS tenant — every later run() call in
+     * the same request (every other school in the same list) silently
+     * inherits that broken state instead of switching to its own
+     * database. Worse, forcing a cleanup via tenancy()->end() at that
+     * point cascades into a second crash: end() reverts EVERY
+     * bootstrapper, including Filesystem's, whose bootstrap() never ran
+     * (Database's threw first) and so has no saved original paths to
+     * revert to. Checking existence ourselves means initialize() is
+     * simply never called for a tenant we already know is broken —
+     * nothing to leave dangling, nothing to revert.
+     */
+    private function runOrZero(callable $callback): int
+    {
+        if (! $this->database()->manager()->databaseExists($this->database()->getName())) {
+            return 0;
+        }
+
+        try {
+            return $this->run($callback);
+        } catch (QueryException) {
+            // Database exists but the query still failed (a drifted/
+            // incompletely migrated schema) — initialize() itself
+            // succeeded here (every bootstrapper's bootstrap() ran), so
+            // unlike the missing-database case above, end() can safely
+            // revert all of them without hitting the same crash.
+            if (tenancy()->initialized) {
+                tenancy()->end();
+            }
+
+            return 0;
+        }
     }
 }

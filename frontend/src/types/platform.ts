@@ -23,3 +23,26 @@ export interface PlatformMetrics {
   by_billing_status: Record<string, number>
   approximate_mrr_cents: number
 }
+
+/**
+ * Super Admin, on the separate `platform` guard/session — landlord-
+ * connection only, no roles/permissions array (being a PlatformUser at all
+ * implies full platform access, see backend AppServiceProvider's
+ * Gate::before). Not a School's User, and not reachable via useAuth().
+ */
+export interface PlatformUser {
+  id: number
+  uuid: string
+  first_name: string
+  last_name: string
+  full_name: string
+  email: string
+  last_login_at: string | null
+  created_at: string
+}
+
+export interface PlatformLoginPayload {
+  email: string
+  password: string
+  remember?: boolean
+}

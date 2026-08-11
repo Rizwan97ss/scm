@@ -6,6 +6,7 @@
  */
 export const queryKeys = {
   me: ['me'] as const,
+  platformMe: ['platform-me'] as const,
   plans: ['plans'] as const,
   publicSettings: (school?: string) => ['settings', 'public', school ?? null] as const,
   settings: ['settings'] as const,

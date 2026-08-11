@@ -2,11 +2,35 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { env } from '@/config/env'
 import type { ApiErrorResponse } from '@/types/api'
 
-/** Origin the API is served from, e.g. "http://localhost:8000" (VITE_API_URL minus /api). */
-const apiOrigin = new URL(env.apiUrl).origin
+/**
+ * The API's origin, adjusted for whichever tenant subdomain this page is
+ * currently being viewed from. VITE_API_URL only supplies the scheme and
+ * port (a build-time default) — the hostname has to follow window.location
+ * at request time, or a request made from myschool.localtest.me:5173 would
+ * silently go to whatever host was baked in at build time (the wrong
+ * tenant's backend, or none, once a real subdomain no longer matches it).
+ *
+ * A relative VITE_API_URL (e.g. "/api") opts out of this entirely and
+ * resolves same-origin — the intended production shape, where a reverse
+ * proxy serves the SPA and API from the same host per tenant (see
+ * docs/deployment.md) and there is no separate port to preserve.
+ */
+function resolveApiUrl(): string {
+  if (env.apiUrl.startsWith('/')) {
+    return env.apiUrl
+  }
+  const configured = new URL(env.apiUrl)
+  const port = configured.port ? `:${configured.port}` : ''
+  return `${configured.protocol}//${window.location.hostname}${port}${configured.pathname}`
+}
+
+const apiUrl = resolveApiUrl()
+
+/** Origin the API is served from, e.g. "http://myschool.localtest.me:8000". */
+const apiOrigin = apiUrl.startsWith('/') ? window.location.origin : new URL(apiUrl).origin
 
 export const httpClient = axios.create({
-  baseURL: `${env.apiUrl}/v1`,
+  baseURL: `${apiUrl}/v1`,
   withCredentials: true,
   withXSRFToken: true,
   headers: {

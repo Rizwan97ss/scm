@@ -180,7 +180,6 @@ export const NAV_GROUPS: NavGroupConfig[] = [
     label: 'Administration',
     items: [
       { label: 'Roles & Permissions', to: routePaths.roles, icon: ShieldCheck, permissions: ['roles.view'] },
-      { label: 'Schools', to: routePaths.schools, icon: School, permissions: ['schools.manage'] },
       { label: 'Settings', to: routePaths.settings, icon: Settings, permissions: ['settings.view'] },
       { label: 'Billing', to: routePaths.settingsBilling, icon: CreditCard, permissions: ['billing.view'] },
       { label: 'Audit Log', to: routePaths.auditLogs, icon: ScrollText, permissions: ['audit-logs.view'] },
@@ -214,26 +213,16 @@ export const STUDENT_NAV_GROUPS: NavGroupConfig[] = [
   },
 ]
 
-/** Super Admin (school_id === null) — cross-tenant platform management, not a single school's data. */
-export const PLATFORM_ADMIN_NAV_GROUPS: NavGroupConfig[] = [
-  {
-    label: 'Platform',
-    items: [
-      { label: 'Schools', to: routePaths.platformSchools, icon: School, permissions: ['platform.view-tenants'] },
-      { label: 'Metrics', to: routePaths.platformMetrics, icon: BarChart3, permissions: ['platform.view-metrics'] },
-    ],
-  },
-]
-
 /**
  * Single source of truth for "which nav does this user see" — Sidebar.tsx
  * (desktop) and AppShell.tsx (mobile drawer) both call this instead of each
  * re-implementing the same role checks, after those two previously
  * disagreed (mobile gave Students the Parent nav — a bug, not a deliberate
- * difference).
+ * difference). Super Admin has no branch here at all — it's a PlatformUser
+ * now, on an entirely separate guard/shell (see PlatformShell), never a
+ * tenant User this function's caller could even be handed.
  */
-export function resolveNavGroups(hasRole: (...roles: string[]) => boolean, schoolId: number | null | undefined): NavGroupConfig[] {
-  if (schoolId === null && hasRole('Super Admin')) return PLATFORM_ADMIN_NAV_GROUPS
+export function resolveNavGroups(hasRole: (...roles: string[]) => boolean): NavGroupConfig[] {
   if (hasRole('Student')) return STUDENT_NAV_GROUPS
   if (hasRole('Parent')) return PARENT_NAV_GROUPS
   return NAV_GROUPS

@@ -31,9 +31,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
     throwOnError: false,
-    // A 401 here just means "not logged in" — not an error state the UI should surface.
+    // A 401 here just means "not logged in" — not an error state the UI
+    // should surface. Since the tenancy conversion, a 404 means the same
+    // thing for a different reason: /auth/me is tenant-zone-only, and this
+    // provider is mounted globally, so it fires on central-domain pages
+    // (login, signup, the platform console) with no tenant to resolve at
+    // all — also not something the UI should treat as a real error.
     select: (data) => data,
-    meta: { silent401: true },
+    meta: { silentError: true },
   })
 
   const login = useCallback(

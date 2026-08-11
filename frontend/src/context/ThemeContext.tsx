@@ -26,6 +26,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     queryKey: queryKeys.publicSettings(),
     queryFn: () => fetchPublicSettings(),
     staleTime: 5 * 60 * 1000,
+    retry: false,
+    // /settings/public is tenant-resolved (see SettingController) — on the
+    // central domain (login, signup, the platform console) there is no
+    // tenant to resolve, so this legitimately 404s on every page load
+    // there. Every value below already falls back to a sane default, so
+    // the failure itself is harmless; only the toast would not be.
+    meta: { silentError: true },
   })
 
   const [preference, setPreferenceState] = useState<ThemePreference>(

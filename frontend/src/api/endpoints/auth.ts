@@ -1,7 +1,7 @@
 import { ensureCsrfCookie, httpClient } from '@/api/client'
 import type { ApiResponse } from '@/types/api'
 import type { LoginPayload, UpdatePasswordPayload, User } from '@/types/auth'
-import type { SignupPayload, SignupResponse } from '@/types/signup'
+import type { SignupCompletePayload, SignupPayload, SignupResponse } from '@/types/signup'
 
 export async function login(payload: LoginPayload): Promise<User> {
   await ensureCsrfCookie()
@@ -12,6 +12,13 @@ export async function login(payload: LoginPayload): Promise<User> {
 export async function signup(payload: SignupPayload): Promise<SignupResponse> {
   await ensureCsrfCookie()
   const { data } = await httpClient.post<ApiResponse<SignupResponse>>('/auth/signup', payload)
+  return data.data
+}
+
+/** The tenant-subdomain half of the signup handoff — see SignupCompletePage. */
+export async function signupComplete(payload: SignupCompletePayload): Promise<User> {
+  await ensureCsrfCookie()
+  const { data } = await httpClient.post<ApiResponse<User>>('/auth/signup/complete', payload)
   return data.data
 }
 

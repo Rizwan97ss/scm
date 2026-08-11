@@ -11,9 +11,9 @@ import { resolveNavGroups } from '@/config/navigation'
 
 export function AppShell() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const { hasRole, user } = useAuth()
+  const { hasRole } = useAuth()
   const { appName } = useTheme()
-  const groups = resolveNavGroups(hasRole, user?.school_id)
+  const groups = resolveNavGroups(hasRole)
 
   return (
     <div className="flex h-svh overflow-hidden bg-background">

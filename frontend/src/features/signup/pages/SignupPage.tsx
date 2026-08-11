@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { signupSchema, SIGNUP_STEP_FIELDS, type SignupFormValues } from '../schemas/signupSchema'
 import { signup } from '@/api/endpoints/auth'
@@ -22,7 +22,6 @@ function stepForField(field: string): Step {
 }
 
 export function SignupPage() {
-  const queryClient = useQueryClient()
   const [stepIndex, setStepIndex] = useState(0)
   const [formError, setFormError] = useState<string | null>(null)
   const [isRedirecting, setIsRedirecting] = useState(false)
@@ -65,9 +64,10 @@ export function SignupPage() {
         ...values,
         school: { ...values.school, email: values.school.email || undefined },
       })
-      // Session cookie is already set server-side (signup logs the admin in
-      // immediately) — this just makes the client aware without a refetch.
-      queryClient.setQueryData(queryKeys.me, response.user)
+      // Not logged in yet — provision() never calls Auth::login() (see
+      // SignupResponse's docblock). Nothing to cache here; the redirect
+      // below leaves the SPA entirely, and SignupCompletePage on the far
+      // side of checkout is what actually establishes the session.
       setIsRedirecting(true)
       window.location.href = response.checkout_url
     } catch (error) {
