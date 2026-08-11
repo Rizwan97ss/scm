@@ -15,6 +15,7 @@ docs as they land; see [roadmap.md](roadmap.md) for what's next.
 | Doc | Read this for |
 |---|---|
 | [architecture.md](architecture.md) | System design: multi-tenancy, RBAC, layering, how the pieces fit together |
+| [tenant-guide.md](tenant-guide.md) | For a School Admin, not a developer — the complete setup flow for a new school, in dependency order |
 | [setup.md](setup.md) | Getting a local dev environment running from a clean checkout |
 | [database.md](database.md) | Schema, ERD, and the reasoning behind key modeling decisions |
 | [rbac.md](rbac.md) | The permission model, default roles, and how to add a new role or permission |
