@@ -25,6 +25,9 @@ class Guardian extends Model
     {
         return [
             'invited_at' => 'datetime',
+            'national_id' => 'encrypted',
+            'address_line1' => 'encrypted',
+            'address_line2' => 'encrypted',
         ];
     }
 
@@ -71,6 +74,12 @@ class Guardian extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logOnlyDirty()->dontLogEmptyChanges();
+        // national_id/address_line1/address_line2 are excluded: they're
+        // encrypted-at-rest (see casts() above), so a raw before/after diff
+        // would just be unreadable ciphertext, not a useful audit entry.
+        return LogOptions::defaults()
+            ->logOnly(['first_name', 'last_name', 'email', 'phone', 'occupation', 'city', 'state', 'postal_code', 'country'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
     }
 }

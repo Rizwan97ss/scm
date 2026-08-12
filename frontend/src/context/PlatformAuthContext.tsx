@@ -1,14 +1,21 @@
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { fetchPlatformMe, platformLogin as loginRequest, platformLogout as logoutRequest } from '@/api/endpoints/platformAuth'
+import {
+  fetchPlatformMe,
+  platformLogin as loginRequest,
+  platformLogout as logoutRequest,
+  verifyPlatformMfaChallenge as verifyMfaChallengeRequest,
+} from '@/api/endpoints/platformAuth'
 import { queryKeys } from '@/api/queryKeys'
-import type { PlatformLoginPayload, PlatformUser } from '@/types/platform'
+import type { MfaChallengePayload } from '@/types/auth'
+import type { PlatformLoginPayload, PlatformLoginResult, PlatformUser } from '@/types/platform'
 
 interface PlatformAuthContextValue {
   platformUser: PlatformUser | null
   isLoading: boolean
   isAuthenticated: boolean
-  login: (payload: PlatformLoginPayload) => Promise<PlatformUser>
+  login: (payload: PlatformLoginPayload) => Promise<PlatformLoginResult>
+  verifyMfaChallenge: (payload: MfaChallengePayload) => Promise<PlatformUser>
   logout: () => Promise<void>
 }
 
@@ -40,7 +47,18 @@ export function PlatformAuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (payload: PlatformLoginPayload) => {
-      const loggedInUser = await loginRequest(payload)
+      const result = await loginRequest(payload)
+      if (!result.mfa_required) {
+        queryClient.setQueryData(queryKeys.platformMe, result.user)
+      }
+      return result
+    },
+    [queryClient]
+  )
+
+  const verifyMfaChallenge = useCallback(
+    async (payload: MfaChallengePayload) => {
+      const loggedInUser = await verifyMfaChallengeRequest(payload)
       queryClient.setQueryData(queryKeys.platformMe, loggedInUser)
       return loggedInUser
     },
@@ -59,9 +77,10 @@ export function PlatformAuthProvider({ children }: { children: ReactNode }) {
       isLoading: isLoading || isPending,
       isAuthenticated: !!platformUser,
       login,
+      verifyMfaChallenge,
       logout,
     }),
-    [platformUser, isLoading, isPending, login, logout]
+    [platformUser, isLoading, isPending, login, verifyMfaChallenge, logout]
   )
 
   return <PlatformAuthContext.Provider value={value}>{children}</PlatformAuthContext.Provider>

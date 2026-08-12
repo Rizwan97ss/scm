@@ -1,11 +1,44 @@
 import { ensureCsrfCookie, httpClient } from '@/api/client'
 import type { ApiResponse } from '@/types/api'
-import type { LoginPayload, UpdatePasswordPayload, User } from '@/types/auth'
+import type {
+  LoginPayload,
+  LoginResult,
+  MfaChallengePayload,
+  MfaRecoveryCodesResponse,
+  MfaSetupResponse,
+  UpdatePasswordPayload,
+  User,
+} from '@/types/auth'
 import type { SignupCompletePayload, SignupPayload, SignupResponse } from '@/types/signup'
 
-export async function login(payload: LoginPayload): Promise<User> {
+/** data.mfa_required distinguishes a real login from a second-step challenge — see LoginRequest::authenticate()'s docblock. */
+export async function login(payload: LoginPayload): Promise<LoginResult> {
   await ensureCsrfCookie()
-  const { data } = await httpClient.post<ApiResponse<User>>('/auth/login', payload)
+  const { data } = await httpClient.post<ApiResponse<{ mfa_required: boolean; challenge_token?: string } | User>>('/auth/login', payload)
+  const body = data.data as { mfa_required?: boolean; challenge_token?: string }
+  if (body.mfa_required) {
+    return { mfa_required: true, challenge_token: body.challenge_token! }
+  }
+  return { mfa_required: false, user: data.data as User }
+}
+
+export async function verifyMfaChallenge(payload: MfaChallengePayload): Promise<User> {
+  const { data } = await httpClient.post<ApiResponse<User>>('/auth/mfa/verify-challenge', payload)
+  return data.data
+}
+
+export async function setupMfa(): Promise<MfaSetupResponse> {
+  const { data } = await httpClient.post<ApiResponse<MfaSetupResponse>>('/auth/mfa/setup')
+  return data.data
+}
+
+export async function confirmMfa(code: string): Promise<MfaRecoveryCodesResponse> {
+  const { data } = await httpClient.post<ApiResponse<MfaRecoveryCodesResponse>>('/auth/mfa/confirm', { code })
+  return data.data
+}
+
+export async function regenerateMfaRecoveryCodes(password: string): Promise<MfaRecoveryCodesResponse> {
+  const { data } = await httpClient.post<ApiResponse<MfaRecoveryCodesResponse>>('/auth/mfa/recovery-codes/regenerate', { password })
   return data.data
 }
 
@@ -24,6 +57,10 @@ export async function signupComplete(payload: SignupCompletePayload): Promise<Us
 
 export async function logout(): Promise<void> {
   await httpClient.post('/auth/logout')
+}
+
+export async function deleteAccount(): Promise<void> {
+  await httpClient.delete('/account')
 }
 
 export async function fetchMe(): Promise<User> {

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use App\Enums\UserStatus;
 use App\Models\User;
+use App\Services\Mfa\MfaChallengeService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,13 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    public function authenticate(): void
+    /**
+     * @return array{mfa_required: bool, challenge_token: string|null} 'mfa_required' true means
+     * no session was established — a confirmed MFA account needs a second
+     * request to /auth/mfa/verify-challenge (see MfaChallengeService) before
+     * Auth::login() actually runs.
+     */
+    public function authenticate(): array
     {
         $this->ensureIsNotRateLimited();
 
@@ -51,9 +58,17 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        RateLimiter::clear($this->throttleKey());
+
+        if ($user->hasMfaConfirmed()) {
+            $token = app(MfaChallengeService::class)->issueChallenge($user, 'web', $this->boolean('remember'));
+
+            return ['mfa_required' => true, 'challenge_token' => $token];
+        }
+
         Auth::login($user, $this->boolean('remember'));
 
-        RateLimiter::clear($this->throttleKey());
+        return ['mfa_required' => false, 'challenge_token' => null];
     }
 
     private function ensureIsNotRateLimited(): void

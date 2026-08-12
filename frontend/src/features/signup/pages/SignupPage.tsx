@@ -7,13 +7,15 @@ import { signupSchema, SIGNUP_STEP_FIELDS, type SignupFormValues } from '../sche
 import { signup } from '@/api/endpoints/auth'
 import { plansApi } from '@/api/endpoints/plans'
 import { queryKeys } from '@/api/queryKeys'
-import { PublicLayout } from '@/components/layout/PublicLayout'
+import { AuthLayout } from '@/features/marketing/components/AuthLayout'
 import { Button, Card, CardContent, FormField, Input } from '@/components/ui'
 import { cn } from '@/utils/cn'
 import type { ApiError } from '@/api/client'
 
 const STEPS = ['school', 'admin', 'plan'] as const
 type Step = (typeof STEPS)[number]
+
+const STEP_LABELS: Record<Step, string> = { school: 'Your school', admin: 'Your account', plan: 'Choose a plan' }
 
 function stepForField(field: string): Step {
   if (field.startsWith('school.')) return 'school'
@@ -86,11 +88,30 @@ export function SignupPage() {
   }
 
   return (
-    <PublicLayout step={stepIndex} totalSteps={STEPS.length}>
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold">Start your free trial</h1>
-        <p className="text-sm text-muted-foreground">No credit card charge until your trial ends. Cancel anytime.</p>
+    <AuthLayout
+      eyebrow="14-day free trial"
+      title="Set up your school in three steps."
+      description="No card charged until your trial ends. Every plan includes every module — the only difference is how much room your school needs."
+      wide={step === 'plan'}
+      footer={
+        <p className="text-[13.5px] text-[var(--mk-ink-soft)]">Already set up? Sign in from your school's own address.</p>
+      }
+    >
+      <div className="mb-7 flex items-center gap-2" role="progressbar" aria-valuenow={stepIndex + 1} aria-valuemin={1} aria-valuemax={STEPS.length}>
+        {STEPS.map((s, i) => (
+          <span
+            key={s}
+            className={cn(
+              'h-1.5 flex-1 rounded-full transition-colors duration-300',
+              i <= stepIndex ? 'bg-[var(--mk-marigold)]' : 'bg-[var(--mk-line-light)]'
+            )}
+          />
+        ))}
       </div>
+      <p className="mb-1 font-[var(--mk-font-mono)] text-[11px] uppercase tracking-[0.1em] text-[var(--mk-forest-deep)]">
+        Step {stepIndex + 1} of {STEPS.length}
+      </p>
+      <h2 className="mb-6 text-[22px] font-medium text-[var(--mk-ink)]">{STEP_LABELS[step]}</h2>
 
       {formError && (
         <p role="alert" className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -101,7 +122,6 @@ export function SignupPage() {
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {step === 'school' && (
           <section className="flex flex-col gap-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Your school</h2>
             <FormField label="School name" htmlFor="school-name" error={errors.school?.name?.message} required>
               <Input id="school-name" invalid={!!errors.school?.name} {...register('school.name')} />
             </FormField>
@@ -125,7 +145,6 @@ export function SignupPage() {
 
         {step === 'admin' && (
           <section className="flex flex-col gap-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Your account</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField label="First name" htmlFor="admin-first-name" error={errors.admin?.first_name?.message} required>
                 <Input id="admin-first-name" invalid={!!errors.admin?.first_name} {...register('admin.first_name')} />
@@ -159,7 +178,6 @@ export function SignupPage() {
 
         {step === 'plan' && (
           <section className="flex flex-col gap-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Choose your plan</h2>
             {errors.plan_id && <p className="text-sm text-destructive">{errors.plan_id.message}</p>}
             {plansLoading && <p className="text-sm text-muted-foreground">Loading plans…</p>}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -170,11 +188,16 @@ export function SignupPage() {
                   onClick={() => setValue('plan_id', plan.id, { shouldValidate: true })}
                   className="text-left"
                 >
-                  <Card className={cn('h-full transition-colors', planId === plan.id ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/50')}>
+                  <Card
+                    className={cn(
+                      'h-full transition-all',
+                      planId === plan.id ? 'border-[var(--mk-marigold)] ring-1 ring-[var(--mk-marigold)]' : 'hover:border-[var(--mk-marigold)]/50'
+                    )}
+                  >
                     <CardContent className="flex flex-col gap-2 pt-6">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold">{plan.name}</span>
-                        {planId === plan.id && <Check className="h-4 w-4 text-primary" />}
+                        {planId === plan.id && <Check className="h-4 w-4 text-[var(--mk-marigold)]" />}
                       </div>
                       <p className="text-2xl font-semibold">
                         ${(plan.price_cents / 100).toFixed(0)}
@@ -214,6 +237,6 @@ export function SignupPage() {
           )}
         </div>
       </form>
-    </PublicLayout>
+    </AuthLayout>
   )
 }

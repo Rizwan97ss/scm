@@ -1,16 +1,17 @@
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { fetchMe, login as loginRequest, logout as logoutRequest } from '@/api/endpoints/auth'
+import { fetchMe, login as loginRequest, logout as logoutRequest, verifyMfaChallenge as verifyMfaChallengeRequest } from '@/api/endpoints/auth'
 import { queryKeys } from '@/api/queryKeys'
 import { disconnectEcho } from '@/lib/echo'
-import type { LoginPayload, User } from '@/types/auth'
+import type { LoginPayload, LoginResult, MfaChallengePayload, User } from '@/types/auth'
 import type { ApiError } from '@/api/client'
 
 interface AuthContextValue {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
-  login: (payload: LoginPayload) => Promise<User>
+  login: (payload: LoginPayload) => Promise<LoginResult>
+  verifyMfaChallenge: (payload: MfaChallengePayload) => Promise<User>
   logout: () => Promise<void>
   hasRole: (...roles: string[]) => boolean
   hasPermission: (...permissions: string[]) => boolean
@@ -44,7 +45,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (payload: LoginPayload) => {
-      const loggedInUser = await loginRequest(payload)
+      const result = await loginRequest(payload)
+      if (!result.mfa_required) {
+        queryClient.setQueryData(queryKeys.me, result.user)
+      }
+      return result
+    },
+    [queryClient]
+  )
+
+  const verifyMfaChallenge = useCallback(
+    async (payload: MfaChallengePayload) => {
+      const loggedInUser = await verifyMfaChallengeRequest(payload)
       queryClient.setQueryData(queryKeys.me, loggedInUser)
       return loggedInUser
     },
@@ -71,11 +83,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading: isLoading || isPending,
       isAuthenticated: !!user,
       login,
+      verifyMfaChallenge,
       logout,
       hasRole,
       hasPermission,
     }),
-    [user, isLoading, isPending, login, logout, hasRole, hasPermission]
+    [user, isLoading, isPending, login, verifyMfaChallenge, logout, hasRole, hasPermission]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

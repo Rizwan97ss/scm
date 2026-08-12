@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\Platform\PlatformUser;
+use App\Services\Mfa\MfaChallengeService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +33,10 @@ class PlatformLoginRequest extends FormRequest
         ];
     }
 
-    public function authenticate(): void
+    /**
+     * @return array{mfa_required: bool, challenge_token: string|null} see LoginRequest::authenticate()'s docblock — identical shape, separate guard.
+     */
+    public function authenticate(): array
     {
         $this->ensureIsNotRateLimited();
 
@@ -46,6 +50,14 @@ class PlatformLoginRequest extends FormRequest
             ]);
         }
 
+        RateLimiter::clear($this->throttleKey());
+
+        if ($user->hasMfaConfirmed()) {
+            $token = app(MfaChallengeService::class)->issueChallenge($user, 'platform', $this->boolean('remember'));
+
+            return ['mfa_required' => true, 'challenge_token' => $token];
+        }
+
         Auth::guard('platform')->login($user, $this->boolean('remember'));
 
         // Authenticate middleware does this automatically for subsequent
@@ -56,7 +68,7 @@ class PlatformLoginRequest extends FormRequest
         // guard) already does without needing this extra call.
         Auth::shouldUse('platform');
 
-        RateLimiter::clear($this->throttleKey());
+        return ['mfa_required' => false, 'challenge_token' => null];
     }
 
     private function ensureIsNotRateLimited(): void

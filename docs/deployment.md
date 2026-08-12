@@ -66,6 +66,30 @@ skips the explicit name, it'll hit the same wall the first time it's
 migrated against MySQL, not before — worth naming these explicitly by habit
 rather than waiting for it to fail.
 
+**Phase 15 encryption backfill — deploy order matters here.** Several PII
+columns (`users.phone`, `students.medical_info`/
+`emergency_contact_phone`/`address_line1`/`address_line2`,
+`guardians.national_id`/`address_line1`/`address_line2`,
+`payments.reference_number`) now carry Laravel's `encrypted` cast. Adding
+the cast to a model does nothing to rows already stored as plaintext — the
+next read throws `DecryptException` on every one of them. The correct
+order for every environment that has existing data (i.e. anything past a
+fresh install) is:
+
+1. `php artisan tenants:migrate` (or `migrate --force` against each tenant)
+   — applies `2026_08_12_090001_widen_pii_columns_for_encryption.php`,
+   widening the target columns to `text` (the encrypted envelope runs
+   ~3-4x longer than plaintext, and these were `string(255)`).
+2. `php artisan security:encrypt-pii` (add `--dry-run` first to preview,
+   `--school=<slug>` to scope to one tenant) — rewrites existing plaintext
+   values in place via the same encrypter the model cast uses. Idempotent
+   and safe to re-run.
+3. Only then deploy the application code carrying the `encrypted` casts.
+
+A rolling deploy that serves old (plaintext-expecting) and new
+(encrypted-expecting) code against the same rows at the same time
+corrupts data — don't skip step 2 or reorder it after step 3.
+
 Also: MySQL's `CREATE TABLE`/`ALTER TABLE` are **not transactional** the
 way Laravel's migration wrapping implies — if a migration's `up()` fails
 partway through (exactly what happened here: the `CREATE TABLE` succeeded,
@@ -180,12 +204,14 @@ TRUSTED_PROXIES=*
 
 ## 5. Queue worker
 
-`QUEUE_CONNECTION=database` locally; for production, either keep the
-database driver (fine at this scale — no module built so far dispatches
-jobs yet) or switch to Redis/SQS when a later phase adds real background
-work (bulk import processing at scale, scheduled report generation,
-notification fan-out). Run a worker process regardless once queued jobs
-exist:
+`QUEUE_CONNECTION=database` locally (already runs alongside `php artisan
+serve` in the local `composer dev` script via `queue:listen`). **As of
+Phase 15, this is no longer optional** — `App\Jobs\GenerateDataExportJob`
+(data export generation, `docs/api.md`'s "Data export" section) is a real
+queued job now, and a school's export requests silently never complete
+without a worker actually processing them. Keep the database driver (fine
+at this scale) or switch to Redis/SQS if background work grows heavier.
+Run a worker process in production:
 
 ```bash
 php artisan queue:work --tries=3
@@ -197,15 +223,30 @@ not silently stop processing.
 
 ## 6. Scheduled jobs
 
-No scheduled command exists yet as of Phase 0-3 (the academic-year
-`is_current` flag is toggled explicitly via the `activate` endpoint, not on
-a timer). When a later phase adds one (e.g. auto-transitioning
-`upcoming` → `active` academic years, nightly attendance-summary rollups),
-register it in `routes/console.php` and point cron at:
+**As of Phase 15, three scheduled commands exist** (`routes/console.php`)
+— all three fan out per-tenant themselves (`School::all()->each(fn ($school)
+=> $school->run(...))`, the same pattern used elsewhere in this codebase),
+so no per-school cron configuration is needed, just the one line below:
 
 ```
 * * * * * cd /path/to/backend && php artisan schedule:run >> /dev/null 2>&1
 ```
+
+- `retention:clean-activity-logs` (daily) — prunes each tenant's activity
+  log per its own `retention.activity_log_days` setting.
+- `retention:clean-expired-exports` (hourly) — deletes data-export ZIPs
+  (and their `DataExport` rows) past `expires_at`.
+- `retention:anonymize-stale-accounts` (daily) — off by default per
+  tenant (`retention.inactive_account_anonymize_days` is null unless a
+  school explicitly opts in via Settings).
+
+**Gotcha already worked around, not left for you to hit**: Spatie's own
+`activitylog:clean` command reads one *global* config value and has no
+concept of per-tenant databases — a bare `Schedule::command('activitylog:
+clean')` would run against whatever tenant happens to be "current" when
+the scheduler ticks (none) and silently no-op forever. `retention:clean-
+activity-logs` wraps it correctly per-tenant instead; don't add a second,
+naive schedule entry calling `activitylog:clean` directly.
 
 ## 7. File storage
 
@@ -295,10 +336,10 @@ has real operational consequences at scale:
   `SchoolProvisioningService::SCHOOL_SCOPED_ROLE_PERMISSIONS` (the default
   role/permission matrix) only affects schools provisioned *after* the
   change — existing tenants' already-seeded roles aren't retroactively
-  updated. A permission-matrix change that needs to reach existing
-  schools needs its own one-off script iterating `School::all()` and
-  calling `$school->run(fn () => ...)`, the same pattern
-  `SchoolProvisioningService::seedDefaultRoles()` itself uses.
+  updated. Run `php artisan permissions:rollout` once per deploy that
+  changes the matrix (add `--school=<slug>` to scope to one tenant) —
+  idempotent, safe to re-run, iterates every school and calls
+  `seedDefaultRoles()` again.
 
 ## 11. Stripe billing (Phase 6)
 
@@ -354,7 +395,8 @@ production — Stripe can reach a real public URL directly:
 - [ ] `VITE_API_URL` baked into the frontend build for the real backend
       origin (or left relative, `/api`, if using the same-origin-per-
       tenant proxy shape — see § 4)
-- [ ] Queue worker running under a supervisor, if any queued jobs exist
+- [ ] Queue worker running under a supervisor — no longer optional as of
+      Phase 15, see § 5
 - [ ] Mail transport configured (not `log`)
 - [ ] File storage disk decided (local vs. S3) based on deployment topology
 - [ ] Backup schedule covers **every tenant database**, not just the
@@ -367,6 +409,9 @@ production — Stripe can reach a real public URL directly:
 - [ ] `composer audit` and `npm audit` both clean on the exact commit being
       deployed — dependency CVEs surface after code is written, so this is
       a deploy-time check, not a one-time pass
+- [ ] If this deploy is the one introducing/changing encrypted PII columns:
+      migrate → `php artisan security:encrypt-pii` → deploy code, in that
+      exact order — see § 1's "Phase 15 encryption backfill" note
 - [ ] A live browser pass through signup → Stripe Checkout redirect →
       tenant login on a real subdomain → platform login, on the actual
       production domain — not just `php artisan test`/`npm run build`

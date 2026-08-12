@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Gender;
 use App\Enums\UserStatus;
+use App\Models\Concerns\HasTwoFactorAuthentication;
 use Database\Factories\UserFactory;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -30,11 +31,11 @@ use Spatie\Permission\Traits\HasRoles;
     'gender', 'date_of_birth', 'status', 'must_change_password', 'password',
     'designation_id', 'employee_id', 'hire_date',
 ])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable implements HasMedia, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, InteractsWithMedia, LogsActivity, MustVerifyEmailTrait, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, HasRoles, HasTwoFactorAuthentication, InteractsWithMedia, LogsActivity, MustVerifyEmailTrait, Notifiable, SoftDeletes;
 
     protected function casts(): array
     {
@@ -47,6 +48,8 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
             'must_change_password' => 'boolean',
             'last_login_at' => 'datetime',
             'hire_date' => 'date',
+            'phone' => 'encrypted',
+            ...$this->twoFactorCasts(),
         ];
     }
 
@@ -54,6 +57,7 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
     {
         static::creating(function (User $user) {
             $user->uuid ??= (string) Str::uuid();
+            $user->mfa_grace_period_ends_at ??= now();
         });
     }
 

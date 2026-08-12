@@ -24,6 +24,9 @@ class PlatformUserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            // See UserFactory's identical default for why this isn't left
+            // at the model's zero-grace `creating` hook default.
+            'mfa_grace_period_ends_at' => now()->addYears(10),
         ];
     }
 }

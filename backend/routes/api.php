@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AcademicYearController;
+use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AnnouncementController;
 use App\Http\Controllers\Api\V1\AppNotificationController;
 use App\Http\Controllers\Api\V1\AuditLogController;
@@ -9,10 +10,12 @@ use App\Http\Controllers\Api\V1\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\LogoutController;
 use App\Http\Controllers\Api\V1\Auth\MeController;
+use App\Http\Controllers\Api\V1\Auth\MfaController;
 use App\Http\Controllers\Api\V1\Auth\PasswordController;
 use App\Http\Controllers\Api\V1\Auth\PlatformLoginController;
 use App\Http\Controllers\Api\V1\Auth\PlatformLogoutController;
 use App\Http\Controllers\Api\V1\Auth\PlatformMeController;
+use App\Http\Controllers\Api\V1\Auth\PlatformMfaController;
 use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\V1\Auth\SignupCompleteController;
 use App\Http\Controllers\Api\V1\Auth\SignupController;
@@ -23,6 +26,7 @@ use App\Http\Controllers\Api\V1\CertificateController;
 use App\Http\Controllers\Api\V1\CertificateTemplateController;
 use App\Http\Controllers\Api\V1\ClassSubjectTeacherController;
 use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\DataExportController;
 use App\Http\Controllers\Api\V1\DepartmentController;
 use App\Http\Controllers\Api\V1\DesignationController;
 use App\Http\Controllers\Api\V1\ExamController;
@@ -97,10 +101,16 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::prefix('auth')->name('auth.')->group(function () {
         Route::post('signup', SignupController::class)->name('signup')->middleware('throttle:5,60');
         Route::post('platform-login', PlatformLoginController::class)->name('platform-login')->middleware('throttle:10,1');
+        Route::post('platform-mfa/verify-challenge', [PlatformMfaController::class, 'verifyChallenge'])
+            ->name('platform-mfa.verify-challenge')->middleware('throttle:10,1');
 
         Route::middleware('auth:platform')->group(function () {
             Route::post('platform-logout', PlatformLogoutController::class)->name('platform-logout');
             Route::get('platform-me', PlatformMeController::class)->name('platform-me');
+            Route::post('platform-mfa/setup', [PlatformMfaController::class, 'setup'])->name('platform-mfa.setup');
+            Route::post('platform-mfa/confirm', [PlatformMfaController::class, 'confirm'])->name('platform-mfa.confirm');
+            Route::post('platform-mfa/recovery-codes/regenerate', [PlatformMfaController::class, 'regenerateRecoveryCodes'])
+                ->name('platform-mfa.recovery-codes.regenerate');
         });
     });
 
@@ -113,6 +123,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('schools', [PlatformSchoolController::class, 'index'])->name('schools.index');
             Route::get('schools/{school}', [PlatformSchoolController::class, 'show'])->name('schools.show');
             Route::post('schools/{school}/plan', [SchoolPlanController::class, 'update'])->name('schools.plan');
+            Route::post('schools/{school}/offboard', [PlatformSchoolController::class, 'offboard'])->name('schools.offboard');
             Route::get('metrics', [PlatformMetricsController::class, 'index'])->name('metrics');
         });
     });
@@ -129,6 +140,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // ---- Auth -------------------------------------------------------
         Route::prefix('auth')->name('auth.')->group(function () {
             Route::post('login', LoginController::class)->name('login')->middleware('throttle:10,1');
+            Route::post('mfa/verify-challenge', [MfaController::class, 'verifyChallenge'])
+                ->name('mfa.verify-challenge')->middleware('throttle:10,1');
             // The other half of SignupController's cross-domain handoff —
             // see SignupCompleteController's own docblock.
             Route::post('signup/complete', SignupCompleteController::class)->name('signup.complete')->middleware('throttle:10,1');
@@ -142,6 +155,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::post('email/verification-notification', [EmailVerificationController::class, 'notify'])
                     ->name('verification.send')
                     ->middleware('throttle:6,1');
+                Route::post('mfa/setup', [MfaController::class, 'setup'])->name('mfa.setup');
+                Route::post('mfa/confirm', [MfaController::class, 'confirm'])->name('mfa.confirm');
+                Route::post('mfa/recovery-codes/regenerate', [MfaController::class, 'regenerateRecoveryCodes'])
+                    ->name('mfa.recovery-codes.regenerate');
             });
 
             Route::get('email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
@@ -180,6 +197,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('users/{user}/roles', [UserController::class, 'updateRoles'])->name('users.roles');
             Route::post('users/{user}/status', [UserController::class, 'updateStatus'])->name('users.status');
             Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+            Route::post('users/{user}/mfa/reset', [UserController::class, 'resetMfa'])->name('users.mfa.reset');
 
             Route::apiResource('roles', RoleController::class)->names('roles');
             Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
@@ -188,6 +206,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
 
             Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+
+            // ---- Data export (Phase 15) -------------------------------------
+            Route::post('account/data-export', [DataExportController::class, 'storeSelf'])->name('account.data-export.store');
+            Route::get('account/data-export', [DataExportController::class, 'indexSelf'])->name('account.data-export.index');
+            // ---- Self-service account deletion (Phase 15) --------------------
+            Route::delete('account', [AccountController::class, 'destroy'])->name('account.destroy');
+            Route::post('data-exports', [DataExportController::class, 'storeSchool'])->name('data-exports.store');
+            Route::get('data-exports', [DataExportController::class, 'indexSchool'])->name('data-exports.index');
+            Route::get('data-exports/{export}/download', [DataExportController::class, 'download'])->name('data-exports.download');
 
             // ---- Academic structure ----------------------------------------
             Route::apiResource('academic-years', AcademicYearController::class)->names('academic-years');

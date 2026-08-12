@@ -12,6 +12,9 @@ function required(name: string, value: string | undefined): string {
 
 export const env = {
   apiUrl: required('VITE_API_URL', import.meta.env.VITE_API_URL),
+  // Optional — window.location-based tenant detection (see utils/tenant.ts)
+  // just no-ops if unset, treating every host as a tenant subdomain.
+  centralDomain: import.meta.env.VITE_CENTRAL_DOMAIN as string | undefined,
   appName: import.meta.env.VITE_APP_NAME ?? 'School Management System',
   // Optional — live notifications (src/lib/echo.ts) simply don't connect
   // if either is unset, falling back to NotificationBell's own poll.

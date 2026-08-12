@@ -2,8 +2,10 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { BarChart3, LogOut, School, ShieldCheck } from 'lucide-react'
 import { usePlatformAuth } from '@/context/PlatformAuthContext'
 import { Button } from '@/components/ui'
+import { MfaSetupBanner } from './MfaSetupBanner'
 import { routePaths } from '@/routes/routePaths'
 import { cn } from '@/utils/cn'
+import { isInMfaGracePeriod } from '@/utils/mfaEnforcement'
 
 const NAV_ITEMS = [
   { label: 'Schools', to: routePaths.platformSchools, icon: School },
@@ -17,9 +19,14 @@ const NAV_ITEMS = [
  */
 export function PlatformShell() {
   const { platformUser, logout } = usePlatformAuth()
+  const mfaDaysRemaining =
+    isInMfaGracePeriod(platformUser) && platformUser?.mfa_grace_period_ends_at
+      ? Math.ceil((new Date(platformUser.mfa_grace_period_ends_at).getTime() - Date.now()) / (24 * 60 * 60 * 1000))
+      : null
 
   return (
     <div className="flex min-h-svh flex-col bg-muted/40">
+      {mfaDaysRemaining !== null && <MfaSetupBanner setupPath={routePaths.platformMfaSetup} daysRemaining={mfaDaysRemaining} />}
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-6">

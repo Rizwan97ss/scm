@@ -22,6 +22,7 @@ class Payment extends Model
             'amount' => 'float',
             'method' => PaymentMethod::class,
             'paid_at' => 'date',
+            'reference_number' => 'encrypted',
         ];
     }
 
@@ -56,6 +57,6 @@ class Payment extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logOnly(['amount', 'method', 'paid_at'])->dontLogEmptyChanges();
+        return LogOptions::defaults()->logOnly(['amount', 'method', 'paid_at'])->logOnlyDirty()->dontLogEmptyChanges();
     }
 }

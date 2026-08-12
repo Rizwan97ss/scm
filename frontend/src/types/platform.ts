@@ -38,6 +38,8 @@ export interface PlatformUser {
   full_name: string
   email: string
   last_login_at: string | null
+  mfa_enabled: boolean
+  mfa_grace_period_ends_at: string | null
   created_at: string
 }
 
@@ -46,3 +48,6 @@ export interface PlatformLoginPayload {
   password: string
   remember?: boolean
 }
+
+/** Mirrors the tenant-side LoginResult (types/auth.ts) — see PlatformLoginRequest::authenticate()'s docblock. */
+export type PlatformLoginResult = { mfa_required: true; challenge_token: string } | { mfa_required: false; user: PlatformUser }

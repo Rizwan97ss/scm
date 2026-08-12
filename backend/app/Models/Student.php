@@ -38,6 +38,10 @@ class Student extends Model implements HasMedia
             'status' => StudentStatus::class,
             'date_of_birth' => 'date',
             'admission_date' => 'date',
+            'medical_info' => 'encrypted',
+            'emergency_contact_phone' => 'encrypted',
+            'address_line1' => 'encrypted',
+            'address_line2' => 'encrypted',
         ];
     }
 

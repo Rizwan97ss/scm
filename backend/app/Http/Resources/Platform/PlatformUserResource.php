@@ -19,6 +19,8 @@ class PlatformUserResource extends JsonResource
             'full_name' => $this->full_name,
             'email' => $this->email,
             'last_login_at' => $this->last_login_at?->toIso8601String(),
+            'mfa_enabled' => $this->hasMfaConfirmed(),
+            'mfa_grace_period_ends_at' => $this->mfa_grace_period_ends_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

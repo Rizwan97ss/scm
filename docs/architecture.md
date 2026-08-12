@@ -303,6 +303,25 @@ the whole UI live, no rebuild or redeploy required. See
 - **Dependency audit** (Phase 13): `composer audit` / `npm audit` both
   clean as of this pass — re-run before every production deploy, not just
   once.
+- **Two-factor authentication** (Phase 15): mandatory TOTP for every
+  account, no opt-out — see [mfa.md](mfa.md) for the full model (grace
+  period, recovery codes, admin reset) and
+  `App\Http\Middleware\EnsureMfaEnrolled` for enforcement.
+- **Field-level encryption** (Phase 15): the most sensitive PII/financial
+  columns (`Student.medical_info`, guardian national IDs, phone numbers,
+  MFA secrets, etc.) carry Laravel's `encrypted`/`encrypted:array` cast —
+  see [deployment.md](deployment.md)'s encryption-backfill deploy-order
+  note for the one real gotcha (existing plaintext rows need a one-off
+  backfill command run before the cast goes live, not after).
+- **Data export & right to erasure** (Phase 15): self-service "export my
+  data" / "delete my account" for any user, plus admin/platform-level
+  bulk equivalents — see [api.md](api.md)'s "Data export" and "Account
+  deletion & anonymization" sections. `AnonymizationService` documents
+  exactly what's scrubbed vs. retained per model.
+- **Configurable retention** (Phase 15): per-tenant `retention.*`
+  Settings drive three scheduled commands (audit log pruning, expired
+  data-export cleanup, opt-in stale-account anonymization) — see
+  [deployment.md § 6](deployment.md#6-scheduled-jobs).
 
 See [rbac.md](rbac.md) for the authorization model in depth and
 [deployment.md](deployment.md) for production hardening (HTTPS, secure

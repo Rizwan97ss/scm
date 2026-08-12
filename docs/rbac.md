@@ -38,10 +38,11 @@ Permissions are named `module.action` and generated from
 | Module | Actions |
 |---|---|
 | `schools` | manage |
-| `users` | view, create, edit, delete |
+| `users` | view, create, edit, delete, manage-mfa *(Phase 15 — `manage-mfa` is what lets an admin clear a locked-out user's TOTP enrollment (`POST /users/{id}/mfa/reset`) and grant them a new setup grace period. Deliberately its own action, not folded into `edit`: `UserPolicy::update()` allows a user to edit their own record, but a user resetting their OWN MFA with no second factor at all would defeat the point of it being mandatory — see `UserController::resetMfa()`'s docblock)* |
 | `roles` | view, create, edit, delete |
 | `settings` | view, edit |
 | `audit-logs` | view |
+| `data-export` | school *(Phase 15 — the admin bulk "export the whole school's data" flow. Self-service "export my own data" is deliberately ungated, same self-service shape as leave requests/payslips — see `DataExportController`)* |
 | `academic-years` | view, create, edit, delete |
 | `academic-structure` | view, create, edit, delete *(departments, grade levels, sections, subjects, rooms, class-subject-teacher links)* |
 | `timetable` | view, create, edit, delete |
@@ -58,7 +59,7 @@ Permissions are named `module.action` and generated from
 | `homework` | view, create, edit, delete, grade *(Phase 7 — row-scoped for Teacher/Class Teacher the same way as exams: must actually teach the subject/section, see `Homework::isTaughtBy()`)* |
 | `remarks` | view, create, edit, delete *(Phase 7 — a Teacher/Class Teacher may only write about a student in a section they teach or lead; Parent visibility additionally gated per-remark by `visible_to_guardian`, see [database.md](database.md#key-modeling-decisions))* |
 | `dashboard` | view |
-| `platform` | view-tenants, manage-billing, view-metrics *(Super Admin only, cross-tenant — the platform admin console added in Phase 6. Distinct from the school-scoped `billing` module below; see [database.md](database.md#key-modeling-decisions))* |
+| `platform` | view-tenants, manage-billing, view-metrics, offboard-schools *(Super Admin only, cross-tenant — the platform admin console added in Phase 6. Distinct from the school-scoped `billing` module below; see [database.md](database.md#key-modeling-decisions). `offboard-schools` is Phase 15's whole-school anonymize/delete action, `PlatformSchoolController::offboard()`)* |
 | `billing` | view, manage *(School Admin only, school-scoped — "our plan/trial", added in Phase 6 Sub-phase E. Distinct from `platform.*`'s cross-tenant scope, and from `fees`/`invoices` below for school-to-parent billing)* |
 | `fees` | view, create, edit, delete *(Phase 8 — fee categories and fee structures, the templates invoices are generated from)* |
 | `invoices` | view, create, edit, delete, void, record-payment, issue-credit-note, view-reports *(Phase 8 — invoices, payments via `App\Contracts\PaymentGatewayInterface`'s manual implementation, credit notes, and financial reports. Row-scoped for Student/Parent the same way exams/homework are — see below)* |
@@ -108,7 +109,10 @@ all — Super Admin's role is synced with *every* existing permission
 name automatically (`RolePermissionSeeder::allPermissionNames()`), not
 a hand-maintained list. Either way, run
 `php artisan db:seed --class=PermissionSeeder` (idempotent — uses
-`firstOrCreate`) followed by `RolePermissionSeeder`.
+`firstOrCreate`) followed by `RolePermissionSeeder`. That reaches schools
+being freshly provisioned only — for changes that need to reach
+**already-live** tenants, run `php artisan permissions:rollout` (Phase
+15) instead, see [deployment.md § 10](deployment.md#10-multi-school-considerations-database-per-tenant).
 
 The frontend's role editor fetches the live catalogue from
 `GET /api/v1/permissions` rather than hardcoding it, so custom roles built

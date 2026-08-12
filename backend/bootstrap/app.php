@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\PlanLimitExceededException;
+use App\Http\Middleware\EnsureMfaEnrolled;
 use App\Http\Middleware\EnsureSchoolIsUsable;
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\ApiResponse;
@@ -55,6 +56,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // replaces it. EnsureSchoolIsUsable stays: it now reads tenant()
         // instead of $user->school (see its own docblock).
         $middleware->appendToGroup('api', EnsureSchoolIsUsable::class);
+
+        // Phase 15 — mandatory MFA. Reads $request->user(), so it needs
+        // auth:sanctum/auth:platform (route-group middleware) to have
+        // already resolved a user; no-ops for guest routes (login, the MFA
+        // challenge endpoint itself) since $request->user() is null there.
+        // See EnsureMfaEnrolled's own docblock for why one class covers
+        // both guards.
+        $middleware->appendToGroup('api', EnsureMfaEnrolled::class);
 
         // Stripe's webhook POSTs are server-to-server — no session, no CSRF
         // token. Signature verification (VerifyWebhookSignature, applied by

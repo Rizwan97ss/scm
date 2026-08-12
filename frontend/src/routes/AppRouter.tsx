@@ -3,14 +3,18 @@ import { Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
 import { PlatformProtectedRoute } from './PlatformProtectedRoute'
 import { PermissionRoute } from './PermissionRoute'
+import { RequireMfaSetup } from './RequireMfaSetup'
+import { RequirePlatformMfaSetup } from './RequirePlatformMfaSetup'
 import { routePaths } from './routePaths'
 import { AppShell } from '@/components/layout/AppShell'
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import { NotFound } from '@/components/feedback/NotFound'
 import { LoadingScreen } from '@/components/feedback/LoadingScreen'
+import { isCentralDomain } from '@/utils/tenant'
 
 // Route-level code splitting: each feature page ships as its own chunk instead
 // of one large bundle, so the initial load only pays for the login screen.
+const LandingPage = lazy(() => import('@/features/marketing/pages/LandingPage').then((m) => ({ default: m.LandingPage })))
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage })))
 const PlatformLoginPage = lazy(() => import('@/features/platform/pages/PlatformLoginPage').then((m) => ({ default: m.PlatformLoginPage })))
 const SignupPage = lazy(() => import('@/features/signup/pages/SignupPage').then((m) => ({ default: m.SignupPage })))
@@ -19,11 +23,15 @@ const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswo
 const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })))
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })))
 const HelpGuidePage = lazy(() => import('@/features/help/pages/HelpGuidePage').then((m) => ({ default: m.HelpGuidePage })))
+const MfaSetupPage = lazy(() => import('@/features/auth/pages/MfaSetupPage').then((m) => ({ default: m.MfaSetupPage })))
+const PlatformMfaSetupPage = lazy(() => import('@/features/platform/pages/PlatformMfaSetupPage').then((m) => ({ default: m.PlatformMfaSetupPage })))
 const UsersListPage = lazy(() => import('@/features/users/pages/UsersListPage').then((m) => ({ default: m.UsersListPage })))
 const RolesListPage = lazy(() => import('@/features/roles/pages/RolesListPage').then((m) => ({ default: m.RolesListPage })))
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage').then((m) => ({ default: m.SettingsPage })))
 const BillingPage = lazy(() => import('@/features/settings/pages/BillingPage').then((m) => ({ default: m.BillingPage })))
 const AuditLogsPage = lazy(() => import('@/features/auditLogs/pages/AuditLogsPage').then((m) => ({ default: m.AuditLogsPage })))
+const MyDataExportPage = lazy(() => import('@/features/dataExports/pages/MyDataExportPage').then((m) => ({ default: m.MyDataExportPage })))
+const DataExportsPage = lazy(() => import('@/features/settings/pages/DataExportsPage').then((m) => ({ default: m.DataExportsPage })))
 const SchoolsListPage = lazy(() => import('@/features/schools/pages/SchoolsListPage').then((m) => ({ default: m.SchoolsListPage })))
 const AcademicYearsPage = lazy(() => import('@/features/academics/pages/AcademicYearsPage').then((m) => ({ default: m.AcademicYearsPage })))
 const TermsPage = lazy(() => import('@/features/academics/pages/TermsPage').then((m) => ({ default: m.TermsPage })))
@@ -89,9 +97,17 @@ const PlatformSchoolDetailPage = lazy(() => import('@/features/platform/pages/Pl
 const PlatformMetricsPage = lazy(() => import('@/features/platform/pages/PlatformMetricsPage').then((m) => ({ default: m.PlatformMetricsPage })))
 
 export function AppRouter() {
+  // Evaluated once per load, not reactive -- the hostname can't change without
+  // a full navigation anyway. On the bare central domain, "/" is the public
+  // marketing page instead of the dashboard (see routePaths.dashboard below,
+  // guarded the other way so the two never both register for the same path).
+  const isCentral = isCentralDomain()
+
   return (
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
+        {isCentral && <Route path={routePaths.dashboard} element={<LandingPage />} />}
+
         <Route path={routePaths.login} element={<LoginPage />} />
         <Route path={routePaths.platformLogin} element={<PlatformLoginPage />} />
         <Route path={routePaths.signup} element={<SignupPage />} />
@@ -103,174 +119,187 @@ export function AppRouter() {
         <Route path={routePaths.resetPassword} element={<ResetPasswordPage />} />
 
         <Route element={<ProtectedRoute />}>
-          <Route element={<AppShell />}>
-            <Route path={routePaths.dashboard} element={<DashboardPage />} />
-            <Route path={routePaths.help} element={<HelpGuidePage />} />
+          {/* Outside RequireMfaSetup on purpose — the setup page must stay
+              reachable for the account it's redirecting FROM. */}
+          <Route path={routePaths.mfaSetup} element={<MfaSetupPage />} />
 
-            <Route path={routePaths.parentChildren} element={<ParentChildrenPage />} />
-            <Route path={routePaths.parentChildProfile()} element={<ParentChildProfilePage />} />
+          <Route element={<RequireMfaSetup />}>
+            <Route element={<AppShell />}>
+              {!isCentral && <Route path={routePaths.dashboard} element={<DashboardPage />} />}
+              <Route path={routePaths.help} element={<HelpGuidePage />} />
 
-            <Route element={<PermissionRoute permissions={['users.view']} />}>
-              <Route path={routePaths.users} element={<UsersListPage />} />
-            </Route>
+              <Route path={routePaths.parentChildren} element={<ParentChildrenPage />} />
+              <Route path={routePaths.parentChildProfile()} element={<ParentChildProfilePage />} />
 
-            <Route element={<PermissionRoute permissions={['roles.view']} />}>
-              <Route path={routePaths.roles} element={<RolesListPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['users.view']} />}>
+                <Route path={routePaths.users} element={<UsersListPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['settings.view']} />}>
-              <Route path={routePaths.settings} element={<SettingsPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['roles.view']} />}>
+                <Route path={routePaths.roles} element={<RolesListPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['billing.view']} />}>
-              <Route path={routePaths.settingsBilling} element={<BillingPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['settings.view']} />}>
+                <Route path={routePaths.settings} element={<SettingsPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['audit-logs.view']} />}>
-              <Route path={routePaths.auditLogs} element={<AuditLogsPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['billing.view']} />}>
+                <Route path={routePaths.settingsBilling} element={<BillingPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['academic-years.view']} />}>
-              <Route path={routePaths.academicYears} element={<AcademicYearsPage />} />
-              <Route path={routePaths.terms} element={<TermsPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['audit-logs.view']} />}>
+                <Route path={routePaths.auditLogs} element={<AuditLogsPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['academic-structure.view']} />}>
-              <Route path={routePaths.departments} element={<DepartmentsPage />} />
-              <Route path={routePaths.gradeLevels} element={<GradeLevelsPage />} />
-              <Route path={routePaths.sections} element={<SectionsPage />} />
-              <Route path={routePaths.subjects} element={<SubjectsPage />} />
-              <Route path={routePaths.rooms} element={<RoomsPage />} />
-              <Route path={routePaths.holidays} element={<HolidaysPage />} />
-            </Route>
+              {/* Self-service — no permission gate, every role can export
+                  their own data (see DataExportController::indexSelf()). */}
+              <Route path={routePaths.myDataExport} element={<MyDataExportPage />} />
+              <Route element={<PermissionRoute permissions={['data-export.school']} />}>
+                <Route path={routePaths.dataExports} element={<DataExportsPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['timetable.view']} />}>
-              <Route path={routePaths.timetable} element={<TimetablePage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['academic-years.view']} />}>
+                <Route path={routePaths.academicYears} element={<AcademicYearsPage />} />
+                <Route path={routePaths.terms} element={<TermsPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['students.view']} />}>
-              <Route path={routePaths.students} element={<StudentsListPage />} />
-              <Route path={routePaths.studentProfile()} element={<StudentProfilePage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['students.create']} />}>
-              <Route path={routePaths.studentAdmission} element={<StudentAdmissionPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['students.import']} />}>
-              <Route path={routePaths.studentImport} element={<StudentImportPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['academic-structure.view']} />}>
+                <Route path={routePaths.departments} element={<DepartmentsPage />} />
+                <Route path={routePaths.gradeLevels} element={<GradeLevelsPage />} />
+                <Route path={routePaths.sections} element={<SectionsPage />} />
+                <Route path={routePaths.subjects} element={<SubjectsPage />} />
+                <Route path={routePaths.rooms} element={<RoomsPage />} />
+                <Route path={routePaths.holidays} element={<HolidaysPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['guardians.view']} />}>
-              <Route path={routePaths.guardians} element={<GuardiansListPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['timetable.view']} />}>
+                <Route path={routePaths.timetable} element={<TimetablePage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['student-attendance.mark']} />}>
-              <Route path={routePaths.attendanceTake} element={<TakeAttendancePage />} />
-            </Route>
-            <Route path={routePaths.attendanceStaff} element={<StaffAttendancePage />} />
+              <Route element={<PermissionRoute permissions={['students.view']} />}>
+                <Route path={routePaths.students} element={<StudentsListPage />} />
+                <Route path={routePaths.studentProfile()} element={<StudentProfilePage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['students.create']} />}>
+                <Route path={routePaths.studentAdmission} element={<StudentAdmissionPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['students.import']} />}>
+                <Route path={routePaths.studentImport} element={<StudentImportPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['grading.view']} />}>
-              <Route path={routePaths.gradingScales} element={<GradingScalesPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['questions.view']} />}>
-              <Route path={routePaths.questionBank} element={<QuestionBankPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['exams.view']} />}>
-              <Route path={routePaths.exams} element={<ExamsListPage />} />
-              <Route path={routePaths.examDetail()} element={<ExamDetailPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['exam-marks.enter']} />}>
-              <Route path={routePaths.examSubjectMarks()} element={<MarksEntryPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['online-exams.configure']} />}>
-              <Route path={routePaths.examSubjectOnlineTest()} element={<OnlineTestConfigPage />} />
-            </Route>
-            <Route path={routePaths.takeOnlineTest()} element={<TakeOnlineTestPage />} />
-            <Route path={routePaths.myOnlineTests} element={<MyOnlineTestsPage />} />
+              <Route element={<PermissionRoute permissions={['guardians.view']} />}>
+                <Route path={routePaths.guardians} element={<GuardiansListPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['homework.view']} />}>
-              <Route path={routePaths.homework} element={<HomeworkListPage />} />
-              <Route path={routePaths.homeworkDetail()} element={<HomeworkDetailPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['student-attendance.mark']} />}>
+                <Route path={routePaths.attendanceTake} element={<TakeAttendancePage />} />
+              </Route>
+              <Route path={routePaths.attendanceStaff} element={<StaffAttendancePage />} />
 
-            <Route element={<PermissionRoute permissions={['fees.view']} />}>
-              <Route path={routePaths.feeCategories} element={<FeeCategoriesPage />} />
-              <Route path={routePaths.feeStructures} element={<FeeStructuresPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['invoices.view']} />}>
-              <Route path={routePaths.invoices} element={<InvoicesListPage />} />
-              <Route path={routePaths.invoiceDetail()} element={<InvoiceDetailPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['invoices.view-reports']} />}>
-              <Route path={routePaths.feeReports} element={<FeeReportsPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['grading.view']} />}>
+                <Route path={routePaths.gradingScales} element={<GradingScalesPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['questions.view']} />}>
+                <Route path={routePaths.questionBank} element={<QuestionBankPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['exams.view']} />}>
+                <Route path={routePaths.exams} element={<ExamsListPage />} />
+                <Route path={routePaths.examDetail()} element={<ExamDetailPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['exam-marks.enter']} />}>
+                <Route path={routePaths.examSubjectMarks()} element={<MarksEntryPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['online-exams.configure']} />}>
+                <Route path={routePaths.examSubjectOnlineTest()} element={<OnlineTestConfigPage />} />
+              </Route>
+              <Route path={routePaths.takeOnlineTest()} element={<TakeOnlineTestPage />} />
+              <Route path={routePaths.myOnlineTests} element={<MyOnlineTestsPage />} />
 
-            {/* Self-service — every staff member reaches these to apply for
-                their own leave / see their own payslips, so they aren't
-                behind a PermissionRoute; each page internally shows more
-                (everyone's records, approve/mark-paid actions) once the
-                viewer holds leave.view/leave.manage or payroll.view/.manage. */}
-            <Route path={routePaths.leaveRequests} element={<LeaveRequestsPage />} />
-            <Route path={routePaths.payslips} element={<PayslipsPage />} />
+              <Route element={<PermissionRoute permissions={['homework.view']} />}>
+                <Route path={routePaths.homework} element={<HomeworkListPage />} />
+                <Route path={routePaths.homeworkDetail()} element={<HomeworkDetailPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['designations.view']} />}>
-              <Route path={routePaths.designations} element={<DesignationsPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['leave.view', 'leave.manage']} />}>
-              <Route path={routePaths.leaveTypes} element={<LeaveTypesPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['payroll.view', 'payroll.manage']} />}>
-              <Route path={routePaths.salaryStructures} element={<SalaryStructuresPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['fees.view']} />}>
+                <Route path={routePaths.feeCategories} element={<FeeCategoriesPage />} />
+                <Route path={routePaths.feeStructures} element={<FeeStructuresPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['invoices.view']} />}>
+                <Route path={routePaths.invoices} element={<InvoicesListPage />} />
+                <Route path={routePaths.invoiceDetail()} element={<InvoiceDetailPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['invoices.view-reports']} />}>
+                <Route path={routePaths.feeReports} element={<FeeReportsPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['library.view']} />}>
-              <Route path={routePaths.books} element={<BooksPage />} />
-              <Route path={routePaths.bookIssues} element={<BookIssuesPage />} />
-            </Route>
+              {/* Self-service — every staff member reaches these to apply for
+                  their own leave / see their own payslips, so they aren't
+                  behind a PermissionRoute; each page internally shows more
+                  (everyone's records, approve/mark-paid actions) once the
+                  viewer holds leave.view/leave.manage or payroll.view/.manage. */}
+              <Route path={routePaths.leaveRequests} element={<LeaveRequestsPage />} />
+              <Route path={routePaths.payslips} element={<PayslipsPage />} />
 
-            <Route element={<PermissionRoute permissions={['transport.view']} />}>
-              <Route path={routePaths.vehicles} element={<VehiclesPage />} />
-              <Route path={routePaths.routes} element={<RoutesPage />} />
-              <Route path={routePaths.studentTransportAssignments} element={<StudentTransportAssignmentsPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['designations.view']} />}>
+                <Route path={routePaths.designations} element={<DesignationsPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['leave.view', 'leave.manage']} />}>
+                <Route path={routePaths.leaveTypes} element={<LeaveTypesPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['payroll.view', 'payroll.manage']} />}>
+                <Route path={routePaths.salaryStructures} element={<SalaryStructuresPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['hostel.view']} />}>
-              <Route path={routePaths.hostels} element={<HostelsPage />} />
-              <Route path={routePaths.hostelRooms} element={<HostelRoomsPage />} />
-              <Route path={routePaths.hostelAllocations} element={<HostelAllocationsPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['library.view']} />}>
+                <Route path={routePaths.books} element={<BooksPage />} />
+                <Route path={routePaths.bookIssues} element={<BookIssuesPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['front-desk.view']} />}>
-              <Route path={routePaths.visitors} element={<VisitorsPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['transport.view']} />}>
+                <Route path={routePaths.vehicles} element={<VehiclesPage />} />
+                <Route path={routePaths.routes} element={<RoutesPage />} />
+                <Route path={routePaths.studentTransportAssignments} element={<StudentTransportAssignmentsPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['certificates.create']} />}>
-              <Route path={routePaths.certificateTemplates} element={<CertificateTemplatesPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['certificates.view']} />}>
-              <Route path={routePaths.certificates} element={<CertificatesPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['hostel.view']} />}>
+                <Route path={routePaths.hostels} element={<HostelsPage />} />
+                <Route path={routePaths.hostelRooms} element={<HostelRoomsPage />} />
+                <Route path={routePaths.hostelAllocations} element={<HostelAllocationsPage />} />
+              </Route>
 
-            {/* Self-service — the notice board is readable by every
-                authenticated user with no permission at all (see
-                NoticePolicy); the page itself shows create/edit/delete/
-                publish actions only once the viewer holds notice-board.*. */}
-            <Route path={routePaths.noticeBoard} element={<NoticeBoardPage />} />
+              <Route element={<PermissionRoute permissions={['front-desk.view']} />}>
+                <Route path={routePaths.visitors} element={<VisitorsPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['communication.view']} />}>
-              <Route path={routePaths.announcements} element={<AnnouncementsPage />} />
-            </Route>
+              <Route element={<PermissionRoute permissions={['certificates.create']} />}>
+                <Route path={routePaths.certificateTemplates} element={<CertificateTemplatesPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['certificates.view']} />}>
+                <Route path={routePaths.certificates} element={<CertificatesPage />} />
+              </Route>
 
-            <Route element={<PermissionRoute permissions={['student-attendance.view', 'staff-attendance.view']} />}>
-              <Route path={routePaths.reportsAttendance} element={<AttendanceReportPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['exam-marks.view']} />}>
-              <Route path={routePaths.reportsAcademic} element={<AcademicReportPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['students.view']} />}>
-              <Route path={routePaths.reportsEnrollment} element={<EnrollmentReportPage />} />
-            </Route>
-            <Route element={<PermissionRoute permissions={['library.view', 'transport.view', 'hostel.view']} />}>
-              <Route path={routePaths.reportsOperations} element={<OperationsReportPage />} />
+              {/* Self-service — the notice board is readable by every
+                  authenticated user with no permission at all (see
+                  NoticePolicy); the page itself shows create/edit/delete/
+                  publish actions only once the viewer holds notice-board.*. */}
+              <Route path={routePaths.noticeBoard} element={<NoticeBoardPage />} />
+
+              <Route element={<PermissionRoute permissions={['communication.view']} />}>
+                <Route path={routePaths.announcements} element={<AnnouncementsPage />} />
+              </Route>
+
+              <Route element={<PermissionRoute permissions={['student-attendance.view', 'staff-attendance.view']} />}>
+                <Route path={routePaths.reportsAttendance} element={<AttendanceReportPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['exam-marks.view']} />}>
+                <Route path={routePaths.reportsAcademic} element={<AcademicReportPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['students.view']} />}>
+                <Route path={routePaths.reportsEnrollment} element={<EnrollmentReportPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['library.view', 'transport.view', 'hostel.view']} />}>
+                <Route path={routePaths.reportsOperations} element={<OperationsReportPage />} />
+              </Route>
             </Route>
           </Route>
         </Route>
@@ -278,11 +307,15 @@ export function AppRouter() {
         {/* Platform console — auth:platform guard, entirely separate from
             the tenant session/permissions above (see PlatformAuthContext). */}
         <Route element={<PlatformProtectedRoute />}>
-          <Route element={<PlatformShell />}>
-            <Route path={routePaths.schools} element={<SchoolsListPage />} />
-            <Route path={routePaths.platformSchools} element={<PlatformSchoolsListPage />} />
-            <Route path={routePaths.platformSchoolDetail()} element={<PlatformSchoolDetailPage />} />
-            <Route path={routePaths.platformMetrics} element={<PlatformMetricsPage />} />
+          <Route path={routePaths.platformMfaSetup} element={<PlatformMfaSetupPage />} />
+
+          <Route element={<RequirePlatformMfaSetup />}>
+            <Route element={<PlatformShell />}>
+              <Route path={routePaths.schools} element={<SchoolsListPage />} />
+              <Route path={routePaths.platformSchools} element={<PlatformSchoolsListPage />} />
+              <Route path={routePaths.platformSchoolDetail()} element={<PlatformSchoolDetailPage />} />
+              <Route path={routePaths.platformMetrics} element={<PlatformMetricsPage />} />
+            </Route>
           </Route>
         </Route>
 

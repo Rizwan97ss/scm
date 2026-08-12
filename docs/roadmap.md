@@ -701,14 +701,46 @@ several bugs invisible to `php artisan test`/`npm run build` alone
 (a CORS regex silently discarded by an unquoted `.env` value chief among
 them — see deployment.md § 4).
 
-## What's next (after Phase 14)
+**Done (Phase 15):** Data Security & Privacy Hardening — mandatory TOTP
+two-factor authentication for every account (staff/students/parents/
+platform admins, no opt-out; see [mfa.md](mfa.md) for the full model:
+grace period, recovery codes, admin/self reset), field-level encryption
+for the most sensitive existing PII columns (`encrypted`/`encrypted:array`
+casts, greenfield except for a one-off backfill command for pre-existing
+plaintext), self-service + admin-bulk data export (a ZIP of CSVs, the
+first real queued job this app has ever dispatched —
+`GenerateDataExportJob`, tenant-context-aware via stancl's
+`QueueTenancyBootstrapper`), individual account anonymization plus a
+whole-school offboarding action for Super Admins (anonymize-in-place or
+permanently drop the tenant database), and configurable per-tenant
+retention driving the first three scheduled commands in this app
+(`routes/console.php`). See [architecture.md § Security
+posture](architecture.md#security-posture),
+[api.md](api.md#two-factor-authentication-phase-15) (three new sections),
+[rbac.md](rbac.md#permission-catalogue) (three new permissions:
+`users.manage-mfa`, `data-export.school`, `platform.offboard-schools`),
+and [deployment.md](deployment.md) (§ 1's encryption backfill deploy
+order, § 5/§ 6 no longer optional, § 10's `permissions:rollout` command
+for reaching already-live tenants). Real bugs a `tests/Feature/Security`
+pass (not just manual review) caught before they shipped: a missing
+`Controller` import on two new controllers (same class of mistake this
+project's own history already flagged once), a stale in-memory model
+returned right after a synchronously-completed queued job updated the
+same row in the database, a bare `Auth::login()` resolving to Sanctum's
+non-session `RequestGuard` on a second login round-trip within one
+process, and the wrong `Schedule` class imported in `routes/console.php`
+(the concrete `Illuminate\Console\Scheduling\Schedule`, not the
+`Illuminate\Support\Facades\Schedule` facade — the former has no static
+`command()`).
+
+## What's next (after Phase 15)
 
 Every phase on the original roadmap — SaaS platform layer, the full
-domain feature set (Phase 7-12), hardening (Phase 13), and the
-database-per-tenant conversion (Phase 14) — is done. Further work from
-here is user-directed rather than roadmap-driven: real pricing decisions,
-onboarding real schools, or whatever comes up once this is actually in
-front of users.
+domain feature set (Phase 7-12), hardening (Phase 13), the
+database-per-tenant conversion (Phase 14), and data security/privacy
+hardening (Phase 15) — is done. Further work from here is user-directed
+rather than roadmap-driven: real pricing decisions, onboarding real
+schools, or whatever comes up once this is actually in front of users.
 
 ## Conventions a new module should follow
 

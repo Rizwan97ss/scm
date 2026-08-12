@@ -7,6 +7,8 @@ export const routePaths = {
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
   forbidden: '/forbidden',
+  mfaSetup: '/mfa/setup',
+  platformMfaSetup: '/platform-mfa/setup',
 
   dashboard: '/',
   help: '/help',
@@ -16,6 +18,8 @@ export const routePaths = {
   settings: '/settings',
   settingsBilling: '/settings/billing',
   auditLogs: '/audit-logs',
+  myDataExport: '/account/data-export',
+  dataExports: '/data-exports',
   schools: '/schools',
 
   academicYears: '/academics/years',

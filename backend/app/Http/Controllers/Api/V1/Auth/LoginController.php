@@ -12,7 +12,14 @@ class LoginController extends Controller
 {
     public function __invoke(LoginRequest $request): JsonResponse
     {
-        $request->authenticate();
+        $result = $request->authenticate();
+
+        if ($result['mfa_required']) {
+            return ApiResponse::success(
+                ['mfa_required' => true, 'challenge_token' => $result['challenge_token']],
+                'Enter your two-factor authentication code to continue.'
+            );
+        }
 
         $request->session()->regenerate();
 

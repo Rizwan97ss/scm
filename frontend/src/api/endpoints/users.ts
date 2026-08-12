@@ -57,4 +57,7 @@ export const usersApi = {
   resetPassword: async (id: number): Promise<void> => {
     await httpClient.post(`/users/${id}/reset-password`)
   },
+  resetMfa: async (id: number): Promise<void> => {
+    await httpClient.post(`/users/${id}/mfa/reset`)
+  },
 }

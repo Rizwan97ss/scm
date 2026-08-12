@@ -26,6 +26,23 @@ separate test database.
 - `tests/Feature/Authorization` — cross-role and cross-school denial matrix
 - `tests/Feature/Dashboard` — role-context switching (staff/teacher/parent), scoped counts, today's-attendance-marked count
 - `tests/Unit/Services` — `StudentIdGeneratorService`, `StudentEnrollmentService`, `SettingsService` in isolation, no HTTP
+- `tests/Feature/Security` (Phase 15) — `MfaTest` (setup/confirm/login-challenge round trip on both guards, recovery-code consumption, `EnsureMfaEnrolled`'s grace-period/exemption matrix, admin reset), `DataExportTest`, `AnonymizationTest` (individual + whole-school offboarding, cross-tenant isolation), `RetentionTest`, `PermissionRolloutTest`, plus the pre-existing `SecurityHeadersTest`
+
+**Phase 15 note on queued jobs**: `QUEUE_CONNECTION=sync` in `phpunit.xml`
+— `GenerateDataExportJob` (the first real queued job in this app) runs
+inline within the same request/test, so `DataExport` rows are already
+`ready` by the time a dispatching request returns; no `Queue::fake()`
+needed to observe the effect, only to assert *that a dispatch happened*
+without caring about the result.
+
+**Gotcha hit writing these**: don't run two `php artisan test` invocations
+concurrently (e.g. one in the foreground, one backgrounded) — tenant
+SQLite databases are named after the landlord `School` row's
+auto-increment id (`tenant1`, `tenant2`, ...), which resets to 1 every
+time `RefreshDatabase` recreates the landlord `:memory:` DB. Two test
+processes racing to create "tenant1" at the same time produces file-lock
+and disk-I/O errors that look like real bugs but are just self-inflicted
+concurrency — run backend test suites one at a time.
 
 ### Test helpers
 

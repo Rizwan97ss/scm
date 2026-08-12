@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api\V1\Platform;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PlatformSchoolResource;
 use App\Models\School;
+use App\Models\User;
+use App\Services\AnonymizationService;
+use App\Services\SchoolProvisioningService;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -48,5 +51,37 @@ class PlatformSchoolController extends Controller
         $this->authorize('platform.view-tenants');
 
         return ApiResponse::success(new PlatformSchoolResource($school->load('plan')));
+    }
+
+    /**
+     * Ends a school's tenancy — 'delete' physically drops the tenant
+     * database (irreversible, reuses SchoolProvisioningService::teardown(),
+     * the same sequence a failed signup's rollback already uses); 'anonymize'
+     * scrubs every account's PII in place (AnonymizationService, the same
+     * per-model rules the individual-user workflow uses) and deactivates
+     * the school, but leaves the database itself intact — financial/
+     * academic records stay queryable, matching the individual-anonymize
+     * philosophy applied at tenant scope instead of dropping everything.
+     */
+    public function offboard(Request $request, School $school, SchoolProvisioningService $provisioning, AnonymizationService $anonymization): JsonResponse
+    {
+        $this->authorize('platform.offboard-schools');
+
+        $data = $request->validate(['mode' => ['required', 'in:anonymize,delete']]);
+
+        if ($data['mode'] === 'delete') {
+            $name = $school->name;
+            $provisioning->teardown($school);
+
+            return ApiResponse::success(null, "{$name} has been permanently deleted.");
+        }
+
+        $school->run(function () use ($anonymization) {
+            User::withTrashed()->get()->each(fn (User $user) => $anonymization->anonymizeUser($user));
+        });
+
+        $school->update(['is_active' => false, 'billing_status' => 'canceled']);
+
+        return ApiResponse::success(new PlatformSchoolResource($school->fresh('plan')), "{$school->name} has been anonymized and deactivated.");
     }
 }

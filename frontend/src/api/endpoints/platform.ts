@@ -19,4 +19,8 @@ export const platformApi = {
     const { data } = await httpClient.get<ApiResponse<PlatformMetrics>>('/platform/metrics')
     return data.data
   },
+  offboardSchool: async (schoolId: number, mode: 'anonymize' | 'delete'): Promise<PlatformSchool | null> => {
+    const { data } = await httpClient.post<ApiResponse<PlatformSchool | null>>(`/platform/schools/${schoolId}/offboard`, { mode })
+    return data.data
+  },
 }

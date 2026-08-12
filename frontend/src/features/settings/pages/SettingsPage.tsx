@@ -34,6 +34,27 @@ const FIELDS: FieldConfig[] = [
   { key: 'students.admission_number_format', label: 'Admission number format', hint: 'Tokens: {SCHOOL} {YEAR} {SEQ}', group: 'students', type: 'string' },
   { key: 'students.admission_number_padding', label: 'Admission number padding', hint: 'Digits in the sequence, e.g. 4 → 0001', group: 'students', type: 'integer' },
   { key: 'notifications.email_enabled', label: 'Email notifications enabled', group: 'notifications', type: 'boolean' },
+  {
+    key: 'retention.activity_log_days',
+    label: 'Audit log retention (days)',
+    hint: 'Audit log entries older than this are pruned nightly. Default 365.',
+    group: 'retention',
+    type: 'integer',
+  },
+  {
+    key: 'retention.data_export_days',
+    label: 'Data export availability (days)',
+    hint: 'How long a generated export ZIP stays downloadable before it\'s deleted. Default 7.',
+    group: 'retention',
+    type: 'integer',
+  },
+  {
+    key: 'retention.inactive_account_anonymize_days',
+    label: 'Auto-anonymize inactive accounts after (days)',
+    hint: 'Leave blank to disable (default). If set, accounts with no login for this many days are automatically anonymized.',
+    group: 'retention',
+    type: 'integer',
+  },
 ]
 
 export function SettingsPage() {
@@ -114,6 +135,7 @@ export function SettingsPage() {
             { value: 'academic', label: 'Academic Terminology', content: groupPanel('academic', 'Customize labels to match your school system.') },
             { value: 'students', label: 'Students', content: groupPanel('students', 'Admission number generation rules.') },
             { value: 'notifications', label: 'Notifications', content: groupPanel('notifications', 'Enable or disable notification channels.') },
+            { value: 'retention', label: 'Retention', content: groupPanel('retention', 'How long audit logs and data exports are kept, and optional auto-anonymization of inactive accounts.') },
           ]}
         />
       )}

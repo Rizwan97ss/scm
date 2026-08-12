@@ -2,6 +2,7 @@
 
 namespace App\Models\Platform;
 
+use App\Models\Concerns\HasTwoFactorAuthentication;
 use Database\Factories\Platform\PlatformUserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -23,10 +24,10 @@ use Stancl\Tenancy\Database\Concerns\CentralConnection;
  * always worked, just no longer modeled as "a User with school_id === null."
  */
 #[Fillable(['first_name', 'last_name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class PlatformUser extends Authenticatable
 {
-    use CentralConnection, HasFactory, Notifiable, SoftDeletes;
+    use CentralConnection, HasFactory, HasTwoFactorAuthentication, Notifiable, SoftDeletes;
 
     /** @use HasFactory<PlatformUserFactory> */
     protected static function newFactory(): PlatformUserFactory
@@ -39,6 +40,7 @@ class PlatformUser extends Authenticatable
         return [
             'password' => 'hashed',
             'last_login_at' => 'datetime',
+            ...$this->twoFactorCasts(),
         ];
     }
 
@@ -46,6 +48,7 @@ class PlatformUser extends Authenticatable
     {
         static::creating(function (PlatformUser $user) {
             $user->uuid ??= (string) Str::uuid();
+            $user->mfa_grace_period_ends_at ??= now();
         });
     }
 

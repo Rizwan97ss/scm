@@ -34,6 +34,6 @@ class CreditNote extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logOnly(['amount', 'reason'])->dontLogEmptyChanges();
+        return LogOptions::defaults()->logOnly(['amount', 'reason'])->logOnlyDirty()->dontLogEmptyChanges();
     }
 }

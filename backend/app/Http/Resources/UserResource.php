@@ -25,6 +25,8 @@ class UserResource extends JsonResource
             'status' => $this->status?->value,
             'must_change_password' => $this->must_change_password,
             'last_login_at' => $this->last_login_at?->toIso8601String(),
+            'mfa_enabled' => $this->hasMfaConfirmed(),
+            'mfa_grace_period_ends_at' => $this->mfa_grace_period_ends_at?->toIso8601String(),
             'designation' => $this->whenLoaded('designation', fn () => $this->designation ? ['id' => $this->designation->id, 'name' => $this->designation->name] : null),
             'employee_id' => $this->employee_id,
             'hire_date' => $this->hire_date?->toDateString(),

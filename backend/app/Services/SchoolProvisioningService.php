@@ -23,10 +23,11 @@ class SchoolProvisioningService
 {
     private const SCHOOL_SCOPED_ROLE_PERMISSIONS = [
         'School Admin' => [
-            'users.view', 'users.create', 'users.edit', 'users.delete',
+            'users.view', 'users.create', 'users.edit', 'users.delete', 'users.manage-mfa',
             'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
             'settings.view', 'settings.edit',
             'audit-logs.view',
+            'data-export.school',
             'academic-years.view', 'academic-years.create', 'academic-years.edit', 'academic-years.delete',
             'academic-structure.view', 'academic-structure.create', 'academic-structure.edit', 'academic-structure.delete',
             'timetable.view', 'timetable.create', 'timetable.edit', 'timetable.delete',
@@ -301,21 +302,31 @@ class SchoolProvisioningService
                 return ['admin' => $admin, 'login_token' => Password::broker()->createToken($admin)];
             });
         } catch (Throwable $e) {
-            // run()'s own callback threw, so it never got to revert tenancy —
-            // it's still pointed at the half-provisioned tenant. End it
-            // (disconnects the connection) before deleting the database:
-            // for the SQLite manager that's a real file, and Windows won't
-            // let you delete one that's still open.
-            if (tenancy()->initialized) {
-                tenancy()->end();
-            }
-
-            $school->database()->manager()->deleteDatabase($school);
-            $school->forceDelete();
+            $this->teardown($school);
 
             throw $e;
         }
 
         return ['school' => $school, 'admin' => $result['admin'], 'login_token' => $result['login_token']];
+    }
+
+    /**
+     * Physically drops a tenant's database and hard-deletes its landlord
+     * row — irreversible. Originally only the provisioning-failure rollback
+     * path above; Phase 15's whole-school offboarding
+     * (`PlatformSchoolController::offboard()`, `mode=delete`) reuses this
+     * exact sequence rather than duplicating it.
+     */
+    public function teardown(School $school): void
+    {
+        // End tenancy (disconnects the connection) before deleting the
+        // database: for the SQLite manager that's a real file, and Windows
+        // won't let you delete one that's still open.
+        if (tenancy()->initialized) {
+            tenancy()->end();
+        }
+
+        $school->database()->manager()->deleteDatabase($school);
+        $school->forceDelete();
     }
 }

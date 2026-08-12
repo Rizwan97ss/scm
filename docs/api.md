@@ -44,6 +44,25 @@ Conventions used throughout:
 | POST | `/auth/email/verification-notification` | Resend verification email. Throttled 6/min. |
 | GET | `/auth/email/verify/{id}/{hash}` | Signed URL, verifies email. |
 
+## Two-factor authentication (Phase 15)
+
+Mandatory for every account — see [mfa.md](mfa.md) for the full picture
+(enforcement, grace period, recovery). `platform-mfa/*` are the identical
+central-zone twins for the `platform` guard/`PlatformUser`.
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| POST | `/auth/login` | None | Now returns `{ mfa_required: true, challenge_token }` instead of the user, if the account already has MFA confirmed — no session is established yet. |
+| POST | `/auth/mfa/verify-challenge` | None (guest) | `{ challenge_token, code }` — `code` may be a TOTP code or a recovery code. Completes the actual login, returns `UserResource` exactly like a non-MFA `/auth/login` would. Throttled 10/min. |
+| POST | `/auth/mfa/setup` | Session | Generates a fresh unconfirmed secret, returns `{ secret, qr_code }` (a base64 PNG data URI). Calling again before confirming discards the pending secret. |
+| POST | `/auth/mfa/confirm` | Session | `{ code }` — verifies against the pending secret, confirms MFA, returns `{ recovery_codes: [...] }` **once**. |
+| POST | `/auth/mfa/recovery-codes/regenerate` | Session | `{ password }` — password-confirmed. Invalidates the old recovery codes, returns a fresh set. |
+| POST | `/auth/platform-login` | None | Platform-guard twin of `/auth/login`. |
+| POST | `/auth/platform-mfa/verify-challenge` | None (guest) | Platform-guard twin. |
+| POST | `/auth/platform-mfa/setup` | Session | Platform-guard twin. |
+| POST | `/auth/platform-mfa/confirm` | Session | Platform-guard twin. |
+| POST | `/auth/platform-mfa/recovery-codes/regenerate` | Session | Platform-guard twin. |
+
 ## Public
 
 | Method | Path | Notes |
@@ -77,6 +96,7 @@ a Policy — see [rbac.md](rbac.md#permission-catalogue).
 | GET | `/platform/schools` | `platform.view-tenants` | Paginated, filterable by `billing_status`/`plan_id`. |
 | GET | `/platform/schools/{school}` | `platform.view-tenants` | Includes usage vs. plan limits (`School::studentCount()`/`staffCount()`), Stripe customer id. |
 | POST | `/platform/schools/{school}/plan` | `platform.manage-billing` | `{ plan_id }` — calls `SubscriptionService::swapPlan()`, the same method a future School-Admin-facing "change plan" action will also use. |
+| POST | `/platform/schools/{school}/offboard` | `platform.offboard-schools` | `{ mode: 'anonymize'\|'delete' }` (Phase 15). `anonymize` scrubs PII on every account in that tenant (`AnonymizationService`, reused from the per-user workflow below) and deactivates the school, but keeps the physical database — financial/academic records stay queryable. `delete` physically drops the tenant database (`SchoolProvisioningService::teardown()`, the same sequence a failed signup's rollback already uses) — irreversible. |
 | GET | `/platform/metrics` | `platform.view-metrics` | Counts by `billing_status` + an approximated MRR (face-value plan price sum, ignores proration/discounts). |
 
 ## Billing *(school-scoped, School Admin only)*
@@ -101,6 +121,7 @@ view of *its* subscription, not a cross-tenant list.
 | POST | `/users/{user}/roles` | `users.edit` | Replaces the user's role set (school-scoped). |
 | POST | `/users/{user}/status` | `users.edit` | Activate/suspend/etc. |
 | POST | `/users/{user}/reset-password` | `users.edit` | Admin-triggered reset. |
+| POST | `/users/{user}/mfa/reset` | `users.manage-mfa` | Clears the user's TOTP enrollment entirely and grants a new 3-day setup grace period — see [mfa.md](mfa.md#lost-device--recovery). Deliberately its own permission, not `users.edit` (which also allows self-service — resetting your own MFA with no second factor would defeat the point). |
 | GET/POST | `/roles` | `roles.view` / `roles.create` | |
 | GET/PUT/DELETE | `/roles/{role}` | `roles.view`/`edit`/`delete` | School-scoped; Super Admin can also manage global roles. |
 | GET | `/permissions` | `roles.view` | Full permission catalogue, for the role editor's matrix. |
@@ -112,6 +133,36 @@ view of *its* subscription, not a cross-tenant list.
 | GET | `/settings` | `settings.view` | All settings visible to caller (global + school). |
 | PUT | `/settings` | `settings.edit` | Bulk upsert `{ settings: [{key, value}, ...] }`. |
 | GET | `/audit-logs` | `audit-logs.view` | Filterable by causer/subject/date. |
+
+## Data export (Phase 15)
+
+Both flows share `App\Jobs\GenerateDataExportJob` — the first real queued
+job in this app (`QUEUE_CONNECTION=database`, see
+[deployment.md](deployment.md) §5) — and produce a ZIP of CSVs, one per
+resource. Self-service reuses the same `scopeVisibleTo()` scopes the UI
+already uses (`Student`/`Guardian`/`Invoice`/`Payment`), zero new
+authorization logic.
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| POST | `/account/data-export` | None (self-service) | Starts generating the caller's own visible data (account/student-or-guardian profile/invoices/payments). |
+| GET | `/account/data-export` | None (self-service) | Lists the caller's own past requests. |
+| POST | `/data-exports` | `data-export.school` | Starts generating every record in the tenant (users/students/guardians/invoices/payments). |
+| GET | `/data-exports` | `data-export.school` | Lists every school-wide export request. |
+| GET | `/data-exports/{export}/download` | Owner (self scope) or `data-export.school` (school scope) | Streams the ZIP. 409 if not yet `ready`, 410 if the file has since been cleaned up (a `retention.data_export_days` setting controls how long, default 7). |
+
+## Account deletion & anonymization (Phase 15)
+
+| Method | Path | Notes |
+|---|---|---|
+| DELETE | `/account` | Self-service — no permission gate, same self-service shape as `PUT /auth/password`. Anonymizes the caller's own PII (`AnonymizationService`) and soft-deletes their account immediately, then logs them out. No confirmation workflow beyond the request itself in v1. |
+| DELETE | `/users/{user}` | `users.delete` (existing, unchanged permission) — now anonymizes before soft-deleting, not just a bare soft-delete. Restoring a soft-deleted user brings back an anonymized shell, not their original data — see [rbac.md](rbac.md). |
+
+`AnonymizationService::anonymizeUser()` draws the PII line per model — see
+its own docblock for exactly what's scrubbed vs. retained (a `Student`'s
+academic identity/records survive even when their login account doesn't;
+`Invoice`/`Payment`/`CreditNote`/`Payslip` are never touched at all,
+financial/legal record).
 
 ## Academic structure
 

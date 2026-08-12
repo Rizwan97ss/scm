@@ -23,6 +23,9 @@ export const queryKeys = {
 
   auditLogs: (params?: unknown) => ['audit-logs', params] as const,
 
+  dataExportsSelf: ['data-exports', 'self'] as const,
+  dataExportsSchool: ['data-exports', 'school'] as const,
+
   academicYears: (params?: unknown) => ['academic-years', params] as const,
   academicYear: (id: number) => ['academic-years', id] as const,
   terms: (params?: unknown) => ['terms', params] as const,

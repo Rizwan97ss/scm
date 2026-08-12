@@ -3,15 +3,17 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { platformLoginSchema, type PlatformLoginFormValues } from '../schemas/platformLoginSchema'
+import { MfaChallengeForm } from '@/features/auth/components/MfaChallengeForm'
 import { usePlatformAuth } from '@/context/PlatformAuthContext'
 import { Button, Checkbox, FormField, Input } from '@/components/ui'
 import { routePaths } from '@/routes/routePaths'
 import type { ApiError } from '@/api/client'
 
 export function PlatformLoginForm() {
-  const { login } = usePlatformAuth()
+  const { login, verifyMfaChallenge } = usePlatformAuth()
   const navigate = useNavigate()
   const [formError, setFormError] = useState<string | null>(null)
+  const [challengeToken, setChallengeToken] = useState<string | null>(null)
 
   const {
     register,
@@ -24,14 +26,26 @@ export function PlatformLoginForm() {
     defaultValues: { email: '', password: '', remember: false },
   })
 
+  function goToDestination() {
+    navigate(routePaths.platformSchools, { replace: true })
+  }
+
   async function onSubmit(values: PlatformLoginFormValues) {
     setFormError(null)
     try {
-      await login(values)
-      navigate(routePaths.platformSchools, { replace: true })
+      const result = await login(values)
+      if (result.mfa_required) {
+        setChallengeToken(result.challenge_token)
+        return
+      }
+      goToDestination()
     } catch (error) {
       setFormError((error as ApiError).message ?? 'Unable to log in.')
     }
+  }
+
+  if (challengeToken) {
+    return <MfaChallengeForm challengeToken={challengeToken} onVerify={verifyMfaChallenge} onSuccess={goToDestination} />
   }
 
   return (

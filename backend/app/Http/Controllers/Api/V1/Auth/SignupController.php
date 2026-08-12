@@ -79,8 +79,10 @@ class SignupController extends Controller
             // soft-deleted School whose tenant database still physically
             // exists and is still loginable is a worse failure state than
             // no tenant at all, and nothing of value exists in it yet.
-            $school->database()->manager()->deleteDatabase($school);
-            $school->forceDelete();
+            // Same sequence provision()'s own catch block uses, extracted
+            // to SchoolProvisioningService::teardown() (Phase 15) so this
+            // and the new whole-school-offboarding action share one copy.
+            $this->provisioning->teardown($school);
 
             return ApiResponse::error('We could not start checkout. Please try again.', 502);
         }

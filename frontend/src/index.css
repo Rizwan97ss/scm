@@ -120,3 +120,109 @@ body {
   outline: 2px solid var(--color-ring);
   outline-offset: 2px;
 }
+
+/*
+ * Marketing surface (Landing, Login, Signup) -- its own fixed brand identity,
+ * deliberately independent of the --color- tokens and data-theme above.
+ * Those are per-tenant customizable (School Admins repaint the authenticated app from
+ * Settings > Branding); the public/pre-auth pages represent the platform
+ * itself, not any one school, so they intentionally don't react to a
+ * tenant's colors or the viewer's light/dark preference -- one committed
+ * look, like a company's own marketing site.
+ */
+.marketing-scope {
+  --mk-ink: #10141c;
+  --mk-ink-raised: #171c26;
+  --mk-paper: #f7f6f2;
+  --mk-card: #ffffff;
+  --mk-marigold: #e7a93e;
+  --mk-marigold-ink: #4a2f06;
+  --mk-forest: #3f8f78;
+  --mk-forest-deep: #2b6e5c;
+  --mk-mist: #b9c0cc;
+  --mk-mist-soft: #7c8494;
+  --mk-line-dark: rgba(247, 246, 242, 0.12);
+  --mk-line-light: #e6e3da;
+  --mk-ink-soft: #5b6472;
+
+  --mk-font-display: 'Fraunces', var(--font-sans);
+  --mk-font-body: 'Public Sans', var(--font-sans);
+  --mk-font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+
+  color-scheme: dark;
+  font-family: var(--mk-font-body);
+}
+
+.marketing-scope h1,
+.marketing-scope h2,
+.marketing-scope h3 {
+  font-family: var(--mk-font-display);
+  text-wrap: balance;
+}
+
+/*
+ * Login/Signup sit their form panel inside .marketing-scope too, but forms
+ * read best on a plain light surface, not the hero's ink background. Rather
+ * than override every Input/Button/FormField instance, this repaints the
+ * SAME --color-* tokens those shared components already read from --
+ * everything just works, unchanged, with the marketing palette instead of
+ * the tenant-brand one.
+ */
+.marketing-form-panel {
+  --color-background: var(--mk-card);
+  --color-foreground: var(--mk-ink);
+  --color-card: var(--mk-card);
+  --color-card-foreground: var(--mk-ink);
+  --color-muted: #f1efe9;
+  --color-muted-foreground: var(--mk-ink-soft);
+  --color-border: var(--mk-line-light);
+  --color-input: var(--mk-line-light);
+  --color-ring: var(--mk-marigold);
+  --color-primary: var(--mk-marigold);
+  --color-primary-foreground: var(--mk-marigold-ink);
+  --color-secondary: var(--mk-ink);
+  --color-secondary-foreground: var(--mk-paper);
+  --font-sans: var(--mk-font-body);
+
+  background: var(--mk-card);
+  color: var(--mk-ink);
+}
+
+@keyframes mk-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mk-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes mk-drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-3%, 4%) rotate(2deg); }
+}
+
+.mk-reveal {
+  opacity: 0;
+}
+.mk-reveal.mk-in {
+  animation: mk-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-reveal {
+    opacity: 1;
+    animation: none;
+  }
+  .marketing-scope * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

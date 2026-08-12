@@ -9,6 +9,7 @@ use App\Http\Requests\User\UpdateUserRolesRequest;
 use App\Http\Requests\User\UpdateUserStatusRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\AnonymizationService;
 use App\Services\PlanLimitService;
 use App\Support\ApiResponse;
 use Illuminate\Auth\Passwords\PasswordBroker;
@@ -46,7 +47,7 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request, PlanLimitService $planLimits): JsonResponse
     {
-        $this->authorize('create', User::class);
+        $this->authorize('create', [User::class, $request->array('roles')]);
 
         // Only roles that actually count toward a "staff seat" (see
         // School::staffCount()) trigger the check — a user created here
@@ -84,10 +85,17 @@ class UserController extends Controller
         return ApiResponse::success(new UserResource($user->load(['roles', 'designation'])));
     }
 
-    public function destroy(User $user): JsonResponse
+    /**
+     * Anonymizes PII (see AnonymizationService's docblock for exactly what
+     * survives) before soft-deleting — a real behavior change from the
+     * previous bare soft-delete: restoring this user now brings back an
+     * anonymized shell, not their original data. See docs/rbac.md.
+     */
+    public function destroy(User $user, AnonymizationService $anonymization): JsonResponse
     {
         $this->authorize('delete', $user);
 
+        $anonymization->anonymizeUser($user);
         $user->delete();
 
         return ApiResponse::noContent();
@@ -95,7 +103,7 @@ class UserController extends Controller
 
     public function updateRoles(UpdateUserRolesRequest $request, User $user): JsonResponse
     {
-        $this->authorize('manageRoles', [User::class, $user]);
+        $this->authorize('manageRoles', [User::class, $user, $request->array('roles')]);
 
         $user->syncRoles($request->array('roles'));
 
@@ -126,5 +134,28 @@ class UserController extends Controller
         }
 
         return ApiResponse::success(null, 'Password reset link sent to the user.');
+    }
+
+    /**
+     * Clears a user's TOTP enrollment entirely (lost device, no working
+     * recovery code) and grants a short grace period so they aren't
+     * instantly locked out by EnsureMfaEnrolled on their very next request.
+     * Gated on the dedicated 'users.manage-mfa' permission, not the
+     * self-service-friendly UserPolicy::update() ('users.edit' OR "it's my
+     * own account") — a user resetting their OWN MFA with no second factor
+     * at all would defeat the entire point of it being mandatory.
+     */
+    public function resetMfa(User $user): JsonResponse
+    {
+        $this->authorize('users.manage-mfa');
+
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+            'mfa_grace_period_ends_at' => now()->addDays(3),
+        ])->save();
+
+        return ApiResponse::success(null, "Two-factor authentication has been reset for {$user->full_name}.");
     }
 }

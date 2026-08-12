@@ -17,10 +17,15 @@ return [
 
     'modules' => [
         'schools' => ['manage'],
-        'users' => ['view', 'create', 'edit', 'delete'],
+        'users' => ['view', 'create', 'edit', 'delete', 'manage-mfa'],
         'roles' => ['view', 'create', 'edit', 'delete'],
         'settings' => ['view', 'edit'],
         'audit-logs' => ['view'],
+        // Phase 15 — admin bulk "export the whole school's data"
+        // (data-export.school). Self-service "export my own data" is
+        // deliberately ungated, same self-service shape as leave requests/
+        // payslips — see DataExportController.
+        'data-export' => ['school'],
         'academic-years' => ['view', 'create', 'edit', 'delete'],
         'academic-structure' => ['view', 'create', 'edit', 'delete'],
         'timetable' => ['view', 'create', 'edit', 'delete'],
@@ -40,7 +45,7 @@ return [
         // Cross-tenant, Super Admin only — managing the platform itself
         // (all schools' plans/subscriptions), not a single school's own
         // data. Distinct from the school-scoped 'billing' module below.
-        'platform' => ['view-tenants', 'manage-billing', 'view-metrics'],
+        'platform' => ['view-tenants', 'manage-billing', 'view-metrics', 'offboard-schools'],
         // School-scoped — a School Admin's own plan/trial/usage and a link
         // out to Stripe's hosted portal. Not the school-to-parent tuition
         // billing below (that's 'fees'/'invoices', a separate concern).

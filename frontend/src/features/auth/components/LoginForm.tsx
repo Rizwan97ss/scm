@@ -3,16 +3,18 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { loginSchema, type LoginFormValues } from '../schemas/loginSchema'
+import { MfaChallengeForm } from './MfaChallengeForm'
 import { useAuth } from '@/context/AuthContext'
 import { Button, Checkbox, FormField, Input } from '@/components/ui'
 import { routePaths } from '@/routes/routePaths'
 import type { ApiError } from '@/api/client'
 
-export function LoginForm() {
-  const { login } = useAuth()
+export function LoginForm({ onStepChange }: { onStepChange?: (step: 'credentials' | 'mfa') => void }) {
+  const { login, verifyMfaChallenge } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [formError, setFormError] = useState<string | null>(null)
+  const [challengeToken, setChallengeToken] = useState<string | null>(null)
 
   const {
     register,
@@ -25,15 +27,28 @@ export function LoginForm() {
     defaultValues: { email: '', password: '', remember: false },
   })
 
+  function goToDestination() {
+    const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? routePaths.dashboard
+    navigate(redirectTo, { replace: true })
+  }
+
   async function onSubmit(values: LoginFormValues) {
     setFormError(null)
     try {
-      await login(values)
-      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? routePaths.dashboard
-      navigate(redirectTo, { replace: true })
+      const result = await login(values)
+      if (result.mfa_required) {
+        setChallengeToken(result.challenge_token)
+        onStepChange?.('mfa')
+        return
+      }
+      goToDestination()
     } catch (error) {
       setFormError((error as ApiError).message ?? 'Unable to log in.')
     }
+  }
+
+  if (challengeToken) {
+    return <MfaChallengeForm challengeToken={challengeToken} onVerify={verifyMfaChallenge} onSuccess={goToDestination} />
   }
 
   return (
