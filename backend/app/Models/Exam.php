@@ -65,7 +65,16 @@ class Exam extends Model
         if ($user->hasRole('Student')) {
             $sectionId = Student::query()->where('user_id', $user->id)->value('current_section_id');
 
-            return $query->where('is_published', true)
+            return $query
+                // Phase 16: an exam is listable once it's wholly published OR at
+                // least one of its subject groups in the student's own section
+                // has been individually declared — matches
+                // ParentPortalController::childExams()'s identical composition,
+                // so the two portals never disagree on what a family can see.
+                ->where(function ($q) use ($sectionId) {
+                    $q->where('is_published', true)
+                        ->orWhereHas('examSubjectGroups', fn ($q2) => $q2->where('section_id', $sectionId)->whereNotNull('published_at'));
+                })
                 ->when(
                     $sectionId,
                     fn ($q) => $q->whereHas('examSubjects', fn ($q2) => $q2->where('section_id', $sectionId)),
@@ -78,7 +87,12 @@ class Exam extends Model
                 ->whereHas('guardians', fn ($q) => $q->where('user_id', $user->id))
                 ->pluck('current_section_id');
 
-            return $query->where('is_published', true)->whereHas('examSubjects', fn ($q) => $q->whereIn('section_id', $sectionIds));
+            return $query
+                ->where(function ($q) use ($sectionIds) {
+                    $q->where('is_published', true)
+                        ->orWhereHas('examSubjectGroups', fn ($q2) => $q2->whereIn('section_id', $sectionIds)->whereNotNull('published_at'));
+                })
+                ->whereHas('examSubjects', fn ($q) => $q->whereIn('section_id', $sectionIds));
         }
 
         if ($user->hasAnyRole(['Teacher', 'Class Teacher'])) {

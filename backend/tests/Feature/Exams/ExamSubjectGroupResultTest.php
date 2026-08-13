@@ -202,6 +202,35 @@ class ExamSubjectGroupResultTest extends TestCase
         $response->assertOk();
     }
 
+    /**
+     * A caught-live regression: Exam::scopeVisibleTo()'s Student/Parent
+     * branches still checked only the flat is_published column, never the
+     * per-group published_at — so the exam this whole feature is about
+     * never even appeared in a student's own "By Exam" dropdown until the
+     * entire exam was published, silently defeating the early-declare
+     * feature for their own self-service view (ParentPortalController::
+     * childExams() had the correct OR-composition; this shared scope did
+     * not). No API-only test caught it because reportCard() is normally
+     * hit directly with a known exam id, never routed through the list
+     * first — only driving the real "select an exam" dropdown surfaced it.
+     */
+    public function test_student_can_list_an_exam_once_their_own_sections_subject_group_is_published(): void
+    {
+        $school = $this->createSchool();
+        $admin = $this->createUserWithRole($school, 'School Admin');
+        $studentUser = $this->createUserWithRole($school, 'Student');
+        [$exam, $group, , $student] = $this->makeMultiComponentSubject($school, [['name' => 'Written', 'max_marks' => 100]]);
+        $student->update(['user_id' => $studentUser->id]);
+
+        $before = $this->actingAsInSchool($studentUser)->getJson('/api/v1/exams?per_page=50');
+        $this->assertFalse(collect($before->json('data'))->pluck('id')->contains($exam->id));
+
+        $this->actingAsInSchool($admin)->postJson("/api/v1/exams/{$exam->id}/exam-subject-groups/{$group->id}/publish")->assertOk();
+
+        $after = $this->actingAsInSchool($studentUser)->getJson('/api/v1/exams?per_page=50');
+        $this->assertTrue(collect($after->json('data'))->pluck('id')->contains($exam->id));
+    }
+
     /** The core of requirement 3: a Class Teacher declares one subject early, independent of the whole exam. */
     public function test_student_sees_the_full_breakdown_once_their_subject_group_is_individually_published(): void
     {
