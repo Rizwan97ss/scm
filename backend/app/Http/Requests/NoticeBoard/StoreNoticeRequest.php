@@ -15,6 +15,8 @@ class StoreNoticeRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Not ValidName — a notice title is a free-text headline
+            // ("Reminder: Field trip tomorrow!"), not an identifier.
             'title' => ['required', 'string', 'max:200'],
             'body' => ['required', 'string'],
             'type' => ['sometimes', Rule::in(['general', 'event'])],

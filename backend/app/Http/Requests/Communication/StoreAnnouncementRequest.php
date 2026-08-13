@@ -15,6 +15,7 @@ class StoreAnnouncementRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Not ValidName — an announcement title is a free-text headline, not an identifier.
             'title' => ['required', 'string', 'max:200'],
             'body' => ['required', 'string'],
             'audience' => ['required', Rule::in(['all', 'students', 'staff', 'parents'])],

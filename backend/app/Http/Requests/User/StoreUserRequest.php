@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\User;
 
+use App\Rules\ValidName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -17,8 +18,8 @@ class StoreUserRequest extends FormRequest
     {
 
         return [
-            'first_name' => ['required', 'string', 'max:100'],
-            'last_name' => ['required', 'string', 'max:100'],
+            'first_name' => ['required', 'string', 'max:100', new ValidName],
+            'last_name' => ['required', 'string', 'max:100', new ValidName],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
             'username' => ['nullable', 'string', 'max:100', Rule::unique('users', 'username')],
             'phone' => ['nullable', 'string', 'max:30'],

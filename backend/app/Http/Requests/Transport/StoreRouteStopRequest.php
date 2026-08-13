@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Transport;
 
+use App\Rules\ValidName;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreRouteStopRequest extends FormRequest
@@ -14,7 +15,7 @@ class StoreRouteStopRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:150'],
+            'name' => ['required', 'string', 'max:150', new ValidName],
             'sequence' => ['sometimes', 'integer', 'min:1'],
         ];
     }

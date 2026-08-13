@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Hr;
 
+use App\Rules\ValidName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,7 +17,7 @@ class StoreDesignationRequest extends FormRequest
     {
 
         return [
-            'name' => ['required', 'string', 'max:100', Rule::unique('designations', 'name')],
+            'name' => ['required', 'string', 'max:100', new ValidName, Rule::unique('designations', 'name')],
             'description' => ['nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
         ];

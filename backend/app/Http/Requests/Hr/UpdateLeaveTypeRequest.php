@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Hr;
 
+use App\Rules\ValidName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,7 +17,7 @@ class UpdateLeaveTypeRequest extends FormRequest
     {
 
         return [
-            'name' => ['required', 'string', 'max:100', Rule::unique('leave_types', 'name')->ignore($this->route('leave_type'))],
+            'name' => ['required', 'string', 'max:100', new ValidName, Rule::unique('leave_types', 'name')->ignore($this->route('leave_type'))],
             'days_allowed_per_year' => ['nullable', 'integer', 'min:1', 'max:365'],
             'is_paid' => ['sometimes', 'boolean'],
             'description' => ['nullable', 'string'],

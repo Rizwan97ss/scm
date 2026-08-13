@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Transport;
 
+use App\Rules\ValidName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,7 +17,7 @@ class StoreRouteRequest extends FormRequest
     {
 
         return [
-            'name' => ['required', 'string', 'max:150', Rule::unique('routes', 'name')],
+            'name' => ['required', 'string', 'max:150', new ValidName, Rule::unique('routes', 'name')],
             'description' => ['nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
             'stops' => ['sometimes', 'array'],

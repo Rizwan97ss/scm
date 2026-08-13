@@ -19,6 +19,7 @@ class StoreHomeworkRequest extends FormRequest
             'academic_year_id' => ['required', Rule::exists('academic_years', 'id')],
             'section_id' => ['required', Rule::exists('sections', 'id')],
             'subject_id' => ['required', Rule::exists('subjects', 'id')],
+            // Not ValidName — a homework title is a free-text headline, not an identifier.
             'title' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
             'due_date' => ['required', 'date'],

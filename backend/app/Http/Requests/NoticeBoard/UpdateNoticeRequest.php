@@ -15,6 +15,7 @@ class UpdateNoticeRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Not ValidName — a notice title is a free-text headline, not an identifier.
             'title' => ['sometimes', 'required', 'string', 'max:200'],
             'body' => ['sometimes', 'required', 'string'],
             'type' => ['sometimes', Rule::in(['general', 'event'])],

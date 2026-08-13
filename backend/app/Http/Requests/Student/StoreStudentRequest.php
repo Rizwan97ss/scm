@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Student;
 
+use App\Rules\ValidName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,8 +17,8 @@ class StoreStudentRequest extends FormRequest
     {
 
         return [
-            'first_name' => ['required', 'string', 'max:100'],
-            'last_name' => ['required', 'string', 'max:100'],
+            'first_name' => ['required', 'string', 'max:100', new ValidName],
+            'last_name' => ['required', 'string', 'max:100', new ValidName],
             'gender' => ['required', Rule::in(['male', 'female', 'other'])],
             'date_of_birth' => ['required', 'date', 'before:today'],
             'blood_group' => ['nullable', 'string', 'max:10'],

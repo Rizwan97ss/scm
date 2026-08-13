@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\User;
 
+use App\Rules\ValidName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,8 +18,8 @@ class UpdateUserRequest extends FormRequest
         $userId = $this->route('user')?->id;
 
         return [
-            'first_name' => ['sometimes', 'required', 'string', 'max:100'],
-            'last_name' => ['sometimes', 'required', 'string', 'max:100'],
+            'first_name' => ['sometimes', 'required', 'string', 'max:100', new ValidName],
+            'last_name' => ['sometimes', 'required', 'string', 'max:100', new ValidName],
             'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'username' => ['nullable', 'string', 'max:100', Rule::unique('users', 'username')->ignore($userId)],
             'phone' => ['nullable', 'string', 'max:30'],

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Transport;
 
+use App\Rules\ValidName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,7 +17,7 @@ class UpdateRouteRequest extends FormRequest
     {
 
         return [
-            'name' => ['sometimes', 'required', 'string', 'max:150', Rule::unique('routes', 'name')->ignore($this->route('route'))],
+            'name' => ['sometimes', 'required', 'string', 'max:150', new ValidName, Rule::unique('routes', 'name')->ignore($this->route('route'))],
             'description' => ['nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
         ];

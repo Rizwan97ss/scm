@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\School;
 
+use App\Rules\ValidName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +16,7 @@ class UpdateSchoolRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'name' => ['sometimes', 'required', 'string', 'max:255', new ValidName],
             'short_name' => ['sometimes', 'required', 'string', 'max:50', Rule::unique('schools', 'short_name')->ignore($this->route('school'))],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
