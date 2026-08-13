@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['school_id', 'subject_id', 'type', 'text', 'default_marks', 'explanation', 'created_by'])]
+#[Fillable(['school_id', 'subject_id', 'type', 'text', 'default_marks', 'negative_marks', 'explanation', 'created_by'])]
 class Question extends Model
 {
     use HasFactory, SoftDeletes;
@@ -18,6 +18,7 @@ class Question extends Model
     {
         return [
             'default_marks' => 'float',
+            'negative_marks' => 'float',
         ];
     }
 

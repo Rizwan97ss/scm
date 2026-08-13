@@ -16,7 +16,10 @@ export function OnlineTestConfigPage() {
   const examSubjectIdNum = Number(examSubjectId)
 
   const { data: exam } = useQuery({ queryKey: queryKeys.exam(Number(examId)), queryFn: () => examsApi.get(Number(examId)) })
-  const examSubject = exam?.exam_subjects.find((es) => es.id === examSubjectIdNum)
+  // The component (what the test is configured on) and its parent group
+  // (what subject/section it's under) — see ExamSubjectGroup in types/exam.ts.
+  const group = exam?.exam_subject_groups.find((g) => g.components.some((c) => c.id === examSubjectIdNum))
+  const examSubject = group?.components.find((c) => c.id === examSubjectIdNum)
 
   const { data: questions, isLoading } = useQuery({ queryKey: queryKeys.questions({ per_page: 200 }), queryFn: () => questionsApi.list({ per_page: 200 }) })
 
@@ -61,9 +64,9 @@ export function OnlineTestConfigPage() {
   return (
     <div>
       <PageHeader
-        title={`Configure Online Test — ${examSubject.subject?.name}`}
-        description={`${exam.name} · ${examSubject.section?.name} · Select the questions this test will draw from.`}
-        breadcrumbs={[{ label: 'Exams', to: routePaths.exams }, { label: exam.name, to: routePaths.examDetail(exam.id) }, { label: examSubject.subject?.name ?? '' }]}
+        title={`Configure Online Test — ${group?.subject?.name}`}
+        description={`${exam.name} · ${group?.section?.name} · Select the questions this test will draw from.`}
+        breadcrumbs={[{ label: 'Exams', to: routePaths.exams }, { label: exam.name, to: routePaths.examDetail(exam.id) }, { label: group?.subject?.name ?? '' }]}
         actions={
           <Button onClick={() => saveMutation.mutate()} isLoading={saveMutation.isPending} disabled={selectedCount === 0}>
             <Save className="h-4 w-4" /> Save ({selectedCount} selected)

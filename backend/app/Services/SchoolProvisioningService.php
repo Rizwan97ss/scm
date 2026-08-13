@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Enums\SettingType;
+use App\Models\AssessmentComponentType;
+use App\Models\ExamType;
 use App\Models\Plan;
 use App\Models\School;
 use App\Models\User;
@@ -38,8 +40,8 @@ class SchoolProvisioningService
             'staff-attendance.view', 'staff-attendance.mark', 'staff-attendance.edit', 'staff-attendance.export',
             'grading.view', 'grading.manage',
             'exams.view', 'exams.create', 'exams.edit', 'exams.delete', 'exams.publish',
-            'exam-marks.view', 'exam-marks.enter', 'exam-marks.edit', 'exam-marks.export',
-            'questions.view', 'questions.create', 'questions.edit', 'questions.delete',
+            'exam-marks.view', 'exam-marks.enter', 'exam-marks.edit', 'exam-marks.export', 'exam-marks.publish',
+            'questions.view', 'questions.create', 'questions.edit', 'questions.delete', 'questions.import',
             'online-exams.view', 'online-exams.configure',
             'homework.view', 'homework.create', 'homework.edit', 'homework.delete', 'homework.grade',
             'remarks.view', 'remarks.create', 'remarks.edit', 'remarks.delete',
@@ -73,7 +75,7 @@ class SchoolProvisioningService
             'staff-attendance.view', 'staff-attendance.edit', 'staff-attendance.export',
             'grading.view', 'grading.manage',
             'exams.view', 'exams.create', 'exams.edit', 'exams.delete', 'exams.publish',
-            'exam-marks.view', 'exam-marks.edit', 'exam-marks.export',
+            'exam-marks.view', 'exam-marks.edit', 'exam-marks.export', 'exam-marks.publish',
             'questions.view', 'questions.edit',
             'online-exams.view', 'online-exams.configure',
             'homework.view',
@@ -161,7 +163,7 @@ class SchoolProvisioningService
             'student-attendance.view', 'student-attendance.mark', 'student-attendance.edit',
             'exams.view',
             'exam-marks.view', 'exam-marks.enter', 'exam-marks.edit',
-            'questions.view', 'questions.create', 'questions.edit',
+            'questions.view', 'questions.create', 'questions.edit', 'questions.import',
             'online-exams.view', 'online-exams.configure',
             'homework.view', 'homework.create', 'homework.edit', 'homework.delete', 'homework.grade',
             'remarks.view', 'remarks.create', 'remarks.edit', 'remarks.delete',
@@ -174,8 +176,8 @@ class SchoolProvisioningService
             'guardians.view',
             'student-attendance.view', 'student-attendance.mark', 'student-attendance.edit', 'student-attendance.export',
             'exams.view',
-            'exam-marks.view', 'exam-marks.enter', 'exam-marks.edit', 'exam-marks.export',
-            'questions.view', 'questions.create', 'questions.edit',
+            'exam-marks.view', 'exam-marks.enter', 'exam-marks.edit', 'exam-marks.export', 'exam-marks.publish',
+            'questions.view', 'questions.create', 'questions.edit', 'questions.import',
             'online-exams.view', 'online-exams.configure',
             'homework.view', 'homework.create', 'homework.edit', 'homework.delete', 'homework.grade',
             'remarks.view', 'remarks.create', 'remarks.edit', 'remarks.delete',
@@ -252,6 +254,42 @@ class SchoolProvisioningService
     }
 
     /**
+     * Seeds the canonical exam types (Class Test, Unit Test, Monthly Test,
+     * Trimester, Semester, Mid-Term, Final/Annual) and assessment component
+     * types (Online MCQ, Written, Practical, Oral/Viva) every tenant starts
+     * with — both are admin-editable/extendable afterward (see
+     * ExamTypeController/AssessmentComponentTypeController), this just
+     * seeds a sensible starting set. Idempotent (firstOrCreate by code), so
+     * re-running it (e.g. via the exam-config:rollout command against an
+     * already-live tenant) never duplicates rows.
+     */
+    public function seedDefaultExamConfig(School $school): void
+    {
+        $examTypes = [
+            ['code' => 'class_test', 'name' => 'Class Test', 'sequence' => 1],
+            ['code' => 'unit_test', 'name' => 'Unit Test', 'sequence' => 2],
+            ['code' => 'monthly_test', 'name' => 'Monthly Test', 'sequence' => 3],
+            ['code' => 'trimester', 'name' => 'Trimester', 'sequence' => 4],
+            ['code' => 'semester', 'name' => 'Semester', 'sequence' => 5],
+            ['code' => 'mid_term', 'name' => 'Mid-Term', 'sequence' => 6],
+            ['code' => 'final_annual', 'name' => 'Final / Annual Examination', 'sequence' => 7],
+        ];
+        foreach ($examTypes as $type) {
+            ExamType::query()->firstOrCreate(['code' => $type['code']], $type);
+        }
+
+        $componentTypes = [
+            ['code' => 'online_mcq', 'name' => 'Online MCQ', 'is_auto_graded' => true, 'sequence' => 1],
+            ['code' => 'written', 'name' => 'Written', 'is_auto_graded' => false, 'sequence' => 2],
+            ['code' => 'practical', 'name' => 'Practical', 'is_auto_graded' => false, 'sequence' => 3],
+            ['code' => 'oral_viva', 'name' => 'Oral / Viva', 'is_auto_graded' => false, 'sequence' => 4],
+        ];
+        foreach ($componentTypes as $type) {
+            AssessmentComponentType::query()->firstOrCreate(['code' => $type['code']], $type);
+        }
+    }
+
+    /**
      * Projects a plan's seat limits into per-school Settings (group
      * 'billing'), so the rest of the app can read them via the already
      * school/global-aware SettingsService rather than joining to `plans`.
@@ -293,6 +331,7 @@ class SchoolProvisioningService
         try {
             $result = $school->run(function () use ($adminAttributes, $plan, $school) {
                 $this->seedDefaultRoles($school);
+                $this->seedDefaultExamConfig($school);
 
                 $admin = User::query()->create($adminAttributes);
                 $admin->assignRole('School Admin');

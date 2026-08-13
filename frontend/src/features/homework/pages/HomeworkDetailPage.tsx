@@ -63,7 +63,7 @@ export function HomeworkDetailPage() {
       {homework.attachments.length > 0 && (
         <div className="mb-6 flex flex-col gap-1.5">
           {homework.attachments.map((attachment) => (
-            <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+            <a key={attachment.id} href={attachment.url} target="_blank" rel="noopener" className="flex items-center gap-2 text-sm text-primary hover:underline">
               <FileText className="h-4 w-4 shrink-0" /> {attachment.file_name}
             </a>
           ))}
@@ -109,7 +109,7 @@ export function HomeworkDetailPage() {
                   <TableCell className="max-w-xs">
                     {submission?.content && <p className="line-clamp-2 text-sm text-muted-foreground">{submission.content}</p>}
                     {submission?.attachments.map((attachment) => (
-                      <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="block text-sm text-primary hover:underline">
+                      <a key={attachment.id} href={attachment.url} target="_blank" rel="noopener" className="block text-sm text-primary hover:underline">
                         {attachment.file_name}
                       </a>
                     ))}

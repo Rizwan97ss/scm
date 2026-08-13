@@ -15,6 +15,13 @@
         .summary td { border: none; padding: 3px 8px; }
         .summary td:first-child { color: #555; }
         .footer { margin-top: 40px; font-size: 10px; color: #888; }
+        .subject-block { margin-top: 14px; }
+        .subject-header { font-weight: bold; font-size: 13px; margin-bottom: 3px; }
+        .status-pending { color: #888; font-style: italic; }
+        .components-table { margin-top: 0; }
+        .components-table th, .components-table td { padding: 4px 8px; font-size: 11px; }
+        .pass { color: #2a7d32; font-weight: bold; }
+        .fail { color: #b3261e; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -26,30 +33,67 @@
         <tr><td>Admission #</td><td>{{ $data['student']['admission_number'] }}</td></tr>
     </table>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Subject</th>
-                <th class="text-right">Max Marks</th>
-                <th class="text-right">Obtained</th>
-                <th class="text-right">Percentage</th>
-                <th>Grade</th>
-                <th>Remark</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($data['subjects'] as $row)
-                <tr>
-                    <td>{{ $row['subject']['name'] }}</td>
-                    <td class="text-right">{{ $row['max_marks'] }}</td>
-                    <td class="text-right">{{ $row['is_absent'] ? 'Absent' : ($row['marks_obtained'] ?? '—') }}</td>
-                    <td class="text-right">{{ $row['percentage'] !== null ? $row['percentage'] . '%' : '—' }}</td>
-                    <td>{{ $row['grade_label'] ?? '—' }}</td>
-                    <td>{{ $row['remark'] ?? '—' }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+    @foreach ($data['subjects'] as $row)
+        <div class="subject-block">
+            <div class="subject-header">{{ $row['group']['subject']['name'] }}</div>
+
+            @if ($row['group']['status'] !== 'published')
+                <p class="status-pending">Result pending — not yet declared.</p>
+            @else
+                @if (count($row['components']) > 1)
+                    <table class="components-table">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th class="text-right">Max</th>
+                                <th class="text-right">Obtained</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($row['components'] as $component)
+                                <tr>
+                                    <td>{{ $component['type'] ?? '—' }}</td>
+                                    <td class="text-right">{{ $component['max_marks'] }}</td>
+                                    <td class="text-right">{{ $component['is_absent'] ? 'Absent' : ($component['marks_obtained'] ?? '—') }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="text-right">Total Max</th>
+                            <th class="text-right">Total Obtained</th>
+                            <th class="text-right">Percentage</th>
+                            <th>Grade</th>
+                            <th>Pass/Fail</th>
+                            <th>Remark</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-right">{{ $row['max_marks_total'] }}</td>
+                            <td class="text-right">{{ $row['is_absent'] ? 'Absent' : ($row['marks_obtained_total'] ?? '—') }}</td>
+                            <td class="text-right">{{ $row['percentage'] !== null ? $row['percentage'] . '%' : '—' }}</td>
+                            <td>{{ $row['grade_label'] ?? '—' }}</td>
+                            <td>
+                                @if ($row['is_pass'] === true)
+                                    <span class="pass">Pass</span>
+                                @elseif ($row['is_pass'] === false)
+                                    <span class="fail">Fail</span>
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td>{{ $row['remark'] ?? '—' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            @endif
+        </div>
+    @endforeach
 
     <table class="summary">
         <tr><td>Overall Percentage</td><td>{{ $data['overall_percentage'] !== null ? $data['overall_percentage'] . '%' : '—' }}</td></tr>

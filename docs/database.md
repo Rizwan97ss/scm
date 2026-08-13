@@ -40,7 +40,10 @@ student_attendances
 staff_attendances
 grading_scales
 grade_bands
+exam_types (Phase 16)
+assessment_component_types (Phase 16)
 exams
+exam_subject_groups (Phase 16)
 exam_subjects
 exam_marks
 questions
@@ -268,10 +271,14 @@ the combined diagram was already at the edge of readable.
 ```mermaid
 erDiagram
     GRADING_SCALE ||--o{ GRADE_BAND : "bands of"
-    EXAM ||--o{ EXAM_SUBJECT : "examines"
-    SUBJECT ||--o{ EXAM_SUBJECT : "subject of"
-    SECTION ||--o{ EXAM_SUBJECT : "section of"
-    GRADING_SCALE ||--o{ EXAM_SUBJECT : "scores against (nullable — falls back to school default)"
+    EXAM_TYPE ||--o{ EXAM : "typed as (nullable)"
+    EXAM ||--o{ EXAM_SUBJECT_GROUP : "examines"
+    SUBJECT ||--o{ EXAM_SUBJECT_GROUP : "subject of"
+    SECTION ||--o{ EXAM_SUBJECT_GROUP : "section of"
+    GRADING_SCALE ||--o{ EXAM_SUBJECT_GROUP : "scores against (nullable — falls back to school default)"
+
+    EXAM_SUBJECT_GROUP ||--o{ EXAM_SUBJECT : "components of"
+    ASSESSMENT_COMPONENT_TYPE ||--o{ EXAM_SUBJECT : "component type of"
 
     EXAM_SUBJECT ||--o{ EXAM_MARK : "marks for"
     STUDENT ||--o{ EXAM_MARK : "marks of"
@@ -301,24 +308,53 @@ erDiagram
         decimal grade_point "nullable"
         string remark "nullable"
     }
+    EXAM_TYPE {
+        bigint id PK
+        bigint school_id FK
+        string name "Class Test, Trimester, Final/Annual, ... — configurable"
+        string code UK
+        smallint sequence
+        bool is_active
+    }
+    ASSESSMENT_COMPONENT_TYPE {
+        bigint id PK
+        bigint school_id FK
+        string name "Online MCQ, Written, Practical, Oral/Viva, ... — configurable"
+        string code UK
+        bool is_auto_graded "drives UI: shows the online-test fields when adding a component of this type"
+        smallint sequence
+        bool is_active
+    }
     EXAM {
         bigint id PK
         bigint school_id FK
         bigint academic_year_id FK
         bigint term_id FK "nullable"
+        bigint exam_type_id FK "nullable"
         string name
         decimal weight "relative contribution to the term result, default 1"
         bool is_published
         timestamp published_at "nullable"
     }
-    EXAM_SUBJECT {
+    EXAM_SUBJECT_GROUP {
         bigint id PK
         bigint exam_id FK
         bigint subject_id FK
         bigint section_id FK
         bigint grading_scale_id FK "nullable"
+        decimal passing_marks "nullable — applies to the subject's combined total"
+        timestamp published_at "nullable — declares this subject's result independent of Exam.is_published"
+        bigint published_by FK "nullable → users"
+    }
+    EXAM_SUBJECT {
+        bigint id PK
+        bigint exam_id FK
+        bigint exam_subject_group_id FK "the subject-in-section-in-exam this component belongs under"
+        bigint assessment_component_type_id FK
+        bigint subject_id FK "kept here too (not group-only) so isTaughtBy()/existing queries needed no rewrite"
+        bigint section_id FK "same reason"
+        smallint sequence
         decimal max_marks
-        decimal passing_marks "nullable"
         date exam_date "nullable"
         bool is_online
         smallint duration_minutes "nullable"
@@ -329,7 +365,7 @@ erDiagram
     }
     EXAM_MARK {
         bigint id PK
-        bigint exam_subject_id FK
+        bigint exam_subject_id FK "one component's mark — a multi-component subject has several EXAM_MARK rows per student"
         bigint student_id FK
         decimal marks_obtained "nullable"
         bool is_absent
@@ -343,6 +379,7 @@ erDiagram
         string type "mcq | true_false — graded identically via QUESTION_OPTION"
         text text
         decimal default_marks
+        decimal negative_marks "nullable — Phase 16, null = no negative marking"
         text explanation "nullable — shown only after grading"
         bigint created_by FK "→ users"
     }
@@ -883,20 +920,35 @@ which carries this warning at the source.
 
 **Grades are computed on read, never stored.** `exam_marks` holds only
 `marks_obtained`; the letter grade, GPA point, and remark are resolved at
-request time by looking up `marks_obtained / exam_subjects.max_marks` in
-the applicable `grading_scales`' `grade_bands` (`GradingScale::resolveBand()`).
-This means editing a grading scale's bands retroactively changes how
-*every* already-entered mark is displayed — a deliberate tradeoff (a school
-correcting a lenient boundary should see it reflected everywhere at once)
-rather than a bug; if a school ever needs "the grade as it stood on the day
-it was published" to be immutable, that's a snapshotting feature to add
-later, not the current behavior.
+request time by summing a subject group's component marks against its
+`max_marks` total and looking the percentage up in the applicable
+`grading_scales`' `grade_bands` (`GradingScale::resolveBand()`, called
+from `SubjectResultService::forGroup()`). This means editing a grading
+scale's bands retroactively changes how *every* already-entered mark is
+displayed — a deliberate tradeoff (a school correcting a lenient boundary
+should see it reflected everywhere at once) rather than a bug; if a
+school ever needs "the grade as it stood on the day it was published" to
+be immutable, that's a snapshotting feature to add later, not the current
+behavior.
 
-**An `ExamSubject` denormalizes which grading scale applies**
-(`grading_scale_id`, nullable) rather than always resolving the school's
-default at read time — a Science exam graded pass/fail can coexist with a
-Math exam graded A–F in the same school, same exam, different subjects. A
-null falls back to the school's `is_default` scale (see `ExamService::reportCard()`).
+**Phase 16 split `ExamSubject` into a group + components.** Before Phase
+16, `ExamSubject` was "the whole subject" — one row per subject-in-
+section-in-exam, one `ExamMark` each. A subject's result now often
+combines several independently-graded pieces (Online MCQ auto-graded,
+Written/Practical/Oral entered by a teacher), so a new
+`exam_subject_groups` table now owns that subject-in-section-in-exam grain
+(and what used to live on `ExamSubject`: `grading_scale_id`,
+`passing_marks`, now `published_at`/`published_by` too), while
+`ExamSubject` becomes **one gradable component** under a group — a 4-part
+subject is one `exam_subject_groups` row with four `exam_subjects` rows
+(`exam_subject_group_id`, `assessment_component_type_id`) under it, each
+with its own `max_marks` and its own `ExamMark` per student. A null
+`exam_subject_groups.grading_scale_id` falls back to the school's
+`is_default` scale, same as before (see `SubjectResultService::forGroup()`).
+Deliberately **not** a new parallel hierarchy: `exam_subjects.subject_id`/
+`section_id` were kept (not moved to the group-only), specifically so
+`ExamSubject::isTaughtBy()` and every existing marks-entry/online-test
+query built around them needed no rewrite.
 
 **Online tests reuse `ExamSubject` as their container instead of a parallel
 "online exam" hierarchy.** `is_online`, `duration_minutes`,
@@ -922,6 +974,24 @@ why the type list was kept to these two in Phase 5: both reduce to the same
 single-correct-option comparison, which is what makes them the auto-gradable
 half of "online examination" — a short-answer or essay type would need a
 genuinely different (manual-grading) code path, deliberately deferred.
+
+**Negative marking (Phase 16) lives on `questions.negative_marks`, nullable
+— null means "no negative marking," today's original behavior, unchanged.**
+A wrong-but-answered question costs `negative_marks`; a genuinely blank
+one always scores 0, never penalized. `OnlineTestAnswer.marks_awarded`
+keeps the real (possibly negative) per-question value for the review
+breakdown; only the summed `OnlineTestAttempt.score` floors at 0 —
+per-question transparency isn't sacrificed for a total that never
+displays negative.
+
+**Attempts nobody ever submits are backstopped server-side, not just by
+the client-side countdown.** `TakeOnlineTestPage.tsx`'s timer is the
+primary mechanism for a student still on the page; a closed tab or lost
+connection leaves an `in_progress` attempt (consuming a `max_attempts`
+slot) that the scheduled `exams:auto-submit-expired` command (Phase 16,
+`OnlineExamService::autoSubmitExpired()`) sweeps up every five minutes,
+scoring whatever was answered before the student disappeared through the
+same `submitAttempt()` path a real submission takes.
 
 **A submitted `online_test_answer`'s `is_correct`/`marks_awarded` are
 snapshotted at grading time, not recomputed on every read.** If a question's

@@ -733,14 +733,68 @@ process, and the wrong `Schedule` class imported in `routes/console.php`
 `Illuminate\Support\Facades\Schedule` facade — the former has no static
 `command()`).
 
-## What's next (after Phase 15)
+**Done (Phase 16):** Unified Multi-Component Examination & Results System.
+Phase 5's exam/marks/grading system only ever supported one flat mark per
+subject per exam — either auto-graded Online MCQ or teacher-entered
+marks, never both together, no concept of exam "type," and result
+visibility gated on one whole-exam `is_published` flag with no
+intermediate draft/calculated state. This phase reworked that without
+touching the online-test-taking pipeline itself: a new
+`exam_subject_groups` table (one row per subject-in-section-in-exam) now
+sits above `exam_subjects`, which becomes "one gradable component" (Online
+MCQ, Written, Practical, Oral/Viva, ...) instead of the whole subject — a
+4-component subject is one group with four `exam_subjects` rows.
+`online_test_questions`/`online_test_attempts`/`online_test_answers`,
+`OnlineExamService`, `OnlineTestController`, and `TakeOnlineTestPage.tsx`
+needed **zero** schema or code changes, since they already key off
+`exam_subject_id` and each component still *is* one `exam_subjects` row.
+
+New configurable lookup tables `exam_types` (Class Test, Unit Test,
+Monthly Test, Trimester, Semester, Mid-Term, Final/Annual — seeded by
+`SchoolProvisioningService::seedDefaultExamConfig()`, backfilled into
+already-live tenants by `exam-config:rollout`) and
+`assessment_component_types` (Online MCQ, Written, Practical, Oral/Viva).
+New `SubjectResultService` is the single place a group's component marks
+combine into a total/percentage/grade/pass-fail — computed on read, never
+stored, matching `TermResultService`'s existing house style. The only new
+stored fact is the publish decision itself:
+`exam_subject_groups.published_at`, composing with `Exam.is_published` by
+OR, so a Class Teacher can now declare one subject's result early without
+waiting for (or needing) the whole exam published — see
+[rbac.md](rbac.md#permission-catalogue) for the new `exam-marks.publish`
+permission and how it's deliberately distinct from `exams.publish`.
+
+Also added: negative marking (`Question.negative_marks`, floored at 0 for
+the attempt total, never applied to a blank answer), a
+`lockForUpdate()` fix for a narrow concurrent-double-submit race, a
+server-side `exams:auto-submit-expired` scheduled command backstopping
+the client-side countdown timer for abandoned attempts, and an Excel MCQ
+question importer (`McqQuestionsImport`, mirroring the existing
+`StudentsImport` pattern exactly — soft per-row failures, a downloadable
+template). Real pass/fail is now computed from `passing_marks` (stored
+since Phase 5 but never actually compared against marks until now) and
+shown on both the single-exam report card and the newly-added
+consolidated term-result PDF (`terms/{term}/result/pdf`) — the JSON
+aggregation already existed via `TermResultService`, only the PDF
+rendering path was missing. `ExamController::reportCard`'s flat
+403-on-unpublished for Student/Parent was deliberately removed and
+replaced with per-subject status masking (a required consequence of
+per-group early publish, not an oversight) — the parent-portal
+equivalents were relaxed identically so the two surfaces never disagree.
+See [database.md](database.md) for the full schema,
+[api.md](api.md) for the new/changed endpoints, and
+[rbac.md](rbac.md) for the two new permissions
+(`exam-marks.publish`, `questions.import`).
+
+## What's next (after Phase 16)
 
 Every phase on the original roadmap — SaaS platform layer, the full
 domain feature set (Phase 7-12), hardening (Phase 13), the
-database-per-tenant conversion (Phase 14), and data security/privacy
-hardening (Phase 15) — is done. Further work from here is user-directed
-rather than roadmap-driven: real pricing decisions, onboarding real
-schools, or whatever comes up once this is actually in front of users.
+database-per-tenant conversion (Phase 14), data security/privacy
+hardening (Phase 15), and the unified exam results system (Phase 16) —
+is done. Further work from here is user-directed rather than
+roadmap-driven: real pricing decisions, onboarding real schools, or
+whatever comes up once this is actually in front of users.
 
 ## Conventions a new module should follow
 

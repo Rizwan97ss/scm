@@ -3,29 +3,51 @@ import { createCrudEndpoints } from './crudFactory'
 import { apiFileUrl } from '@/utils/apiFileUrl'
 import type { ApiResponse } from '@/types/api'
 import type {
+  AssessmentComponentType,
+  AssessmentComponentTypePayload,
   Exam,
   ExamMark,
   ExamPayload,
+  ExamSubjectGroup,
+  ExamType,
+  ExamTypePayload,
   GradingScale,
   GradingScalePayload,
   MarkExamEntry,
   MyOnlineTestRow,
   Question,
+  QuestionImportResult,
   QuestionPayload,
   ReportCard,
   StartAttemptResponse,
+  SubjectResultRow,
   SyncOnlineTestQuestionsPayload,
   TermResult,
   OnlineTestAttempt,
 } from '@/types/exam'
 
 export const gradingScalesApi = createCrudEndpoints<GradingScale, GradingScalePayload>('grading-scales')
-export const questionsApi = createCrudEndpoints<Question, QuestionPayload>('questions')
+export const examTypesApi = createCrudEndpoints<ExamType, ExamTypePayload>('exam-types')
+export const assessmentComponentTypesApi = createCrudEndpoints<AssessmentComponentType, AssessmentComponentTypePayload>('assessment-component-types')
+
+export const questionsApi = {
+  ...createCrudEndpoints<Question, QuestionPayload>('questions'),
+  importTemplateUrl: (): string => apiFileUrl('/questions/import/template'),
+  import: async (file: File, subjectId: number): Promise<QuestionImportResult> => {
+    const form = new FormData()
+    form.append('file', file)
+    form.append('subject_id', String(subjectId))
+    const { data } = await httpClient.post<ApiResponse<QuestionImportResult>>('/questions/import', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return data.data
+  },
+}
 
 export const examsApi = {
   ...createCrudEndpoints<Exam, ExamPayload>('exams'),
-  destroyExamSubject: async (examId: number, examSubjectId: number): Promise<void> => {
-    await httpClient.delete(`/exams/${examId}/exam-subjects/${examSubjectId}`)
+  destroyComponent: async (examId: number, groupId: number, examSubjectId: number): Promise<void> => {
+    await httpClient.delete(`/exams/${examId}/exam-subject-groups/${groupId}/components/${examSubjectId}`)
   },
   publish: async (id: number): Promise<Exam> => {
     const { data } = await httpClient.post<ApiResponse<Exam>>(`/exams/${id}/publish`)
@@ -33,6 +55,18 @@ export const examsApi = {
   },
   unpublish: async (id: number): Promise<Exam> => {
     const { data } = await httpClient.post<ApiResponse<Exam>>(`/exams/${id}/unpublish`)
+    return data.data
+  },
+  publishGroup: async (examId: number, groupId: number): Promise<ExamSubjectGroup> => {
+    const { data } = await httpClient.post<ApiResponse<ExamSubjectGroup>>(`/exams/${examId}/exam-subject-groups/${groupId}/publish`)
+    return data.data
+  },
+  unpublishGroup: async (examId: number, groupId: number): Promise<ExamSubjectGroup> => {
+    const { data } = await httpClient.post<ApiResponse<ExamSubjectGroup>>(`/exams/${examId}/exam-subject-groups/${groupId}/unpublish`)
+    return data.data
+  },
+  groupResult: async (examId: number, groupId: number, studentId: number): Promise<SubjectResultRow> => {
+    const { data } = await httpClient.get<ApiResponse<SubjectResultRow>>(`/exams/${examId}/exam-subject-groups/${groupId}/result`, { params: { student_id: studentId } })
     return data.data
   },
   reportCard: async (examId: number, studentId: number): Promise<ReportCard> => {
@@ -62,6 +96,7 @@ export const termResultsApi = {
     const { data } = await httpClient.get<ApiResponse<TermResult>>(`/terms/${termId}/result`, { params: { student_id: studentId } })
     return data.data
   },
+  pdfUrl: (termId: number, studentId: number) => apiFileUrl(`/terms/${termId}/result/pdf?student_id=${studentId}`),
 }
 
 export const onlineTestsApi = {

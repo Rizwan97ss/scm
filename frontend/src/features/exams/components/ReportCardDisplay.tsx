@@ -1,7 +1,11 @@
 import { Download } from 'lucide-react'
 import { Badge, Button, StatCard, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { downloadFile } from '@/utils/download'
-import type { ReportCard } from '@/types/exam'
+import type { BadgeVariant } from '@/components/ui/Badge'
+import type { ReportCard, SubjectResultStatus } from '@/types/exam'
+
+const STATUS_LABELS: Record<SubjectResultStatus, string> = { draft: 'Draft', calculated: 'Calculated', published: 'Published' }
+const STATUS_VARIANTS: Record<SubjectResultStatus, BadgeVariant> = { draft: 'default', calculated: 'warning', published: 'success' }
 
 export function ReportCardDisplay({ report, pdfUrl }: { report: ReportCard; pdfUrl?: string }) {
   return (
@@ -27,25 +31,37 @@ export function ReportCardDisplay({ report, pdfUrl }: { report: ReportCard; pdfU
         <TableHeader>
           <TableRow>
             <TableHead>Subject</TableHead>
-            <TableHead>Max Marks</TableHead>
-            <TableHead>Obtained</TableHead>
+            <TableHead>Components</TableHead>
+            <TableHead>Total</TableHead>
             <TableHead>Percentage</TableHead>
             <TableHead>Grade</TableHead>
-            <TableHead>Remark</TableHead>
+            <TableHead>Pass/Fail</TableHead>
+            <TableHead>Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {report.subjects.length === 0 && (
-            <TableRow><TableCell colSpan={6} className="text-center text-sm text-muted-foreground">No marks entered yet.</TableCell></TableRow>
+            <TableRow><TableCell colSpan={7} className="text-center text-sm text-muted-foreground">No subjects configured yet.</TableCell></TableRow>
           )}
           {report.subjects.map((row) => (
-            <TableRow key={row.subject.id}>
-              <TableCell className="font-medium">{row.subject.name}</TableCell>
-              <TableCell>{row.max_marks}</TableCell>
-              <TableCell>{row.is_absent ? <Badge variant="destructive">Absent</Badge> : (row.marks_obtained ?? '—')}</TableCell>
+            <TableRow key={row.group.id}>
+              <TableCell className="font-medium">{row.group.subject.name}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {row.components.length > 0
+                  ? row.components.map((c) => `${c.type ?? 'Component'}: ${c.is_absent ? 'Absent' : (c.marks_obtained ?? '—')}/${c.max_marks}`).join(', ')
+                  : '—'}
+              </TableCell>
+              <TableCell>{row.is_absent ? <Badge variant="destructive">Absent</Badge> : `${row.marks_obtained_total ?? '—'} / ${row.max_marks_total}`}</TableCell>
               <TableCell>{row.percentage !== null ? `${row.percentage}%` : '—'}</TableCell>
               <TableCell>{row.grade_label ?? '—'}</TableCell>
-              <TableCell className="text-muted-foreground">{row.remark ?? row.remarks ?? '—'}</TableCell>
+              <TableCell>
+                {row.is_pass === true && <Badge variant="success">Pass</Badge>}
+                {row.is_pass === false && <Badge variant="destructive">Fail</Badge>}
+                {row.is_pass === null && '—'}
+              </TableCell>
+              <TableCell>
+                <Badge variant={STATUS_VARIANTS[row.group.status]}>{STATUS_LABELS[row.group.status]}</Badge>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -34,7 +34,7 @@ export function ChildHomeworkTab({ studentId }: { studentId: number }) {
             </p>
             {item.description && <p className="mt-2 text-sm text-muted-foreground">{item.description}</p>}
             {item.attachments.map((attachment) => (
-              <a key={attachment.id} href={attachment.url} target="_blank" rel="noreferrer" className="mt-1 flex items-center gap-2 text-sm text-primary hover:underline">
+              <a key={attachment.id} href={attachment.url} target="_blank" rel="noopener" className="mt-1 flex items-center gap-2 text-sm text-primary hover:underline">
                 <FileText className="h-4 w-4 shrink-0" /> {attachment.file_name}
               </a>
             ))}

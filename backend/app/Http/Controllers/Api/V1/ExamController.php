@@ -5,10 +5,16 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Requests\Exam\StoreExamRequest;
 use App\Http\Requests\Exam\UpdateExamRequest;
 use App\Http\Resources\ExamResource;
+use App\Http\Resources\ExamSubjectGroupResource;
+use App\Http\Resources\SubjectResultResource;
 use App\Models\Exam;
 use App\Models\ExamSubject;
+use App\Models\ExamSubjectGroup;
+use App\Models\GradingScale;
+use App\Models\Section;
 use App\Models\Student;
 use App\Services\ExamService;
+use App\Services\SubjectResultService;
 use App\Support\ApiResponse;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -23,9 +29,12 @@ class ExamController extends CrudController
 
     protected array $allowedSorts = ['name', 'created_at'];
 
-    protected array $with = ['examSubjects.subject', 'examSubjects.section'];
+    protected array $with = ['examType', 'examSubjectGroups.subject', 'examSubjectGroups.section', 'examSubjectGroups.components.assessmentComponentType'];
 
-    public function __construct(private readonly ExamService $exams) {}
+    public function __construct(
+        private readonly ExamService $exams,
+        private readonly SubjectResultService $subjectResults,
+    ) {}
 
     protected function modelClass(): string
     {
@@ -77,10 +86,10 @@ class ExamController extends CrudController
         $this->authorize('create', Exam::class);
 
         $exam = DB::transaction(function () use ($request) {
-            $exam = Exam::query()->create($request->safe()->only(['academic_year_id', 'term_id', 'name', 'weight']));
+            $exam = Exam::query()->create($request->safe()->only(['academic_year_id', 'term_id', 'exam_type_id', 'name', 'weight']));
 
-            foreach ($request->input('exam_subjects', []) as $examSubject) {
-                $this->createExamSubject($exam, $examSubject);
+            foreach ($request->input('exam_subject_groups', []) as $groupData) {
+                $this->createGroup($exam, $groupData);
             }
 
             return $exam;
@@ -90,30 +99,42 @@ class ExamController extends CrudController
     }
 
     /**
-     * exam_subjects are upserted (matched by subject_id+section_id), never
-     * wholesale-replaced like GradingScale's bands — an ExamSubject row that
-     * already has ExamMarks entered against it must survive an unrelated
-     * edit to the exam's name, since deleting it would cascade-delete those
-     * marks. Removing an exam_subject is a separate, explicit action —
-     * see destroyExamSubject().
+     * Groups (and their components) are upserted — a group matched by
+     * subject_id+section_id, a component matched by
+     * assessment_component_type_id within that group — never
+     * wholesale-replaced, the same guarantee this endpoint has always made:
+     * a component that already has ExamMarks entered against it must
+     * survive an unrelated edit to the exam's name, since deleting it would
+     * cascade-delete those marks. Removing a component is a separate,
+     * explicit action — see destroyComponent().
      */
     public function update(UpdateExamRequest $request, Exam $exam): JsonResponse
     {
         $this->authorize('update', $exam);
 
         DB::transaction(function () use ($request, $exam) {
-            $exam->update($request->safe()->only(['academic_year_id', 'term_id', 'name', 'weight']));
+            $exam->update($request->safe()->only(['academic_year_id', 'term_id', 'exam_type_id', 'name', 'weight']));
 
-            foreach ($request->input('exam_subjects', []) as $data) {
-                $existing = $exam->examSubjects()
-                    ->where('subject_id', $data['subject_id'])
-                    ->where('section_id', $data['section_id'])
+            foreach ($request->input('exam_subject_groups', []) as $groupData) {
+                $existingGroup = $exam->examSubjectGroups()
+                    ->where('subject_id', $groupData['subject_id'])
+                    ->where('section_id', $groupData['section_id'])
                     ->first();
 
-                if ($existing) {
-                    $existing->update($this->examSubjectAttributes($data));
-                } else {
-                    $this->createExamSubject($exam, $data);
+                $group = $existingGroup
+                    ? tap($existingGroup)->update($this->groupAttributes($groupData))
+                    : $this->createGroup($exam, $groupData, false);
+
+                foreach ($groupData['components'] as $componentData) {
+                    $existingComponent = $group->components()
+                        ->where('assessment_component_type_id', $componentData['assessment_component_type_id'])
+                        ->first();
+
+                    if ($existingComponent) {
+                        $existingComponent->update($this->componentAttributes($componentData));
+                    } else {
+                        $this->createComponent($exam, $group, $componentData);
+                    }
                 }
             }
         });
@@ -121,21 +142,22 @@ class ExamController extends CrudController
         return ApiResponse::success(new ExamResource($exam->load($this->with)));
     }
 
-    public function destroyExamSubject(Exam $exam, ExamSubject $examSubject): JsonResponse
+    public function destroyComponent(Exam $exam, ExamSubjectGroup $group, ExamSubject $examSubject): JsonResponse
     {
         $this->authorize('update', $exam);
-        abort_unless($examSubject->exam_id === $exam->id, 404);
+        abort_unless($group->exam_id === $exam->id, 404);
+        abort_unless($examSubject->exam_subject_group_id === $group->id, 404);
 
         $examSubject->delete();
 
         return ApiResponse::noContent();
     }
 
-    public function publish(Exam $exam): JsonResponse
+    public function publish(Request $request, Exam $exam): JsonResponse
     {
         $this->authorize('publish', $exam);
 
-        return ApiResponse::success(new ExamResource($this->exams->publish($exam)->load($this->with)), 'Exam published.');
+        return ApiResponse::success(new ExamResource($this->exams->publish($exam, $request->user())->load($this->with)), 'Exam published.');
     }
 
     public function unpublish(Exam $exam): JsonResponse
@@ -145,18 +167,51 @@ class ExamController extends CrudController
         return ApiResponse::success(new ExamResource($this->exams->unpublish($exam)->load($this->with)), 'Exam unpublished.');
     }
 
+    /**
+     * Declares just this one subject's result early — see ExamSubjectGroup::status() and
+     * ExamService::reportCard() for how this composes with the whole-exam publish flag.
+     *
+     * Class-wide, not per-student — unlike groupResult()/reportCard(), there's no single
+     * student in view here, so the response is the group itself (ExamSubjectGroupResource),
+     * not a SubjectResultResource, which would need a student_id nobody has at this point.
+     */
+    public function publishGroup(Request $request, Exam $exam, ExamSubjectGroup $group): JsonResponse
+    {
+        abort_unless($group->exam_id === $exam->id, 404);
+        $this->assertCanPublishGroup($request, $group);
+        $group = $this->exams->publishGroup($group, $request->user());
+
+        return ApiResponse::success(new ExamSubjectGroupResource($group->load(['subject', 'section', 'components.assessmentComponentType'])), 'Result declared for this subject.');
+    }
+
+    public function unpublishGroup(Request $request, Exam $exam, ExamSubjectGroup $group): JsonResponse
+    {
+        abort_unless($group->exam_id === $exam->id, 404);
+        $this->assertCanPublishGroup($request, $group);
+        $group = $this->exams->unpublishGroup($group);
+
+        return ApiResponse::success(new ExamSubjectGroupResource($group->load(['subject', 'section', 'components.assessmentComponentType'])), 'Subject result un-declared.');
+    }
+
+    /** The combined component breakdown + total for one subject group (?student_id=) — same shape a Student/Parent sees once declared, used by staff to preview it beforehand. */
+    public function groupResult(Request $request, Exam $exam, ExamSubjectGroup $group): JsonResponse
+    {
+        abort_unless($group->exam_id === $exam->id, 404);
+
+        $student = Student::query()->findOrFail($request->integer('student_id'));
+        $this->authorize('view', $student);
+
+        $result = $this->subjectResultFor($request, $group, $student);
+
+        return ApiResponse::success(new SubjectResultResource($result));
+    }
+
     public function reportCard(Request $request, Exam $exam): JsonResponse
     {
         $student = Student::query()->findOrFail($request->integer('student_id'));
         $this->authorize('view', $student);
 
-        abort_if(
-            ! $exam->is_published && $request->user()->hasAnyRole(['Student', 'Parent']),
-            403,
-            'This exam has not been published yet.'
-        );
-
-        return ApiResponse::success($this->exams->reportCard($exam, $student));
+        return ApiResponse::success($this->exams->reportCard($exam, $student, $request->user()));
     }
 
     public function reportCardPdf(Request $request, Exam $exam): Response
@@ -164,13 +219,7 @@ class ExamController extends CrudController
         $student = Student::query()->findOrFail($request->integer('student_id'));
         $this->authorize('view', $student);
 
-        abort_if(
-            ! $exam->is_published && $request->user()->hasAnyRole(['Student', 'Parent']),
-            403,
-            'This exam has not been published yet.'
-        );
-
-        $data = $this->exams->reportCard($exam, $student);
+        $data = $this->exams->reportCard($exam, $student, $request->user());
 
         $pdf = Pdf::loadView('pdf.report-card', [
             'data' => $data,
@@ -183,22 +232,49 @@ class ExamController extends CrudController
         return $pdf->download($fileName);
     }
 
-    private function createExamSubject(Exam $exam, array $data): ExamSubject
+    private function createGroup(Exam $exam, array $data, bool $withComponents = true): ExamSubjectGroup
     {
-        return ExamSubject::query()->create([
+        $group = ExamSubjectGroup::query()->create([
             'exam_id' => $exam->id,
             'subject_id' => $data['subject_id'],
             'section_id' => $data['section_id'],
-            ...$this->examSubjectAttributes($data),
+            ...$this->groupAttributes($data),
+        ]);
+
+        if ($withComponents) {
+            foreach ($data['components'] as $componentData) {
+                $this->createComponent($exam, $group, $componentData);
+            }
+        }
+
+        return $group;
+    }
+
+    private function createComponent(Exam $exam, ExamSubjectGroup $group, array $data): ExamSubject
+    {
+        return ExamSubject::query()->create([
+            'exam_id' => $exam->id,
+            'exam_subject_group_id' => $group->id,
+            'subject_id' => $group->subject_id,
+            'section_id' => $group->section_id,
+            ...$this->componentAttributes($data),
         ]);
     }
 
-    private function examSubjectAttributes(array $data): array
+    private function groupAttributes(array $data): array
     {
         return [
             'grading_scale_id' => $data['grading_scale_id'] ?? null,
-            'max_marks' => $data['max_marks'],
             'passing_marks' => $data['passing_marks'] ?? null,
+        ];
+    }
+
+    private function componentAttributes(array $data): array
+    {
+        return [
+            'assessment_component_type_id' => $data['assessment_component_type_id'],
+            'max_marks' => $data['max_marks'],
+            'sequence' => $data['sequence'] ?? 0,
             'exam_date' => $data['exam_date'] ?? null,
             'is_online' => $data['is_online'] ?? false,
             'duration_minutes' => $data['duration_minutes'] ?? null,
@@ -207,5 +283,36 @@ class ExamController extends CrudController
             'shuffle_questions' => $data['shuffle_questions'] ?? true,
             'max_attempts' => $data['max_attempts'] ?? 1,
         ];
+    }
+
+    private function subjectResultFor(Request $request, ExamSubjectGroup $group, ?Student $student = null): array
+    {
+        $student ??= Student::query()->findOrFail($request->integer('student_id'));
+        $defaultScale = GradingScale::query()->where('is_default', true)->with('gradeBands')->first();
+
+        return $this->subjectResults->forGroup($group, $student, $defaultScale);
+    }
+
+    /**
+     * Same idiom as ExamMarkController::assertSubjectMarkable()/
+     * OnlineTestController::assertCanConfigure() — Admin/Principal/Super
+     * Admin always; otherwise only the class teacher of the group's own
+     * section, matching requirement 3's "Class Teacher can view/declare for
+     * their authorized classes."
+     */
+    private function assertCanPublishGroup(Request $request, ExamSubjectGroup $group): void
+    {
+        $user = $request->user();
+        abort_unless($user->can('exam-marks.publish'), 403);
+
+        if ($user->hasAnyRole(['School Admin', 'Principal', 'Super Admin'])) {
+            return;
+        }
+
+        abort_unless(
+            Section::query()->where('id', $group->section_id)->where('class_teacher_id', $user->id)->exists(),
+            403,
+            'You are not the class teacher of this section.'
+        );
     }
 }

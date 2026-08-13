@@ -43,6 +43,7 @@ export const routePaths = {
   attendanceStaff: '/attendance/staff',
 
   gradingScales: '/exams/grading-scales',
+  examConfiguration: '/exams/configuration',
   questionBank: '/exams/question-bank',
   exams: '/exams',
   examDetail: (id: number | string = ':examId') => `/exams/${id}`,

@@ -27,10 +27,13 @@ use App\Http\Controllers\Api\V1\CertificateTemplateController;
 use App\Http\Controllers\Api\V1\ClassSubjectTeacherController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DataExportController;
+use App\Http\Controllers\Api\V1\AssessmentComponentTypeController;
 use App\Http\Controllers\Api\V1\DepartmentController;
 use App\Http\Controllers\Api\V1\DesignationController;
 use App\Http\Controllers\Api\V1\ExamController;
 use App\Http\Controllers\Api\V1\ExamMarkController;
+use App\Http\Controllers\Api\V1\ExamTypeController;
+use App\Http\Controllers\Api\V1\QuestionImportController;
 use App\Http\Controllers\Api\V1\FeeCategoryController;
 use App\Http\Controllers\Api\V1\FeeReportController;
 use App\Http\Controllers\Api\V1\FeeStructureController;
@@ -287,13 +290,18 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             // ---- Grading & Examinations -----------------------------------------
             Route::pattern('exam', '[0-9]+');
             Route::apiResource('grading-scales', GradingScaleController::class)->names('grading-scales');
+            Route::apiResource('exam-types', ExamTypeController::class)->names('exam-types');
+            Route::apiResource('assessment-component-types', AssessmentComponentTypeController::class)->names('assessment-component-types');
 
             Route::apiResource('exams', ExamController::class)->names('exams');
             Route::post('exams/{exam}/publish', [ExamController::class, 'publish'])->name('exams.publish');
             Route::post('exams/{exam}/unpublish', [ExamController::class, 'unpublish'])->name('exams.unpublish');
             Route::get('exams/{exam}/report-card', [ExamController::class, 'reportCard'])->name('exams.report-card');
             Route::get('exams/{exam}/report-card/pdf', [ExamController::class, 'reportCardPdf'])->name('exams.report-card.pdf');
-            Route::delete('exams/{exam}/exam-subjects/{examSubject}', [ExamController::class, 'destroyExamSubject'])->name('exams.exam-subjects.destroy');
+            Route::post('exams/{exam}/exam-subject-groups/{group}/publish', [ExamController::class, 'publishGroup'])->name('exams.exam-subject-groups.publish');
+            Route::post('exams/{exam}/exam-subject-groups/{group}/unpublish', [ExamController::class, 'unpublishGroup'])->name('exams.exam-subject-groups.unpublish');
+            Route::get('exams/{exam}/exam-subject-groups/{group}/result', [ExamController::class, 'groupResult'])->name('exams.exam-subject-groups.result');
+            Route::delete('exams/{exam}/exam-subject-groups/{group}/components/{examSubject}', [ExamController::class, 'destroyComponent'])->name('exams.exam-subject-groups.components.destroy');
 
             Route::get('exam-subjects/{examSubject}/marks', [ExamMarkController::class, 'index'])->name('exam-subjects.marks.index');
             Route::post('exam-subjects/{examSubject}/marks', [ExamMarkController::class, 'store'])->name('exam-subjects.marks.store');
@@ -301,6 +309,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
             // ---- Question bank & online examinations ----------------------------
             Route::apiResource('questions', QuestionController::class)->only(['index', 'store', 'show', 'update', 'destroy'])->names('questions');
+            Route::get('questions/import/template', [QuestionImportController::class, 'template'])->name('questions.import.template');
+            Route::post('questions/import', QuestionImportController::class)->name('questions.import');
 
             Route::get('online-tests/mine', [OnlineTestController::class, 'myTests'])->name('online-tests.mine');
             Route::post('exam-subjects/{examSubject}/online-test-questions', [OnlineTestController::class, 'syncQuestions'])->name('exam-subjects.online-test-questions.store');
@@ -310,6 +320,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('online-test-attempts/{attempt}', [OnlineTestController::class, 'show'])->name('online-test-attempts.show');
 
             Route::get('terms/{term}/result', [TermResultController::class, 'show'])->name('terms.result');
+            Route::get('terms/{term}/result/pdf', [TermResultController::class, 'pdf'])->name('terms.result.pdf');
 
             // ---- Teacher module: homework & remarks ------------------------------
             Route::apiResource('homework', HomeworkController::class)->names('homework');
@@ -430,6 +441,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('parent/children/{student}/report-card', [ParentPortalController::class, 'childReportCard'])->name('parent.children.report-card');
             Route::get('parent/children/{student}/report-card/pdf', [ParentPortalController::class, 'childReportCardPdf'])->name('parent.children.report-card.pdf');
             Route::get('parent/children/{student}/term-result', [ParentPortalController::class, 'childTermResult'])->name('parent.children.term-result');
+            Route::get('parent/children/{student}/term-result/pdf', [ParentPortalController::class, 'childTermResultPdf'])->name('parent.children.term-result.pdf');
             Route::get('parent/children/{student}/homework', [ParentPortalController::class, 'childHomework'])->name('parent.children.homework');
             Route::get('parent/children/{student}/remarks', [ParentPortalController::class, 'childRemarks'])->name('parent.children.remarks');
             Route::get('parent/children/{student}/invoices', [ParentPortalController::class, 'childInvoices'])->name('parent.children.invoices');

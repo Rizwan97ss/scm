@@ -52,9 +52,9 @@ Permissions are named `module.action` and generated from
 | `student-attendance` | view, mark, edit, export |
 | `staff-attendance` | view, mark, edit, export |
 | `grading` | view, manage *(grading scales — a single "manage" action, not separate create/edit/delete, since scales are infrequently-changed config)* |
-| `exams` | view, create, edit, delete, publish |
-| `exam-marks` | view, enter, edit, export |
-| `questions` | view, create, edit, delete *(the online-test question bank)* |
+| `exams` | view, create, edit, delete, publish *(`publish` is the whole-exam bulk action — `ExamService::publish()` stamps every subject group's `published_at` too, so it and the per-group `exam-marks.publish` below never disagree once it runs)* |
+| `exam-marks` | view, enter, edit, export, publish *(Phase 16 — `publish` declares one subject's result independent of the whole exam: Admin/Principal always, otherwise only the class teacher of that subject's own section, see `ExamController::assertCanPublishGroup()`. Deliberately a distinct permission from `exams.publish`, not a rename — a Teacher never gets it, only Class Teacher does)* |
+| `questions` | view, create, edit, delete, import *(the online-test question bank; `import` is Phase 16's Excel MCQ importer, `McqQuestionsImport`, granted to the same roles that already hold `questions.create`)* |
 | `online-exams` | view, configure *(attaching questions to an exam subject's online test — not gating the act of a Student taking one, which is self-scoped, not permission-gated)* |
 | `homework` | view, create, edit, delete, grade *(Phase 7 — row-scoped for Teacher/Class Teacher the same way as exams: must actually teach the subject/section, see `Homework::isTaughtBy()`)* |
 | `remarks` | view, create, edit, delete *(Phase 7 — a Teacher/Class Teacher may only write about a student in a section they teach or lead; Parent visibility additionally gated per-remark by `visible_to_guardian`, see [database.md](database.md#key-modeling-decisions))* |
@@ -137,7 +137,7 @@ permission unconditionally):
 | **Receptionist** | View students/guardians, create students/guardians (front-desk intake), full `front-desk.*` (Phase 10 — this is the primary role for the visitor log) |
 | **Teacher** | View only their assigned sections' students (enforced at the query level, not just permission-gate — see "Row-level scoping" below); `student-attendance.view/mark/edit`, `exam-marks.view/enter/edit`, and `homework.create/edit/delete/grade` all restricted to sections/subjects they actually teach; `questions.view/create/edit` (author their own bank) and `online-exams.configure`, both still subject-ownership-checked; full `remarks.*` for students in a section they teach; no `staff-attendance.*` beyond self-check-in |
 | **Class Teacher** | Teacher permissions + `student-attendance.export`/`exam-marks.export` for their one section |
-| **Student** | View only their own profile/records; `student-attendance.view`, `exams.view`, `exam-marks.view`, `homework.view`, `remarks.view`, `invoices.view` for their own records only — exams additionally gated by `is_published` (see below); homework submission itself is self-scoped, not permission-gated, same rationale as online-exam taking |
+| **Student** | View only their own profile/records; `student-attendance.view`, `exams.view`, `exam-marks.view`, `homework.view`, `remarks.view`, `invoices.view` for their own records only — the exam *list* is additionally gated by `Exam.is_published` (see below), but a report card's per-subject marks are masked by that subject's own `ExamSubjectGroup.published_at` since Phase 16, not the whole exam (see below); homework submission itself is self-scoped, not permission-gated, same rationale as online-exam taking |
 | **Parent/Guardian** | View only their linked children's records, via the Parent Portal endpoints; same view-only exam/attendance/homework/invoices access as Student, scoped to linked children; remarks additionally filtered to `visible_to_guardian = true` |
 | **Librarian** | Full `library.*` (Phase 10 — this is the primary role for the module: catalog CRUD, issuing/returning books) plus `students.view` (needed to look up a student when issuing a book) |
 | **Transport Staff** | Full `transport.*` (Phase 10 — vehicles, routes/stops, student assignments) plus `students.view` (needed to look up a student when assigning transport) |
@@ -201,6 +201,19 @@ not the permission layer:
 - `ExamMark::scopeVisibleTo()` mirrors it: Student/Parent additionally
   require the parent Exam to be published; Teacher/Class Teacher don't
   (same reasoning — they produce the marks that get published later).
+- **Phase 16 nuance**: the report card endpoints (`ExamController::
+  reportCard`/`reportCardPdf`, and the parent-portal equivalents) do NOT
+  use `ExamMark::scopeVisibleTo()` at all — they call
+  `ExamService::reportCard($exam, $student, $viewer)`, which masks each
+  subject *independently*: visible if `Exam.is_published` OR that
+  specific `ExamSubjectGroup.published_at` is set (see
+  `ExamSubjectGroup::status()`). This is intentionally a strict superset
+  of the old whole-exam-only rule — a Class Teacher's early per-subject
+  publish (`exam-marks.publish`) reaches the student immediately, without
+  waiting for the whole exam. The endpoint itself no longer 403s a
+  Student/Parent on an unpublished exam; it returns 200 with every
+  not-yet-declared subject's marks/percentage/grade nulled out and only
+  `group.status` (`draft`/`calculated`/`published`) exposed.
 - `ExamMarkController::assertSubjectMarkable()` / `OnlineTestController::assertCanConfigure()`
   are the write-side equivalent of `assertSectionMarkable()` above, scoped
   to `ExamSubject::isTaughtBy()` (a `ClassSubjectTeacher` match) rather than

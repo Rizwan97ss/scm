@@ -65,7 +65,7 @@ export function StudentDocumentUploader({ studentId }: { studentId: number }) {
         <ul className="divide-y divide-border rounded-lg border border-border">
           {documents?.map((document) => (
             <li key={document.id} className="flex items-center justify-between gap-4 px-4 py-3">
-              <a href={document.url} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-sm hover:underline">
+              <a href={document.url} target="_blank" rel="noopener" className="flex items-center gap-3 text-sm hover:underline">
                 <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span>
                   <span className="font-medium">{document.file_name}</span>

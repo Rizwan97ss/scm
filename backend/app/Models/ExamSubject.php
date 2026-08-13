@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'school_id', 'exam_id', 'subject_id', 'section_id', 'grading_scale_id', 'max_marks', 'passing_marks', 'exam_date',
+    'school_id', 'exam_id', 'exam_subject_group_id', 'assessment_component_type_id', 'subject_id', 'section_id',
+    'sequence', 'max_marks', 'exam_date',
     'is_online', 'duration_minutes', 'online_starts_at', 'online_ends_at', 'shuffle_questions', 'max_attempts',
 ])]
 class ExamSubject extends Model
@@ -20,7 +21,6 @@ class ExamSubject extends Model
     {
         return [
             'max_marks' => 'float',
-            'passing_marks' => 'float',
             'exam_date' => 'date',
             'is_online' => 'boolean',
             'online_starts_at' => 'datetime',
@@ -44,9 +44,15 @@ class ExamSubject extends Model
         return $this->belongsTo(Section::class);
     }
 
-    public function gradingScale(): BelongsTo
+    /** The subject-in-section-in-exam this component belongs under — owns grading_scale_id/passing_marks/publish state. */
+    public function examSubjectGroup(): BelongsTo
     {
-        return $this->belongsTo(GradingScale::class);
+        return $this->belongsTo(ExamSubjectGroup::class, 'exam_subject_group_id');
+    }
+
+    public function assessmentComponentType(): BelongsTo
+    {
+        return $this->belongsTo(AssessmentComponentType::class);
     }
 
     public function marks(): HasMany

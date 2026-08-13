@@ -61,7 +61,7 @@ export function StudentExamResultsTab({ student }: { student: Student }) {
                 />
               </div>
               {termLoading && <Skeleton className="h-64 w-full" />}
-              {!termLoading && termResult && <TermResultDisplay result={termResult} />}
+              {!termLoading && termResult && <TermResultDisplay result={termResult} pdfUrl={termId ? termResultsApi.pdfUrl(termId, student.id) : undefined} />}
             </div>
           ),
         },

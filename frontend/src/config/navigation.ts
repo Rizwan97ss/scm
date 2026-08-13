@@ -86,6 +86,7 @@ export const NAV_GROUPS: NavGroupConfig[] = [
     items: [
       { label: 'Exams', to: routePaths.exams, icon: ClipboardList, permissions: ['exams.view'] },
       { label: 'Grading Scales', to: routePaths.gradingScales, icon: Sigma, permissions: ['grading.view'] },
+      { label: 'Exam Configuration', to: routePaths.examConfiguration, icon: Settings, permissions: ['grading.view'] },
       { label: 'Question Bank', to: routePaths.questionBank, icon: FileQuestion, permissions: ['questions.view'] },
     ],
   },

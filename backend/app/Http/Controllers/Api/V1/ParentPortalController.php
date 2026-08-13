@@ -75,12 +75,24 @@ class ParentPortalController extends Controller
      * exams.view (same rationale as childAttendance(): parent portal routes
      * never depend on the staff permission matrix).
      */
+    /**
+     * Lists exams touching the child's section that are either fully
+     * published OR have at least one individually-declared subject group
+     * for that section — a Class Teacher's early per-subject publish (see
+     * ExamController::publishGroup()) must make the exam reachable here too,
+     * not just once the whole exam is published. reportCard()'s own
+     * per-subject status masking is what actually hides any subject not yet
+     * declared, once the parent opens it.
+     */
     public function childExams(Request $request, Student $student): JsonResponse
     {
         $this->authorize('view', $student);
 
         $exams = Exam::query()
-            ->where('is_published', true)
+            ->where(function ($q) use ($student) {
+                $q->where('is_published', true)
+                    ->orWhereHas('examSubjectGroups', fn ($q2) => $q2->where('section_id', $student->current_section_id)->whereNotNull('published_at'));
+            })
             ->whereHas('examSubjects', fn ($q) => $q->where('section_id', $student->current_section_id))
             ->orderByDesc('published_at')
             ->get();
@@ -136,21 +148,28 @@ class ParentPortalController extends Controller
         return ApiResponse::success($invoices->statementData($student));
     }
 
+    /**
+     * No longer requires the whole Exam to be published — reportCard()
+     * itself masks any subject not yet individually declared for a
+     * Student/Parent viewer, so this stays reachable the moment even one
+     * subject has been published, matching ExamController::reportCard()'s
+     * identical relaxation (the two surfaces must never disagree).
+     */
     public function childReportCard(Request $request, Student $student, ExamService $exams): JsonResponse
     {
         $this->authorize('view', $student);
 
-        $exam = Exam::query()->where('is_published', true)->findOrFail($request->integer('exam_id'));
+        $exam = Exam::query()->findOrFail($request->integer('exam_id'));
 
-        return ApiResponse::success($exams->reportCard($exam, $student));
+        return ApiResponse::success($exams->reportCard($exam, $student, $request->user()));
     }
 
     public function childReportCardPdf(Request $request, Student $student, ExamService $exams): Response
     {
         $this->authorize('view', $student);
 
-        $exam = Exam::query()->where('is_published', true)->findOrFail($request->integer('exam_id'));
-        $data = $exams->reportCard($exam, $student);
+        $exam = Exam::query()->findOrFail($request->integer('exam_id'));
+        $data = $exams->reportCard($exam, $student, $request->user());
 
         $pdf = Pdf::loadView('pdf.report-card', [
             'data' => $data,
@@ -168,5 +187,21 @@ class ParentPortalController extends Controller
         $term = Term::query()->findOrFail($request->integer('term_id'));
 
         return ApiResponse::success($termResults->termResult($term, $student));
+    }
+
+    public function childTermResultPdf(Request $request, Student $student, TermResultService $termResults): Response
+    {
+        $this->authorize('view', $student);
+
+        $term = Term::query()->findOrFail($request->integer('term_id'));
+        $data = $termResults->termResult($term, $student);
+
+        $pdf = Pdf::loadView('pdf.term-result', [
+            'data' => $data,
+            'schoolName' => tenant()->name,
+            'generatedAt' => now()->toDayDateTimeString(),
+        ]);
+
+        return $pdf->download(str($data['student']['full_name'].'-'.$data['term']['name'])->slug().'-term-result.pdf');
     }
 }

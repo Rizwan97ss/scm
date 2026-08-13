@@ -70,7 +70,7 @@ export function ChildExamResultsTab({ student }: { student: Student }) {
                 />
               </div>
               {termLoading && <Skeleton className="h-64 w-full" />}
-              {!termLoading && termResult && <TermResultDisplay result={termResult} />}
+              {!termLoading && termResult && <TermResultDisplay result={termResult} pdfUrl={termId ? parentPortalApi.childTermResultPdfUrl(student.id, termId) : undefined} />}
             </div>
           ),
         },

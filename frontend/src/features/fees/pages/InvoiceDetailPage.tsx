@@ -176,7 +176,7 @@ export function InvoiceDetailPage() {
                       <a
                         href={paymentsApi.receiptPdfUrl(payment.id)}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener"
                         className="flex items-center gap-1 text-sm text-primary hover:underline"
                         aria-label={`Download receipt ${payment.payment_number}`}
                       >

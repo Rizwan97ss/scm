@@ -1,10 +1,19 @@
-import { StatCard, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { Download } from 'lucide-react'
+import { Button, StatCard, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { downloadFile } from '@/utils/download'
 import type { TermResult } from '@/types/exam'
 
-export function TermResultDisplay({ result }: { result: TermResult }) {
+export function TermResultDisplay({ result, pdfUrl }: { result: TermResult; pdfUrl?: string }) {
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="font-semibold">{result.term.name} — Consolidated Result</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold">{result.term.name} — Consolidated Result</h3>
+        {pdfUrl && (
+          <Button variant="outline" onClick={() => downloadFile(pdfUrl, `${result.student.full_name}-${result.term.name}-term-result.pdf`)}>
+            <Download className="h-4 w-4" /> Download PDF
+          </Button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <StatCard label="Weighted Percentage" value={result.weighted_percentage !== null ? `${result.weighted_percentage}%` : '—'} />

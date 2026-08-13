@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable(['school_id', 'academic_year_id', 'term_id', 'name', 'weight', 'is_published', 'published_at'])]
+#[Fillable(['school_id', 'academic_year_id', 'term_id', 'exam_type_id', 'name', 'weight', 'is_published', 'published_at'])]
 class Exam extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes;
@@ -36,9 +36,19 @@ class Exam extends Model
         return $this->belongsTo(Term::class);
     }
 
+    public function examType(): BelongsTo
+    {
+        return $this->belongsTo(ExamType::class);
+    }
+
     public function examSubjects(): HasMany
     {
         return $this->hasMany(ExamSubject::class);
+    }
+
+    public function examSubjectGroups(): HasMany
+    {
+        return $this->hasMany(ExamSubjectGroup::class);
     }
 
     /**

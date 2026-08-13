@@ -75,8 +75,10 @@ class ReportTest extends TestCase
         $exam = Exam::factory()->create(['academic_year_id' => $section->academic_year_id, 'is_published' => true]);
         tenancy()->initialize($school);
         $examSubject = ExamSubject::factory()->create([
-            'exam_id' => $exam->id, 'section_id' => $section->id, 'grading_scale_id' => $scale->id, 'max_marks' => 100, 'passing_marks' => 40,
+            'exam_id' => $exam->id, 'section_id' => $section->id, 'max_marks' => 100,
         ]);
+        // grading_scale_id/passing_marks now live on the subject's group, not the component.
+        $examSubject->examSubjectGroup->update(['grading_scale_id' => $scale->id, 'passing_marks' => 40]);
         tenancy()->initialize($school);
         $studentA = Student::factory()->create(['academic_year_id' => $section->academic_year_id, 'current_section_id' => $section->id]);
         tenancy()->initialize($school);

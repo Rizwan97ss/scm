@@ -68,15 +68,25 @@ class ExamTest extends TestCase
         tenancy()->initialize($school);
         $subject = Subject::factory()->create();
 
+        tenancy()->initialize($school);
+        $componentType = \App\Models\AssessmentComponentType::factory()->create();
+
         $response = $this->actingAsInSchool($admin)->postJson('/api/v1/exams', [
             'academic_year_id' => $year->id,
             'name' => 'Midterm Exam',
-            'exam_subjects' => [
-                ['subject_id' => $subject->id, 'section_id' => $section->id, 'max_marks' => 100, 'passing_marks' => 40],
+            'exam_subject_groups' => [
+                [
+                    'subject_id' => $subject->id, 'section_id' => $section->id, 'passing_marks' => 40,
+                    'components' => [
+                        ['assessment_component_type_id' => $componentType->id, 'max_marks' => 100],
+                    ],
+                ],
             ],
         ]);
 
-        $response->assertCreated()->assertJsonCount(1, 'data.exam_subjects');
+        $response->assertCreated()
+            ->assertJsonCount(1, 'data.exam_subject_groups')
+            ->assertJsonCount(1, 'data.exam_subject_groups.0.components');
         $this->assertDatabaseHas('exams', ['name' => 'Midterm Exam']);
     }
 
@@ -94,8 +104,13 @@ class ExamTest extends TestCase
         $response = $this->actingAsInSchool($admin)->putJson("/api/v1/exams/{$exam->id}", [
             'academic_year_id' => $exam->academic_year_id,
             'name' => 'Midterm Exam (renamed)',
-            'exam_subjects' => [
-                ['subject_id' => $examSubject->subject_id, 'section_id' => $examSubject->section_id, 'max_marks' => 100],
+            'exam_subject_groups' => [
+                [
+                    'subject_id' => $examSubject->subject_id, 'section_id' => $examSubject->section_id,
+                    'components' => [
+                        ['assessment_component_type_id' => $examSubject->assessment_component_type_id, 'max_marks' => 100],
+                    ],
+                ],
             ],
         ]);
 
@@ -189,16 +204,33 @@ class ExamTest extends TestCase
             ->assertJsonPath('data.overall_gpa', 4);
     }
 
-    public function test_student_cannot_view_report_card_before_exam_is_published(): void
+    /**
+     * No longer a flat 403 — a Class Teacher can now declare one subject's
+     * result independent of the whole exam (ExamController::publishGroup()),
+     * so the endpoint always returns 200 for the student's own record;
+     * what's actually gated is whether marks/percentage/grade are present
+     * per subject. Neither this exam nor this subject's group has been
+     * published here — a mark already exists (status "calculated", proving
+     * the Admin/Class Teacher side of requirement 3 has something to see
+     * pre-publish), but the student still gets every number masked to null.
+     */
+    public function test_student_cannot_view_marks_before_exam_or_subject_is_published(): void
     {
         $school = $this->createSchool();
         $studentUser = $this->createUserWithRole($school, 'Student');
         [$exam, $examSubject, $student] = $this->makeExamSubject($school);
         $student->update(['user_id' => $studentUser->id]);
 
+        tenancy()->initialize($school);
+        ExamMark::factory()->create(['exam_subject_id' => $examSubject->id, 'student_id' => $student->id, 'marks_obtained' => 85, 'entered_by' => $studentUser->id]);
+
         $response = $this->actingAsInSchool($studentUser)->getJson("/api/v1/exams/{$exam->id}/report-card?student_id={$student->id}");
 
-        $response->assertStatus(403);
+        $response->assertOk()
+            ->assertJsonPath('data.subjects.0.group.status', 'calculated')
+            ->assertJsonPath('data.subjects.0.marks_obtained_total', null)
+            ->assertJsonPath('data.subjects.0.percentage', null)
+            ->assertJsonPath('data.subjects.0.components', []);
     }
 
     public function test_student_can_view_report_card_once_published(): void

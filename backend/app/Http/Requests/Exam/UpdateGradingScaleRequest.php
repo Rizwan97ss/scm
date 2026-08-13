@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Exam;
 
+use App\Rules\ValidName;
 use Illuminate\Validation\Rule;
 
 class UpdateGradingScaleRequest extends StoreGradingScaleRequest
@@ -14,7 +15,7 @@ class UpdateGradingScaleRequest extends StoreGradingScaleRequest
     {
         return [
             ...parent::rules(),
-            'name' => ['required', 'string', 'max:150', Rule::unique('grading_scales', 'name')->ignore($this->route('grading_scale'))],
+            'name' => ['required', 'string', 'max:150', new ValidName, Rule::unique('grading_scales', 'name')->ignore($this->route('grading_scale'))],
         ];
     }
 }

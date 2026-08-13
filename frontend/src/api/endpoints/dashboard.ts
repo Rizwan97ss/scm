@@ -51,6 +51,7 @@ export const parentPortalApi = {
     const { data } = await httpClient.get<ApiResponse<TermResult>>(`/parent/children/${studentId}/term-result`, { params: { term_id: termId } })
     return data.data
   },
+  childTermResultPdfUrl: (studentId: number, termId: number) => apiFileUrl(`/parent/children/${studentId}/term-result/pdf?term_id=${termId}`),
   childHomework: async (studentId: number): Promise<Homework[]> => {
     const { data } = await httpClient.get<ApiResponse<Homework[]>>(`/parent/children/${studentId}/homework`)
     return data.data

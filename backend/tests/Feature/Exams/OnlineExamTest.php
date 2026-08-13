@@ -237,4 +237,88 @@ class OnlineExamTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    /**
+     * A wrong-but-answered question costs its own negative_marks (never a
+     * question with no negative_marks set); an unanswered question always
+     * scores exactly 0, even one that has negative_marks configured.
+     */
+    public function test_negative_marking_reduces_score_without_flooring_when_still_positive(): void
+    {
+        $school = $this->createSchool();
+        $admin = $this->createUserWithRole($school, 'School Admin');
+        [$examSubject, $student, $studentUser] = $this->makeOnlineExamSubject($school);
+
+        $q1 = $this->makeQuestion($school, $admin->id, correctIndex: 0, marks: 5); // no negative_marks — correct, worth +5
+        tenancy()->initialize($school);
+        $q2 = Question::factory()->create(['created_by' => $admin->id, 'type' => 'mcq', 'default_marks' => 5, 'negative_marks' => 2]);
+        foreach (['A', 'B', 'C', 'D'] as $i => $label) {
+            tenancy()->initialize($school);
+            QuestionOption::factory()->create(['question_id' => $q2->id, 'option_text' => $label, 'is_correct' => $i === 1, 'sequence' => $i]);
+        }
+
+        $this->actingAsInSchool($admin)->postJson("/api/v1/exam-subjects/{$examSubject->id}/online-test-questions", [
+            'questions' => [['question_id' => $q1->id], ['question_id' => $q2->id]],
+        ])->assertOk();
+
+        $attemptId = $this->actingAsInSchool($studentUser)->postJson("/api/v1/exam-subjects/{$examSubject->id}/attempts")->json('data.attempt.id');
+
+        $correctOptionQ1 = $q1->options()->where('is_correct', true)->first();
+        $wrongOptionQ2 = $q2->options()->where('is_correct', false)->first();
+
+        $this->actingAsInSchool($studentUser)->putJson("/api/v1/online-test-attempts/{$attemptId}/answers", [
+            'question_id' => $q1->id, 'selected_option_id' => $correctOptionQ1->id,
+        ])->assertOk();
+        $this->actingAsInSchool($studentUser)->putJson("/api/v1/online-test-attempts/{$attemptId}/answers", [
+            'question_id' => $q2->id, 'selected_option_id' => $wrongOptionQ2->id,
+        ])->assertOk();
+
+        $submitResponse = $this->actingAsInSchool($studentUser)->postJson("/api/v1/online-test-attempts/{$attemptId}/submit");
+
+        // +5 (correct, no negative_marks) + -2 (wrong, negative_marks=2) = 3, no flooring needed.
+        $submitResponse->assertOk()->assertJsonPath('data.score', 3);
+        $this->assertDatabaseHas('online_test_answers', ['attempt_id' => $attemptId, 'question_id' => $q1->id, 'marks_awarded' => 5]);
+        $this->assertDatabaseHas('online_test_answers', ['attempt_id' => $attemptId, 'question_id' => $q2->id, 'marks_awarded' => -2]);
+        $this->assertDatabaseHas('exam_marks', ['exam_subject_id' => $examSubject->id, 'student_id' => $student->id, 'marks_obtained' => 3]);
+    }
+
+    public function test_negative_marking_total_floors_at_zero_and_never_penalizes_a_blank_answer(): void
+    {
+        $school = $this->createSchool();
+        $admin = $this->createUserWithRole($school, 'School Admin');
+        [$examSubject, $student, $studentUser] = $this->makeOnlineExamSubject($school);
+
+        tenancy()->initialize($school);
+        $q1 = Question::factory()->create(['created_by' => $admin->id, 'type' => 'mcq', 'default_marks' => 5, 'negative_marks' => 2]);
+        foreach (['A', 'B', 'C', 'D'] as $i => $label) {
+            tenancy()->initialize($school);
+            QuestionOption::factory()->create(['question_id' => $q1->id, 'option_text' => $label, 'is_correct' => $i === 0, 'sequence' => $i]);
+        }
+        // q2 is left completely unanswered — must never be penalized even though it has negative_marks configured.
+        tenancy()->initialize($school);
+        $q2 = Question::factory()->create(['created_by' => $admin->id, 'type' => 'mcq', 'default_marks' => 5, 'negative_marks' => 2]);
+        foreach (['A', 'B', 'C', 'D'] as $i => $label) {
+            tenancy()->initialize($school);
+            QuestionOption::factory()->create(['question_id' => $q2->id, 'option_text' => $label, 'is_correct' => $i === 0, 'sequence' => $i]);
+        }
+
+        $this->actingAsInSchool($admin)->postJson("/api/v1/exam-subjects/{$examSubject->id}/online-test-questions", [
+            'questions' => [['question_id' => $q1->id], ['question_id' => $q2->id]],
+        ])->assertOk();
+
+        $attemptId = $this->actingAsInSchool($studentUser)->postJson("/api/v1/exam-subjects/{$examSubject->id}/attempts")->json('data.attempt.id');
+
+        $wrongOptionQ1 = $q1->options()->where('is_correct', false)->first();
+        $this->actingAsInSchool($studentUser)->putJson("/api/v1/online-test-attempts/{$attemptId}/answers", [
+            'question_id' => $q1->id, 'selected_option_id' => $wrongOptionQ1->id,
+        ])->assertOk();
+
+        $submitResponse = $this->actingAsInSchool($studentUser)->postJson("/api/v1/online-test-attempts/{$attemptId}/submit");
+
+        // Raw total would be -2 (wrong q1) + 0 (blank q2) = -2, floored to 0.
+        $submitResponse->assertOk()->assertJsonPath('data.score', 0);
+        $this->assertDatabaseHas('online_test_answers', ['attempt_id' => $attemptId, 'question_id' => $q1->id, 'marks_awarded' => -2]);
+        $this->assertDatabaseHas('online_test_answers', ['attempt_id' => $attemptId, 'question_id' => $q2->id, 'marks_awarded' => 0]);
+        $this->assertDatabaseHas('exam_marks', ['exam_subject_id' => $examSubject->id, 'student_id' => $student->id, 'marks_obtained' => 0]);
+    }
 }

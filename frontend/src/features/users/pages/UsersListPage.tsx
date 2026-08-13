@@ -51,7 +51,7 @@ export function UsersListPage() {
           <a
             href={idCardsApi.staffPdfUrl(row.id)}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener"
             className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted"
             aria-label={`Download ${row.full_name}'s ID card`}
           >

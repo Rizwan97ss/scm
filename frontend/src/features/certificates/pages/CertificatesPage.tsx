@@ -28,7 +28,7 @@ export function CertificatesPage() {
         <a
           href={certificatesApi.pdfUrl(row.id)}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener"
           className="flex items-center justify-end gap-1 text-sm text-primary hover:underline"
           aria-label={`Download certificate ${row.certificate_number}`}
         >

@@ -59,7 +59,7 @@ export function StudentProfilePage() {
             <a
               href={idCardsApi.studentPdfUrl(studentId)}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener"
               className="flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
             >
               <IdCard className="h-4 w-4" /> ID Card

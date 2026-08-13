@@ -15,11 +15,12 @@ class ExamResource extends JsonResource
             'id' => $this->id,
             'academic_year_id' => $this->academic_year_id,
             'term_id' => $this->term_id,
+            'exam_type' => $this->whenLoaded('examType', fn () => $this->examType ? ['id' => $this->examType->id, 'name' => $this->examType->name] : null),
             'name' => $this->name,
             'weight' => $this->weight,
             'is_published' => $this->is_published,
             'published_at' => $this->published_at?->toIso8601String(),
-            'exam_subjects' => ExamSubjectResource::collection($this->whenLoaded('examSubjects')),
+            'exam_subject_groups' => ExamSubjectGroupResource::collection($this->whenLoaded('examSubjectGroups')),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

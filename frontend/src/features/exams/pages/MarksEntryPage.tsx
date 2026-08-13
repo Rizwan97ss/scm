@@ -23,12 +23,16 @@ export function MarksEntryPage() {
   const queryClient = useQueryClient()
 
   const { data: exam } = useQuery({ queryKey: queryKeys.exam(Number(examId)), queryFn: () => examsApi.get(Number(examId)) })
-  const examSubject = exam?.exam_subjects.find((es) => es.id === examSubjectIdNum)
+  // The component (what the marks belong to) and its parent group (what
+  // subject/section it's under) — components no longer carry subject/
+  // section directly, only their group does. See ExamSubjectGroup in types/exam.ts.
+  const group = exam?.exam_subject_groups.find((g) => g.components.some((c) => c.id === examSubjectIdNum))
+  const examSubject = group?.components.find((c) => c.id === examSubjectIdNum)
 
   const { data: roster, isLoading: rosterLoading } = useQuery({
-    queryKey: queryKeys.students({ 'filter[current_section_id]': examSubject?.section?.id, per_page: 200 }),
-    queryFn: () => studentsApi.list({ 'filter[current_section_id]': examSubject!.section!.id, per_page: 200 }),
-    enabled: !!examSubject?.section?.id,
+    queryKey: queryKeys.students({ 'filter[current_section_id]': group?.section?.id, per_page: 200 }),
+    queryFn: () => studentsApi.list({ 'filter[current_section_id]': group!.section!.id, per_page: 200 }),
+    enabled: !!group?.section?.id,
   })
 
   const { data: existingMarks } = useQuery({
@@ -83,9 +87,9 @@ export function MarksEntryPage() {
   return (
     <div>
       <PageHeader
-        title={`Enter Marks — ${examSubject.subject?.name}`}
-        description={`${exam.name} · ${examSubject.section?.name} · Max marks: ${examSubject.max_marks}`}
-        breadcrumbs={[{ label: 'Exams', to: routePaths.exams }, { label: exam.name, to: routePaths.examDetail(exam.id) }, { label: examSubject.subject?.name ?? '' }]}
+        title={`Enter Marks — ${group?.subject?.name}`}
+        description={`${exam.name} · ${group?.section?.name} · Max marks: ${examSubject.max_marks}`}
+        breadcrumbs={[{ label: 'Exams', to: routePaths.exams }, { label: exam.name, to: routePaths.examDetail(exam.id) }, { label: group?.subject?.name ?? '' }]}
       />
 
       {rosterLoading && (

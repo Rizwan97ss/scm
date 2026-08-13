@@ -21,6 +21,7 @@ class StoreQuestionRequest extends FormRequest
             'type' => ['required', Rule::in(['mcq', 'true_false'])],
             'text' => ['required', 'string'],
             'default_marks' => ['sometimes', 'numeric', 'min:0.01'],
+            'negative_marks' => ['nullable', 'numeric', 'min:0'],
             'explanation' => ['nullable', 'string'],
             'options' => ['required', 'array', 'min:2'],
             'options.*.option_text' => ['required', 'string', 'max:500'],

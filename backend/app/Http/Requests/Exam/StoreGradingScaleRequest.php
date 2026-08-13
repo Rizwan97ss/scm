@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Exam;
 
+use App\Rules\ValidName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -16,7 +17,7 @@ class StoreGradingScaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:150', Rule::unique('grading_scales', 'name')],
+            'name' => ['required', 'string', 'max:150', new ValidName, Rule::unique('grading_scales', 'name')],
             'is_default' => ['sometimes', 'boolean'],
             'grade_bands' => ['required', 'array', 'min:1'],
             'grade_bands.*.min_percentage' => ['required', 'numeric', 'min:0', 'max:100'],

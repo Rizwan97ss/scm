@@ -6,7 +6,7 @@ use App\Models\ExamSubject;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin ExamSubject */
+/** One gradable component (Online MCQ, Written, ...) under an ExamSubjectGroup. @mixin ExamSubject */
 class ExamSubjectResource extends JsonResource
 {
     public function toArray(Request $request): array
@@ -14,11 +14,13 @@ class ExamSubjectResource extends JsonResource
         return [
             'id' => $this->id,
             'exam_id' => $this->exam_id,
-            'subject' => $this->whenLoaded('subject', fn () => ['id' => $this->subject->id, 'name' => $this->subject->name]),
-            'section' => $this->whenLoaded('section', fn () => ['id' => $this->section->id, 'name' => $this->section->name]),
-            'grading_scale_id' => $this->grading_scale_id,
+            'exam_subject_group_id' => $this->exam_subject_group_id,
+            'assessment_component_type' => $this->whenLoaded(
+                'assessmentComponentType',
+                fn () => $this->assessmentComponentType ? ['id' => $this->assessmentComponentType->id, 'name' => $this->assessmentComponentType->name, 'is_auto_graded' => $this->assessmentComponentType->is_auto_graded] : null
+            ),
+            'sequence' => $this->sequence,
             'max_marks' => $this->max_marks,
-            'passing_marks' => $this->passing_marks,
             'exam_date' => $this->exam_date?->toDateString(),
             'is_online' => $this->is_online,
             'duration_minutes' => $this->duration_minutes,

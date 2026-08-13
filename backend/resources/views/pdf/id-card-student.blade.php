@@ -4,30 +4,44 @@
     <meta charset="utf-8">
     <title>{{ $student->full_name }} — ID Card</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 9px; color: #1a1a1a; margin: 0; }
-        .card { border: 1.5px solid #2a4d8f; border-radius: 8px; padding: 8px; height: 133px; box-sizing: border-box; }
-        .header { text-align: center; font-size: 10px; font-weight: bold; color: #2a4d8f; margin-bottom: 4px; }
-        .body { display: flex; }
-        .qr { width: 55px; text-align: center; }
-        .qr img { width: 50px; height: 50px; }
-        .details { flex: 1; padding-left: 8px; }
-        .details p { margin: 2px 0; }
+        /* DomPDF applies its own default @page margin regardless of body's
+           margin — on a page this small (153pt tall) that default alone
+           exceeds the whole page, which is what was actually forcing this
+           onto a second page. size must be spelled out here too, matching
+           IdCardController's setPaper([0, 0, 243, 153]) exactly — an @page
+           rule with only `margin` and no `size` makes dompdf's CSS engine
+           take over sizing and silently fall back to A4, overriding the
+           controller's setPaper() call (the card rendered correctly at
+           1 page, but as a tiny card adrift on a full A4 page). */
+        @page { size: 243pt 153pt; margin: 0; }
+        * { box-sizing: border-box; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 8px; color: #1a1a1a; margin: 0; padding: 6px; }
+        .card { border: 1.5px solid #2a4d8f; border-radius: 6px; padding: 6px; width: 100%; height: 137px; }
+        .header { text-align: center; font-size: 9px; font-weight: bold; color: #2a4d8f; margin-bottom: 4px; }
+        table.body { width: 100%; border-collapse: collapse; }
+        table.body td { vertical-align: top; padding: 0; }
+        .qr { width: 52px; text-align: center; }
+        .qr img { width: 48px; height: 48px; }
+        .details { padding-left: 6px; }
+        .details p { margin: 1.5px 0; line-height: 1.25; }
         .label { color: #666; }
-        .name { font-size: 12px; font-weight: bold; margin-bottom: 4px; }
+        .name { font-size: 10px; font-weight: bold; margin-bottom: 3px !important; }
     </style>
 </head>
 <body>
     <div class="card">
         <div class="header">{{ $schoolName }} — STUDENT ID</div>
-        <div class="body">
-            <div class="qr"><img src="{{ $qrCode }}" alt="QR"></div>
-            <div class="details">
-                <p class="name">{{ $student->full_name }}</p>
-                <p><span class="label">Admission #:</span> {{ $student->admission_number }}</p>
-                <p><span class="label">Grade:</span> {{ $student->currentGradeLevel?->name }} - {{ $student->currentSection?->name }}</p>
-                <p><span class="label">DOB:</span> {{ $student->date_of_birth?->toDateString() }}</p>
-            </div>
-        </div>
+        <table class="body">
+            <tr>
+                <td class="qr"><img src="{{ $qrCode }}" alt="QR"></td>
+                <td class="details">
+                    <p class="name">{{ $student->full_name }}</p>
+                    <p><span class="label">Admission #:</span> {{ $student->admission_number }}</p>
+                    <p><span class="label">Grade:</span> {{ $student->currentGradeLevel?->name }} - {{ $student->currentSection?->name }}</p>
+                    <p><span class="label">DOB:</span> {{ $student->date_of_birth?->toDateString() }}</p>
+                </td>
+            </tr>
+        </table>
     </div>
 </body>
 </html>

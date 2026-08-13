@@ -17,6 +17,7 @@ class QuestionResource extends JsonResource
             'type' => $this->type,
             'text' => $this->text,
             'default_marks' => $this->default_marks,
+            'negative_marks' => $this->negative_marks,
             'explanation' => $this->explanation,
             'options' => QuestionOptionResource::collection($this->whenLoaded('options')),
             'created_at' => $this->created_at?->toIso8601String(),

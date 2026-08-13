@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
-import { examsApi } from '@/api/endpoints/exams'
+import { examsApi, examTypesApi } from '@/api/endpoints/exams'
 import { academicYearsApi, termsApi } from '@/api/endpoints/academics'
 import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
@@ -20,6 +20,7 @@ export function ExamsListPage() {
   const { listQuery, createMutation } = useCrudResource(examsApi, queryKeys.exams, queryParams, 'Exam')
   const { data: academicYears } = useQuery({ queryKey: queryKeys.academicYears({ per_page: 100 }), queryFn: () => academicYearsApi.list({ per_page: 100 }) })
   const { data: terms } = useQuery({ queryKey: queryKeys.terms({ per_page: 100 }), queryFn: () => termsApi.list({ per_page: 100 }) })
+  const { data: examTypes } = useQuery({ queryKey: queryKeys.examTypes(), queryFn: () => examTypesApi.list() })
 
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState<ExamPayload>({ academic_year_id: 0, name: '', weight: 1 })
@@ -38,7 +39,8 @@ export function ExamsListPage() {
 
   const columns: DataTableColumn<Exam>[] = [
     { key: 'name', header: 'Name', sortable: true, render: (row) => <span className="font-medium">{row.name}</span> },
-    { key: 'subjects', header: 'Subjects', render: (row) => row.exam_subjects.length },
+    { key: 'exam_type', header: 'Type', render: (row) => row.exam_type?.name ?? '—' },
+    { key: 'subjects', header: 'Subjects', render: (row) => row.exam_subject_groups.length },
     { key: 'weight', header: 'Weight', render: (row) => row.weight },
     { key: 'status', header: 'Status', render: (row) => <Badge variant={row.is_published ? 'success' : 'default'}>{row.is_published ? 'Published' : 'Draft'}</Badge> },
   ]
@@ -81,6 +83,15 @@ export function ExamsListPage() {
               value={form.term_id ? String(form.term_id) : undefined}
               onValueChange={(value) => setForm({ ...form, term_id: Number(value) })}
               options={(terms?.data ?? []).map((t) => ({ value: String(t.id), label: t.name }))}
+              placeholder="None"
+            />
+          </FormField>
+          <FormField label="Exam type" htmlFor="exam_type_id" hint="Optional — Class Test, Trimester, Final, etc.">
+            <Select
+              id="exam_type_id"
+              value={form.exam_type_id ? String(form.exam_type_id) : undefined}
+              onValueChange={(value) => setForm({ ...form, exam_type_id: Number(value) })}
+              options={(examTypes?.data ?? []).map((t) => ({ value: String(t.id), label: t.name }))}
               placeholder="None"
             />
           </FormField>
