@@ -593,6 +593,74 @@ here as a reminder: a `null`-but-technically-valid foreign key/ID column
 is invisible to every test that never exercises the third-party call
 which actually dereferences it.
 
+**Phase 16 (Unified Multi-Component Examination & Results System) needed
+the same discipline twice over: first for the automated-test gate itself,
+then for the live pass — and each layer caught something the one before
+it couldn't.** After the six sub-phases were implemented, a check of
+`git diff --stat -- tests/` showed only two pre-existing test files had
+actually been touched — none of the new functionality (negative marking,
+the Excel importer, auto-submit, group publish/unpublish masking) had
+real coverage despite the plan's own stated test gate per sub-phase.
+Writing that missing coverage surfaced two real bugs before a browser was
+ever involved: `ExamController::publishGroup()`/`unpublishGroup()` built
+their response from a `SubjectResultResource`, which requires a
+`student_id` — but publishing a subject is a class-wide action with no
+single student in view, and the frontend never sent one, so every real
+"Declare Result" click would have 404'd. And `McqQuestionsImport`'s
+`rules()` rejected purely numeric-looking option text (`"3"`, `"4"`,
+`"5"`, `"6"` — an entirely ordinary Math MCQ) because PhpSpreadsheet reads
+a numeric-looking cell back as an actual int/float, not a string, and the
+validation rule required `'string'`; the importer's own `onRow()` already
+defensively `(string)`-cast everything, but never got the chance to run.
+Both fixed before any of this reached a browser.
+
+The live pass then needed real MySQL, not just SQLite, before it could
+even start: `php artisan tenants:migrate` against the actual dev tenant
+databases failed three separate times with errors no SQLite-backed test
+run could ever produce — dropping a composite unique index still backing
+a foreign key, changing a column to NOT NULL while its FK still specified
+`SET NULL` on delete, and an auto-generated index name over MySQL's
+64-character identifier limit. See
+[database.md § Exams, grading & online tests](database.md#exams-grading--online-tests)
+for the fixes; the general lesson is its own reminder: **a schema-changing
+phase isn't done when `php artisan test` is green — it's done when the
+migration has actually run against a real database of the engine
+production uses.**
+
+Only then did the actual UI walkthrough begin — reproducing the user's
+own worked example (Admin/Class Teacher builds a Maths subject with four
+components: Online MCQ 17/20, Written 48/60, Oral 8/10, Practical 9/10;
+declares just that one subject early; Student and Parent portals confirm
+nothing before declaration and the full 82/100, 82%, Pass breakdown after)
+— and it surfaced two more bugs neither the sub-phase tests nor the newly
+-written coverage above had caught, both invisible to any test that
+provisions its own fully-permissioned fixture from a factory: (1) the
+demo tenant (`civisence`) had been provisioned *before* Phase 16 shipped,
+so its already-existing Class Teacher role never picked up the new
+`exam-marks.publish`/`questions.import` permissions — the "Declare
+Result" button silently never rendered, the same "forgot to re-sync an
+already-provisioned tenant's permission matrix" gap this project has now
+hit in Phases 7, 8, 10, and 16. Fixed by running `php artisan
+permissions:rollout`, per its own established convention. (2) A real,
+more serious bug: `Exam::scopeVisibleTo()`'s Student and Parent branches
+still gated visibility on the flat `is_published` column alone, never on
+a subject group's own `published_at` — `ParentPortalController::
+childExams()` had the correct OR-composition (written earlier in the same
+phase), but this shared scope, which the student's *own* "By Exam"
+dropdown actually goes through, was never updated. A student could
+therefore never see an exam in their own results view until the *entire*
+exam was published, silently defeating the whole early-declare feature
+for the one portal it was built for. No API-level test caught it because
+`report-card` tests all call that endpoint directly with an already-known
+exam id — never through the listing step a real dropdown depends on.
+Fixed, with a new regression test
+(`test_student_can_list_an_exam_once_their_own_sections_subject_group_is_published`)
+added specifically because the gap existed at the *listing* layer, not
+the one every other Phase 16 test had been exercising. The general lesson
+holds precisely as stated after Phase 5: automated tests confirm the code
+does what you told it to; only driving the actual dropdown a real student
+clicks confirms you told the right layer to do it.
+
 Phase 13 itself added `tests/Feature/Security/SecurityHeadersTest.php`
 (3 tests: baseline headers present, HSTS absent over plain HTTP, HSTS
 present over HTTPS) — full suite now 248/248. The HTTPS-simulation test

@@ -786,6 +786,19 @@ See [database.md](database.md) for the full schema,
 [rbac.md](rbac.md) for the two new permissions
 (`exam-marks.publish`, `questions.import`).
 
+Migrated onto every real tenant database (not just the SQLite-backed test
+suite) and verified live end to end — a Class Teacher declaring one
+subject early while the rest of the exam stays a draft, a Student and
+Parent seeing nothing before that and the full component breakdown after.
+That pass caught two bugs no automated test had: an already-provisioned
+tenant's Class Teacher role missing the new `exam-marks.publish`
+permission (fixed by running `permissions:rollout`), and
+`Exam::scopeVisibleTo()` never having been updated for per-group
+publishing, so a student's own results dropdown never showed a declared
+exam until the whole thing published (fixed, with a regression test —
+see [testing.md](testing.md) for the full writeup of everything the
+migration and the live pass each caught).
+
 ## What's next (after Phase 16)
 
 Every phase on the original roadmap — SaaS platform layer, the full
