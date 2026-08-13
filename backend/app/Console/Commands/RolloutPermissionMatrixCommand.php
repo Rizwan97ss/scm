@@ -36,6 +36,13 @@ class RolloutPermissionMatrixCommand extends Command
         }
 
         $schools->each(function (School $school) use ($provisioning) {
+            // Degrade, don't crash the whole batch — see School::studentCount()'s own guard.
+            if (! $school->database()->manager()->databaseExists($school->database()->getName())) {
+                $this->warn("  {$school->name}: skipped (no physical database)");
+
+                return;
+            }
+
             $school->run(fn () => $provisioning->seedDefaultRoles($school));
             $this->line("  {$school->name}: role/permission matrix synced");
         });

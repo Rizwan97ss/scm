@@ -27,6 +27,11 @@ class AnonymizeStaleAccountsCommand extends Command
     public function handle(SettingsService $settings, AnonymizationService $anonymization): int
     {
         School::all()->each(function (School $school) use ($settings, $anonymization) {
+            // Degrade, don't crash the whole batch — see School::studentCount()'s own guard.
+            if (! $school->database()->manager()->databaseExists($school->database()->getName())) {
+                return;
+            }
+
             $school->run(function () use ($settings, $anonymization) {
                 $days = $settings->get('retention.inactive_account_anonymize_days');
 

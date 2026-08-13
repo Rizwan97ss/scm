@@ -13,6 +13,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -26,6 +27,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
         $middleware->throttleApi();
+
+        // This is an API-only app (no named 'login' route exists — it's an
+        // SPA route, not a Laravel one). Left at Laravel's default, the auth
+        // middleware tries to redirect any *non*-JSON-expecting unauthenticated
+        // request (a plain browser navigation — exactly what a PDF download
+        // link is, unlike the SPA's own XHR calls) to route('login'), which
+        // throws RouteNotFoundException instead of the intended 401. Forcing
+        // a null redirect here means an expired/invalid session on a PDF
+        // link now correctly reaches the AuthenticationException render
+        // handler below (clean JSON 401) instead of crashing with a 500.
+        $middleware->redirectGuestsTo(null);
 
         $middleware->append(SecurityHeaders::class);
 
@@ -48,7 +60,7 @@ return Application::configure(basePath: dirname(__DIR__))
             // every request to the central/platform domain: its default
             // failure mode on an unrecognized-as-tenant host is to throw,
             // not pass through.
-            'tenancy.subdomain' => \Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain::class,
+            'tenancy.subdomain' => InitializeTenancyBySubdomain::class,
         ]);
 
         // EnsureSchoolContext (Spatie permission "team" context) was deleted

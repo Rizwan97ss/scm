@@ -18,6 +18,11 @@ class CleanExpiredExportsCommand extends Command
         $disk = Storage::disk('local');
 
         School::all()->each(function (School $school) use ($disk) {
+            // Degrade, don't crash the whole batch — see School::studentCount()'s own guard.
+            if (! $school->database()->manager()->databaseExists($school->database()->getName())) {
+                return;
+            }
+
             $school->run(function () use ($disk) {
                 $expired = DataExport::query()->whereNotNull('expires_at')->where('expires_at', '<=', now())->get();
 

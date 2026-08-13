@@ -60,6 +60,13 @@ class EncryptExistingPiiCommand extends Command
         }
 
         foreach ($schools as $school) {
+            // Degrade, don't crash the whole batch — see School::studentCount()'s own guard.
+            if (! $school->database()->manager()->databaseExists($school->database()->getName())) {
+                $this->warn("=== {$school->name} ({$school->slug}) — skipped (no physical database) ===");
+
+                continue;
+            }
+
             $this->info("=== {$school->name} ({$school->slug}) ===");
 
             $school->run(function () use ($dryRun) {
@@ -110,7 +117,7 @@ class EncryptExistingPiiCommand extends Command
             }
         }
 
-        $this->line("  {$table}: {$encryptedCount} row(s) ".($dryRun ? 'would be' : 'were')." encrypted");
+        $this->line("  {$table}: {$encryptedCount} row(s) ".($dryRun ? 'would be' : 'were').' encrypted');
     }
 
     private function isAlreadyEncrypted(string $value): bool

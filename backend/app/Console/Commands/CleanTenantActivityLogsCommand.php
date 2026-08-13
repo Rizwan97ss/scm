@@ -29,6 +29,11 @@ class CleanTenantActivityLogsCommand extends Command
     public function handle(SettingsService $settings): int
     {
         School::all()->each(function (School $school) use ($settings) {
+            // Degrade, don't crash the whole batch — see School::studentCount()'s own guard.
+            if (! $school->database()->manager()->databaseExists($school->database()->getName())) {
+                return;
+            }
+
             $school->run(function () use ($settings) {
                 $days = (int) $settings->get('retention.activity_log_days', 365);
                 Artisan::call('activitylog:clean', ['--days' => $days, '--force' => true]);

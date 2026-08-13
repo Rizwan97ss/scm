@@ -39,6 +39,16 @@ class GrantMfaGracePeriodCommand extends Command
         $this->info("Platform users granted a grace period: {$platformCount}");
 
         School::all()->each(function (School $school) use ($cutoff) {
+            // A School row with no physical database yet (mid-provisioning,
+            // or a stale/orphaned record) would otherwise throw and abort
+            // every school after it — same degrade-don't-crash guard
+            // School::studentCount() already uses.
+            if (! $school->database()->manager()->databaseExists($school->database()->getName())) {
+                $this->warn("  {$school->name}: skipped (no physical database)");
+
+                return;
+            }
+
             $count = $school->run(fn () => User::query()
                 ->whereNull('two_factor_confirmed_at')
                 ->whereNull('mfa_grace_period_ends_at')
