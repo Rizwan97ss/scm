@@ -52,7 +52,10 @@ export function ExamDetailPage() {
   const { data: exam, isLoading } = useQuery({ queryKey: queryKeys.exam(id), queryFn: () => examsApi.get(id) })
   const { data: subjects } = useQuery({ queryKey: queryKeys.subjects({ per_page: 100 }), queryFn: () => subjectsApi.list({ per_page: 100 }) })
   const { data: sections } = useQuery({ queryKey: queryKeys.sections({ per_page: 100 }), queryFn: () => sectionsApi.list({ per_page: 100 }) })
-  const { data: componentTypes } = useQuery({ queryKey: queryKeys.assessmentComponentTypes(), queryFn: () => assessmentComponentTypesApi.list() })
+  // Only the exams.edit-gated "Add Subject"/"Add Component" modals consume this — a
+  // Class Teacher (exams.view but not exams.edit, and no grading.view either) would
+  // otherwise get a needless 403 on every page load for data they can never act on.
+  const { data: componentTypes } = useQuery({ queryKey: queryKeys.assessmentComponentTypes(), queryFn: () => assessmentComponentTypesApi.list(), enabled: can('exams.edit') })
 
   const [groupModalOpen, setGroupModalOpen] = useState(false)
   const [groupForm, setGroupForm] = useState(EMPTY_GROUP)
