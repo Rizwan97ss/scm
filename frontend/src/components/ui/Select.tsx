@@ -1,6 +1,20 @@
 import * as RadixSelect from '@radix-ui/react-select'
-import { Check, ChevronDown } from 'lucide-react'
+import { Check, ChevronDown, Search } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { cn } from '@/utils/cn'
+
+// Below this, a search box is just visual noise (gender, yes/no, status
+// flags, ...) — above it (subjects, sections, students, rooms, ...) it's
+// the difference between scrolling and typing.
+const SEARCH_THRESHOLD = 6
+
+// Radix's own keydown handler lives on Content and drives both typeahead
+// (jump to the item starting with the typed letter) and arrow-key/Enter/
+// Escape navigation. Letting ordinary character keys bubble from our
+// search input would fight the input for those keystrokes; navigation/
+// selection/close keys need to keep bubbling so arrow keys still move
+// into the (now filtered) item list.
+const NAV_KEYS = new Set(['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Tab'])
 
 export interface SelectOption {
   value: string
@@ -21,8 +35,20 @@ export interface SelectProps {
 }
 
 export function Select({ value, onValueChange, options, placeholder = 'Select…', disabled, invalid, className, id, ...rest }: SelectProps) {
+  const [search, setSearch] = useState('')
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const showSearch = options.length > SEARCH_THRESHOLD
+  const filtered = search.trim()
+    ? options.filter((o) => o.label.toLowerCase().includes(search.trim().toLowerCase()))
+    : options
+
   return (
-    <RadixSelect.Root value={value} onValueChange={onValueChange} disabled={disabled}>
+    <RadixSelect.Root
+      value={value}
+      onValueChange={onValueChange}
+      disabled={disabled}
+      onOpenChange={(open) => { if (!open) setSearch('') }}
+    >
       <RadixSelect.Trigger
         id={id}
         aria-label={rest['aria-label']}
@@ -41,12 +67,31 @@ export function Select({ value, onValueChange, options, placeholder = 'Select…
       </RadixSelect.Trigger>
       <RadixSelect.Portal>
         <RadixSelect.Content
-          className="z-50 max-h-72 overflow-y-auto rounded-md border border-border bg-card text-foreground shadow-lg"
+          className="z-50 flex max-h-72 flex-col overflow-hidden rounded-md border border-border bg-card text-foreground shadow-lg"
           position="popper"
           sideOffset={4}
+          onOpenAutoFocus={(e) => {
+            if (showSearch) {
+              e.preventDefault()
+              searchInputRef.current?.focus()
+            }
+          }}
         >
-          <RadixSelect.Viewport className="p-1">
-            {options.map((option) => (
+          {showSearch && (
+            <div className="flex items-center gap-2 border-b border-border px-2.5 py-1.5">
+              <Search className="h-3.5 w-3.5 shrink-0 opacity-50" />
+              <input
+                ref={searchInputRef}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => { if (!NAV_KEYS.has(e.key)) e.stopPropagation() }}
+                placeholder="Search…"
+                className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              />
+            </div>
+          )}
+          <RadixSelect.Viewport className="overflow-y-auto p-1">
+            {filtered.map((option) => (
               <RadixSelect.Item
                 key={option.value}
                 value={option.value}
@@ -62,6 +107,9 @@ export function Select({ value, onValueChange, options, placeholder = 'Select…
                 <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
               </RadixSelect.Item>
             ))}
+            {showSearch && filtered.length === 0 && (
+              <p className="px-2 py-4 text-center text-sm text-muted-foreground">No results.</p>
+            )}
           </RadixSelect.Viewport>
         </RadixSelect.Content>
       </RadixSelect.Portal>
