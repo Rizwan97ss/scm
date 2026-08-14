@@ -661,6 +661,52 @@ holds precisely as stated after Phase 5: automated tests confirm the code
 does what you told it to; only driving the actual dropdown a real student
 clicks confirms you told the right layer to do it.
 
+**A follow-up round on the same Phase 16 system (folding the standalone
+Question Bank into exam configuration, masking Online MCQ results until
+declared, adding a bulk marks Excel importer) surfaced the single most
+significant environment bug found all session — and it wasn't in this
+codebase at all.** The user had reported a "Request failed with status
+code 422" on file upload multiple times across the session; every earlier
+attempt to reproduce it — calling the import service directly, bypassing
+HTTP entirely — succeeded cleanly, which looked like it cleared the
+backend logic. It didn't; it just never exercised the actual HTTP upload
+path. The first real reproduction came from finally driving an Excel
+import through the live browser for these new features: a raw
+`{"message":"The file failed to upload.","errors":{"file":[...]}}`, with
+`PHP Request Startup: File upload error - unable to create a temporary
+file` printed before Laravel's JSON even started. A tiny raw `curl -F`
+POST to a completely unrelated endpoint reproduced the identical warning
+with zero application code involved, proving it wasn't this codebase's
+bug at all — **every multipart file upload through `php artisan serve`
+on this Windows machine was silently broken**, a latent issue that would
+have hit the student importer, the question importer, and this session's
+new marks importer identically, regardless of which one happened to get
+blamed first.
+
+Root cause, found by reading Laravel's own `ServeCommand` source (not
+guessed): it spawns its actual request-handling subprocess through
+Symfony `Process` with a hand-built environment array, and its
+`$passthroughVariables` allowlist doesn't include `TMP`/`TEMP` — so the
+spawned worker loses them entirely, and PHP's upload-temp-file resolution
+falls back to `C:\WINDOWS` itself, unwritable by a normal user account.
+Fixed by setting `upload_tmp_dir` explicitly in Herd's `php.ini` (outside
+this repo entirely — see [setup.md § Common issues](setup.md#common-issues)
+for the fix, since it can't live in code or `.env`). The diagnosis had one
+more trap layered on top: `php artisan serve --no-reload` pre-forks
+multiple workers (`PHP_CLI_SERVER_WORKERS`) that persist independently of
+the outer `artisan serve` process, so several rounds of "kill and
+restart" via a command-line pattern that only matched the outer process
+left old, still-listening, pre-fix workers quietly answering requests on
+the same port — each restart *looked* clean (a fresh 200 on a health
+check) while a stale worker was still the one actually serving uploads.
+Only killing every `php.exe` process by PID and confirming a genuinely
+empty process list before restarting surfaced the fix actually working.
+The general lesson, sharpened further: reproducing a bug through the same
+layer a real user hits isn't just about the request shape (HTTP vs. a
+direct service call) — for a long-running dev server, it also means
+confirming the process actually serving the request is the one you think
+it is.
+
 Phase 13 itself added `tests/Feature/Security/SecurityHeadersTest.php`
 (3 tests: baseline headers present, HSTS absent over plain HTTP, HSTS
 present over HTTPS) — full suite now 248/248. The HTTPS-simulation test

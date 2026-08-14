@@ -120,6 +120,37 @@ lets the separately-served SPA authenticate against the API (see
 - **Login succeeds but every permission check fails / sidebar is empty** —
   see the `UserResource.permissions` gotcha in [rbac.md](rbac.md); this was
   a real bug once, not hypothetical.
+- **Every file upload (student import, question import, marks import, any
+  future one) 422s with `{"errors":{"file":["The file failed to upload."]}}`,
+  and the raw response sometimes shows `PHP Request Startup: File upload
+  error - unable to create a temporary file` before Laravel's JSON even
+  starts** — this is a genuine `php artisan serve`-on-Windows issue, not an
+  application bug, and it's easy to lose hours chasing it as one (it did,
+  once). Root cause: `Illuminate\Foundation\Console\ServeCommand` spawns its
+  actual request-handling subprocess via Symfony `Process` with an
+  explicitly reconstructed environment — its `$passthroughVariables`
+  allowlist (`APP_ENV`, `PATH`, `SYSTEMROOT`, a few `HERD_*`/`XDEBUG_*`
+  vars) does **not** include `TMP`/`TEMP`, so the spawned worker loses them
+  entirely. Without them, PHP's temp-directory resolution for multipart
+  uploads falls back to `C:\WINDOWS` itself (not even `C:\WINDOWS\Temp`),
+  which a non-admin account can't write to — so *every* multipart upload
+  fails, regardless of file size or which endpoint. Confirmed via a raw
+  `curl -F` POST reproducing the identical error with zero application
+  code involved, and confirmed fixed by setting `upload_tmp_dir` explicitly
+  in `php.ini` (Herd's per-version ini, e.g.
+  `C:\Users\<you>\.config\herd\bin\php84\php.ini`) — an explicit ini value
+  bypasses the broken environment-variable resolution chain entirely, since
+  it's consulted before any `TMP`/`TEMP` fallback. **This setting lives
+  outside the repo** (a machine-level PHP config file, not `.env` or
+  anything Git tracks) — anyone hitting this on a fresh Windows setup needs
+  to make the same change themselves; there's no way to fix it from inside
+  the codebase. If restarting `artisan serve` after this doesn't seem to
+  help, check for orphaned worker processes first (`Get-Process php` on
+  PowerShell) — `PHP_CLI_SERVER_WORKERS` pre-forks multiple workers that
+  persist independently of the outer `artisan serve` process, so a plain
+  `pkill -f "artisan serve"`-style kill (matching only the outer command
+  line) can leave old, still-listening, pre-fix workers answering requests
+  on the same port while looking like a fresh restart succeeded.
 
 ## Running the app end-to-end without a browser
 

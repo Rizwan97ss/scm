@@ -799,6 +799,26 @@ exam until the whole thing published (fixed, with a regression test —
 see [testing.md](testing.md) for the full writeup of everything the
 migration and the live pass each caught).
 
+**Follow-up round on the same system:** the standalone Question Bank page
+is gone — question create/edit/delete/Excel-import now live inline on
+`OnlineTestConfigPage.tsx`, scoped to the component's own subject instead
+of listing every question app-wide. Online MCQ results are no longer
+revealed to a student the instant they submit — `OnlineTestAttemptResource`
+and `OnlineTestController::myTests()` both now gate `score`/`max_score`/
+`answers` on the same `ExamSubjectGroup::status()` check every other
+component type already respects, closing a real gap where auto-grading
+bypassed Draft/Calculated/Published entirely. A Class Teacher can now
+bulk-upload marks for any non-MCQ component via Excel (`exam-marks.import`,
+`ExamMarksImport`, mirrors the existing importer pattern), matched by
+admission number, reusing `ExamService::markBulk()`'s existing upsert
+rather than a second write path. See [testing.md](testing.md) for the
+most significant finding of this round: the "422 on file upload" the user
+had reported repeatedly turned out to be a genuine `php artisan serve`
+-on-Windows environment bug (Laravel's own `ServeCommand` drops `TMP`/
+`TEMP` when spawning its worker process) affecting every file upload in
+the app, not an application bug at all — fixed outside the repo, in
+Herd's `php.ini` (see [setup.md](setup.md#common-issues)).
+
 ## What's next (after Phase 16)
 
 Every phase on the original roadmap — SaaS platform layer, the full

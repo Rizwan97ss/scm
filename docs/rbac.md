@@ -53,7 +53,7 @@ Permissions are named `module.action` and generated from
 | `staff-attendance` | view, mark, edit, export |
 | `grading` | view, manage *(grading scales — a single "manage" action, not separate create/edit/delete, since scales are infrequently-changed config)* |
 | `exams` | view, create, edit, delete, publish *(`publish` is the whole-exam bulk action — `ExamService::publish()` stamps every subject group's `published_at` too, so it and the per-group `exam-marks.publish` below never disagree once it runs)* |
-| `exam-marks` | view, enter, edit, export, publish *(Phase 16 — `publish` declares one subject's result independent of the whole exam: Admin/Principal always, otherwise only the class teacher of that subject's own section, see `ExamController::assertCanPublishGroup()`. Deliberately a distinct permission from `exams.publish`, not a rename — a Teacher never gets it, only Class Teacher does)* |
+| `exam-marks` | view, enter, edit, export, publish, import *(Phase 16 — `publish` declares one subject's result independent of the whole exam: Admin/Principal always, otherwise only the class teacher of that subject's own section, see `ExamController::assertCanPublishGroup()`. Deliberately a distinct permission from `exams.publish`, not a rename — a Teacher never gets it, only Class Teacher does. `import` is a later Phase-16 addition — a bulk Excel alternative to the manual marks form, `ExamMarksImport` — granted to exactly the roles that already hold `.enter` (School Admin, Teacher, Class Teacher); Principal has `.edit`/`.publish` but never `.enter`/`.import`, consistent with "oversees, doesn't grade")* |
 | `questions` | view, create, edit, delete, import *(the online-test question bank; `import` is Phase 16's Excel MCQ importer, `McqQuestionsImport`, granted to the same roles that already hold `questions.create`)* |
 | `online-exams` | view, configure *(attaching questions to an exam subject's online test — not gating the act of a Student taking one, which is self-scoped, not permission-gated)* |
 | `homework` | view, create, edit, delete, grade *(Phase 7 — row-scoped for Teacher/Class Teacher the same way as exams: must actually teach the subject/section, see `Homework::isTaughtBy()`)* |
@@ -135,8 +135,8 @@ permission unconditionally):
 | **Accountant** | Full `fees.*`/`invoices.*` (Phase 8 — this is the primary role for the module: fee structures, invoices, recording payments, credit notes, financial reports), plus view students/guardians/academic-years/academic-structure (needed to browse grade levels and sections when generating invoices) |
 | **HR Staff** | Full `staff-attendance.*` (their attendance is a staff-management concern), no `student-attendance.*`/exam modules; full `designations.*`/`leave.*`/`payroll.*` (Phase 9 — this is the primary role for the module, same relationship Accountant has to `fees`/`invoices`); full `hostel.*` (Phase 10 — boarding is an HR/welfare concern at most schools) plus `students.view` (needed to look up a student when allocating a hostel room — see roadmap.md's Phase 10 entry for the bug this was missing at first) |
 | **Receptionist** | View students/guardians, create students/guardians (front-desk intake), full `front-desk.*` (Phase 10 — this is the primary role for the visitor log) |
-| **Teacher** | View only their assigned sections' students (enforced at the query level, not just permission-gate — see "Row-level scoping" below); `student-attendance.view/mark/edit`, `exam-marks.view/enter/edit`, and `homework.create/edit/delete/grade` all restricted to sections/subjects they actually teach; `questions.view/create/edit` (author their own bank) and `online-exams.configure`, both still subject-ownership-checked; full `remarks.*` for students in a section they teach; no `staff-attendance.*` beyond self-check-in |
-| **Class Teacher** | Teacher permissions + `student-attendance.export`/`exam-marks.export` for their one section |
+| **Teacher** | View only their assigned sections' students (enforced at the query level, not just permission-gate — see "Row-level scoping" below); `student-attendance.view/mark/edit`, `exam-marks.view/enter/edit/import`, and `homework.create/edit/delete/grade` all restricted to sections/subjects they actually teach; `questions.view/create/edit` (author their own bank) and `online-exams.configure`, both still subject-ownership-checked; full `remarks.*` for students in a section they teach; no `staff-attendance.*` beyond self-check-in |
+| **Class Teacher** | Teacher permissions + `student-attendance.export`/`exam-marks.export`/`exam-marks.publish` for their one section |
 | **Student** | View only their own profile/records; `student-attendance.view`, `exams.view`, `exam-marks.view`, `homework.view`, `remarks.view`, `invoices.view` for their own records only — the exam *list* is additionally gated by `Exam.is_published` (see below), but a report card's per-subject marks are masked by that subject's own `ExamSubjectGroup.published_at` since Phase 16, not the whole exam (see below); homework submission itself is self-scoped, not permission-gated, same rationale as online-exam taking |
 | **Parent/Guardian** | View only their linked children's records, via the Parent Portal endpoints; same view-only exam/attendance/homework/invoices access as Student, scoped to linked children; remarks additionally filtered to `visible_to_guardian = true` |
 | **Librarian** | Full `library.*` (Phase 10 — this is the primary role for the module: catalog CRUD, issuing/returning books) plus `students.view` (needed to look up a student when issuing a book) |
@@ -214,6 +214,17 @@ not the permission layer:
   Student/Parent on an unpublished exam; it returns 200 with every
   not-yet-declared subject's marks/percentage/grade nulled out and only
   `group.status` (`draft`/`calculated`/`published`) exposed.
+- **Later Phase-16 addition, same rule extended to Online MCQ**:
+  `OnlineTestAttemptResource` (backing `submit()`/`show()`) and
+  `OnlineTestController::myTests()` independently apply the identical
+  `ExamSubjectGroup::status()` check to `score`/`max_score`/`answers` —
+  auto-grading still happens and writes `ExamMark` the instant a student
+  submits, but the student's own view of that score is masked exactly like
+  every other component type until the subject is declared. A staff viewer
+  with `exam-marks.view` (excluding Student/Parent) always sees it. This
+  closed a real gap: before this, an Online MCQ result bypassed
+  Draft/Calculated/Published entirely and was visible to the student the
+  instant they hit submit, regardless of anyone declaring anything.
 - `ExamMarkController::assertSubjectMarkable()` / `OnlineTestController::assertCanConfigure()`
   are the write-side equivalent of `assertSectionMarkable()` above, scoped
   to `ExamSubject::isTaughtBy()` (a `ClassSubjectTeacher` match) rather than
