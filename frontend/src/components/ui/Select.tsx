@@ -1,6 +1,6 @@
 import * as RadixSelect from '@radix-ui/react-select'
 import { Check, ChevronDown, Search } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/utils/cn'
 
 // Below this, a search box is just visual noise (gender, yes/no, status
@@ -35,6 +35,7 @@ export interface SelectProps {
 }
 
 export function Select({ value, onValueChange, options, placeholder = 'Select…', disabled, invalid, className, id, ...rest }: SelectProps) {
+  const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
   const showSearch = options.length > SEARCH_THRESHOLD
@@ -42,12 +43,26 @@ export function Select({ value, onValueChange, options, placeholder = 'Select…
     ? options.filter((o) => o.label.toLowerCase().includes(search.trim().toLowerCase()))
     : options
 
+  // Select.Content has no onOpenAutoFocus (unlike Dialog/Popover) — it
+  // always auto-focuses the selected/first item itself on open, with no
+  // prop to override that. Stealing focus a frame later, once that's
+  // already happened, is the only way to land it in the search box instead.
+  useEffect(() => {
+    if (!open || !showSearch) return
+    const raf = requestAnimationFrame(() => searchInputRef.current?.focus())
+    return () => cancelAnimationFrame(raf)
+  }, [open, showSearch])
+
   return (
     <RadixSelect.Root
       value={value}
       onValueChange={onValueChange}
       disabled={disabled}
-      onOpenChange={(open) => { if (!open) setSearch('') }}
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next)
+        if (!next) setSearch('')
+      }}
     >
       <RadixSelect.Trigger
         id={id}
@@ -70,12 +85,6 @@ export function Select({ value, onValueChange, options, placeholder = 'Select…
           className="z-50 flex max-h-72 flex-col overflow-hidden rounded-md border border-border bg-card text-foreground shadow-lg"
           position="popper"
           sideOffset={4}
-          onOpenAutoFocus={(e) => {
-            if (showSearch) {
-              e.preventDefault()
-              searchInputRef.current?.focus()
-            }
-          }}
         >
           {showSearch && (
             <div className="flex items-center gap-2 border-b border-border px-2.5 py-1.5">
