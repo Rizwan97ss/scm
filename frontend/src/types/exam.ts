@@ -241,6 +241,7 @@ export interface Question {
 
 export interface QuestionPayload {
   subject_id?: number | null
+  exam_subject_id?: number | null
   type: QuestionType
   text: string
   default_marks?: number

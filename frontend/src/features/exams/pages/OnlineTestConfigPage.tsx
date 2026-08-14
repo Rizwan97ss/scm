@@ -3,10 +3,9 @@ import { useParams } from 'react-router-dom'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { FileSpreadsheet, Plus, Save, Trash2, Upload } from 'lucide-react'
+import { FileSpreadsheet, Plus, Trash2, Upload } from 'lucide-react'
 import { examsApi, onlineTestsApi, questionsApi } from '@/api/endpoints/exams'
 import { queryKeys } from '@/api/queryKeys'
-import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePermission } from '@/hooks/usePermission'
 import { PageHeader } from '@/components/layout/PageHeader'
 import {
@@ -36,42 +35,39 @@ export function OnlineTestConfigPage() {
   const examSubject = group?.components.find((c) => c.id === examSubjectIdNum)
   const subjectId = group?.subject?.id
 
-  // Scoped to this component's own subject — this used to list every question
-  // app-wide regardless of subject, a leftover from before questions had a
-  // subject_id at all. QuestionController already supports filter[subject_id].
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
-    questionsApi, queryKeys.questions, { 'filter[subject_id]': subjectId, per_page: 200 }, 'Question'
-  )
-  const questions = listQuery.data
+  // Scoped to THIS test, not the subject at large — a question only shows up
+  // here once it's been created or imported directly into this test (see
+  // QuestionController::attachToTest / McqQuestionsImport's optional
+  // exam-subject attach). There's no shared question bank to browse anymore:
+  // a brand-new test starts with an empty list until you import or add one.
+  const questionsQuery = useQuery({
+    queryKey: queryKeys.onlineTestQuestions(examSubjectIdNum),
+    queryFn: () => onlineTestsApi.questions(examSubjectIdNum),
+    enabled: Number.isFinite(examSubjectIdNum),
+  })
+  const questions = questionsQuery.data ?? []
 
-  // Starts blank rather than pre-loading a previously configured set — there's
-  // no GET endpoint for a test's current question list (only the sanitized
-  // student-facing TestQuestionResource), and re-saving always replaces the
-  // set wholesale (see syncQuestions on the backend), so re-selecting is the
-  // simplest correct behavior for now.
-  const [selected, setSelected] = useState<Record<number, number | ''>>({})
+  function invalidateQuestions() {
+    queryClient.invalidateQueries({ queryKey: queryKeys.onlineTestQuestions(examSubjectIdNum) })
+  }
 
-  const saveMutation = useMutation({
-    mutationFn: () =>
-      onlineTestsApi.syncQuestions(examSubjectIdNum, {
-        questions: Object.entries(selected)
-          .filter(([, marks]) => marks !== undefined)
-          .map(([questionId, marks]) => ({ question_id: Number(questionId), marks: marks === '' ? null : Number(marks) })),
-      }),
-    onSuccess: () => toast.success('Online test questions saved.'),
+  const createMutation = useMutation({
+    mutationFn: (payload: QuestionPayload) => questionsApi.create(payload),
+    onSuccess: () => { toast.success('Question created.'); invalidateQuestions() },
+    onError: (error) => toast.error(formatApiError(error as ApiError)),
+  })
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: Partial<QuestionPayload> }) => questionsApi.update(id, payload),
+    onSuccess: () => { toast.success('Question updated.'); invalidateQuestions() },
+    onError: (error) => toast.error(formatApiError(error as ApiError)),
+  })
+  const removeMutation = useMutation({
+    mutationFn: (id: number) => questionsApi.remove(id),
+    onSuccess: () => { toast.success('Question deleted.'); invalidateQuestions() },
     onError: (error) => toast.error(formatApiError(error as ApiError)),
   })
 
-  function toggle(questionId: number, defaultMarks: number) {
-    setSelected((prev) => {
-      const next = { ...prev }
-      if (questionId in next) delete next[questionId]
-      else next[questionId] = defaultMarks
-      return next
-    })
-  }
-
-  // ---- Question CRUD (folded in from the now-removed standalone Question Bank page) ----
+  // ---- Question CRUD ----
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Question | null>(null)
   const [deleting, setDeleting] = useState<Question | null>(null)
@@ -119,23 +115,23 @@ export function OnlineTestConfigPage() {
   async function onSubmitQuestion(values: QuestionPayload) {
     try {
       if (editing) await updateMutation.mutateAsync({ id: editing.id, payload: values })
-      else await createMutation.mutateAsync({ ...values, subject_id: subjectId })
+      else await createMutation.mutateAsync({ ...values, subject_id: subjectId, exam_subject_id: examSubjectIdNum })
       setModalOpen(false)
     } catch {
       toast.error('Check the options — exactly one must be marked correct.')
     }
   }
 
-  // ---- Excel import (folded in from the now-removed standalone Question Bank page) ----
+  // ---- Excel import — attaches straight into this test, not a subject-wide bank ----
   const [importModalOpen, setImportModalOpen] = useState(false)
   const [importResult, setImportResult] = useState<QuestionImportResult | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const importMutation = useMutation({
-    mutationFn: (file: File) => questionsApi.import(file, subjectId!),
+    mutationFn: (file: File) => questionsApi.import(file, subjectId!, examSubjectIdNum),
     onSuccess: (result) => {
       setImportResult(result)
-      queryClient.invalidateQueries({ queryKey: ['questions'] })
+      invalidateQuestions()
       if (result.failed_count === 0) toast.success(`${result.imported_count} question(s) imported.`)
       else toast.warning(`${result.imported_count} imported, ${result.failed_count} row(s) failed.`)
     },
@@ -151,13 +147,11 @@ export function OnlineTestConfigPage() {
     )
   }
 
-  const selectedCount = Object.keys(selected).length
-
   return (
     <div>
       <PageHeader
         title={`Configure Online Test — ${group?.subject?.name}`}
-        description={`${exam.name} · ${group?.section?.name} · Select the questions this test will draw from.`}
+        description={`${exam.name} · ${group?.section?.name} · Import or add the questions this test will use.`}
         breadcrumbs={[{ label: 'Exams', to: routePaths.exams }, { label: exam.name, to: routePaths.examDetail(exam.id) }, { label: group?.subject?.name ?? '' }]}
         actions={
           <div className="flex flex-wrap gap-2">
@@ -171,20 +165,16 @@ export function OnlineTestConfigPage() {
                 <Plus className="h-4 w-4" /> New Question
               </Button>
             )}
-            <Button onClick={() => saveMutation.mutate()} isLoading={saveMutation.isPending} disabled={selectedCount === 0}>
-              <Save className="h-4 w-4" /> Save ({selectedCount} selected)
-            </Button>
           </div>
         }
       />
 
-      {listQuery.isLoading && <Skeleton className="h-64 w-full" />}
+      {questionsQuery.isLoading && <Skeleton className="h-64 w-full" />}
 
-      {!listQuery.isLoading && (
+      {!questionsQuery.isLoading && (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead></TableHead>
               <TableHead>Question</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Marks</TableHead>
@@ -192,29 +182,13 @@ export function OnlineTestConfigPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(questions?.data ?? []).map((question) => (
+            {questions.map((question) => (
               <TableRow key={question.id}>
-                <TableCell>
-                  <Checkbox checked={question.id in selected} onCheckedChange={() => toggle(question.id, question.default_marks)} aria-label={`Select question`} />
-                </TableCell>
                 <TableCell className="max-w-md">
                   <span className="line-clamp-2">{question.text}</span>
                 </TableCell>
                 <TableCell>{QUESTION_TYPE_LABELS[question.type]}</TableCell>
-                <TableCell>
-                  {question.id in selected ? (
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      className="h-8 w-20"
-                      value={selected[question.id] ?? ''}
-                      onChange={(e) => setSelected((prev) => ({ ...prev, [question.id]: e.target.value === '' ? '' : Number(e.target.value) }))}
-                    />
-                  ) : (
-                    <span className="text-muted-foreground">{question.default_marks}</span>
-                  )}
-                </TableCell>
+                <TableCell>{question.default_marks}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     {can('questions.edit') && <Button variant="outline" size="sm" onClick={() => openEdit(question)}>Edit</Button>}
@@ -227,8 +201,8 @@ export function OnlineTestConfigPage() {
                 </TableCell>
               </TableRow>
             ))}
-            {(questions?.data ?? []).length === 0 && (
-              <TableRow><TableCell colSpan={5} className="text-center text-sm text-muted-foreground">No questions for this subject yet.</TableCell></TableRow>
+            {questions.length === 0 && (
+              <TableRow><TableCell colSpan={4} className="text-center text-sm text-muted-foreground">No questions yet — import an Excel file or add one manually.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -297,7 +271,7 @@ export function OnlineTestConfigPage() {
         open={!!deleting}
         onOpenChange={(open) => !open && setDeleting(null)}
         title="Delete this question?"
-        description="It will be removed from any online tests it's attached to."
+        description="It will be removed from this test."
         isLoading={removeMutation.isPending}
         onConfirm={async () => {
           if (deleting) await removeMutation.mutateAsync(deleting.id)

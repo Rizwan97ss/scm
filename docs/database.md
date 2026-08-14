@@ -960,10 +960,17 @@ automatically. Both paths write to the same `exam_marks` table, so report
 cards and term results never need to know which one produced a given row.
 
 **`online_test_questions` is a pivot with its own `marks` override**
-(nullable) rather than always trusting `questions.default_marks` — the same
-question can be reused across multiple tests worth different point values
-without duplicating the question. `OnlineTestQuestion::effectiveMarks()`
-resolves the override-or-default at grading time.
+(nullable) rather than always trusting `questions.default_marks` —
+`OnlineTestQuestion::effectiveMarks()` resolves the override-or-default at
+grading time. The override exists for the bulk-replace endpoint (`POST
+.../online-test-questions`, still used by tests and available as a raw
+primitive), but the frontend's actual create/import flow never sets it,
+attaching with `marks: null` instead — each test's questions are authored
+directly into it (`QuestionController::attachToTest()` /
+`McqQuestionsImport`'s optional `$examSubject`), not picked from a
+subject-wide pool and reused across tests at different point values. A
+fresh test's question list (`GET .../online-test-questions`) is scoped to
+just what's attached to that one `ExamSubject`, and starts empty.
 
 **MCQ and True/False are graded through one mechanism, not two.**
 `questions.type` is stored for UI/filtering purposes only — grading always

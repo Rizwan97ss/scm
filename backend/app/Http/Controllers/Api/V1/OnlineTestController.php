@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Exam\SaveOnlineTestAnswerRequest;
 use App\Http\Requests\Exam\SyncOnlineTestQuestionsRequest;
 use App\Http\Resources\OnlineTestAttemptResource;
+use App\Http\Resources\QuestionResource;
 use App\Http\Resources\TestQuestionResource;
 use App\Models\ExamSubject;
 use App\Models\OnlineTestAttempt;
@@ -20,6 +21,26 @@ use Illuminate\Validation\ValidationException;
 class OnlineTestController extends Controller
 {
     public function __construct(private readonly OnlineExamService $onlineExams) {}
+
+    /**
+     * The questions currently attached to this specific test — scoped by
+     * exam_subject_id via the OnlineTestQuestion pivot, never by subject
+     * alone. A brand-new test has none until a question is created or
+     * imported directly into it (see QuestionController::attachToTest() /
+     * McqQuestionsImport's optional $examSubject) — subjects are no longer
+     * a shared, reusable question pool across different exams/tests.
+     */
+    public function questions(Request $request, ExamSubject $examSubject): JsonResponse
+    {
+        $this->assertCanConfigure($request, $examSubject);
+
+        $questions = $examSubject->onlineTestQuestions()
+            ->with('question.subject', 'question.options')
+            ->get()
+            ->map(fn ($otq) => $otq->question);
+
+        return ApiResponse::success(QuestionResource::collection($questions));
+    }
 
     /**
      * Question-bank management for a specific online test — same

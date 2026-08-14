@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Requests\Exam\StoreQuestionRequest;
 use App\Http\Requests\Exam\UpdateQuestionRequest;
 use App\Http\Resources\QuestionResource;
+use App\Models\ExamSubject;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use App\Support\ApiResponse;
@@ -53,12 +54,24 @@ class QuestionController extends CrudController
     {
         $this->authorize('create', Question::class);
 
-        $question = DB::transaction(function () use ($request) {
+        $examSubject = $request->filled('exam_subject_id')
+            ? ExamSubject::query()->findOrFail($request->integer('exam_subject_id'))
+            : null;
+
+        if ($examSubject) {
+            $this->assertCanConfigure($request, $examSubject);
+        }
+
+        $question = DB::transaction(function () use ($request, $examSubject) {
             $question = Question::query()->create([
-                ...$request->safe()->except('options'),
+                ...$request->safe()->except(['options', 'exam_subject_id']),
                 'created_by' => $request->user()->id,
             ]);
             $this->syncOptions($question, $request->input('options', []));
+
+            if ($examSubject) {
+                $this->attachToTest($examSubject, $question);
+            }
 
             return $question;
         });
@@ -76,6 +89,41 @@ class QuestionController extends CrudController
         });
 
         return ApiResponse::success(new QuestionResource($question->load($this->with)));
+    }
+
+    /**
+     * A newly created/imported question attaches straight into the test it
+     * was authored for — mirrors OnlineTestController::syncQuestions()'s
+     * shape but appends one row instead of replacing the set wholesale, so
+     * concurrent imports/creates never clobber each other. `marks` is left
+     * null so OnlineTestQuestion::effectiveMarks() falls back to the
+     * question's own default_marks — there's no separate per-test override
+     * surfaced in the UI, so keeping one source of truth avoids silent drift.
+     */
+    private function attachToTest(ExamSubject $examSubject, Question $question): void
+    {
+        $examSubject->onlineTestQuestions()->create([
+            'question_id' => $question->id,
+            'sequence' => ($examSubject->onlineTestQuestions()->max('sequence') ?? -1) + 1,
+        ]);
+    }
+
+    /**
+     * Same rule as OnlineTestController::assertCanConfigure() — attaching a
+     * question to a specific test is a form of authoring that test, so it
+     * requires the same "actually teaches this subject/section" check for
+     * non-admin roles that configuring the test itself already enforces.
+     */
+    private function assertCanConfigure(Request $request, ExamSubject $examSubject): void
+    {
+        $user = $request->user();
+        abort_unless($user->can('online-exams.configure'), 403);
+
+        if ($user->hasAnyRole(['School Admin', 'Principal', 'Super Admin'])) {
+            return;
+        }
+
+        abort_unless($examSubject->isTaughtBy($user), 403, 'You are not assigned to teach this subject.');
     }
 
     /**

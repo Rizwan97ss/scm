@@ -34,10 +34,11 @@ export const assessmentComponentTypesApi = createCrudEndpoints<AssessmentCompone
 export const questionsApi = {
   ...createCrudEndpoints<Question, QuestionPayload>('questions'),
   importTemplateUrl: (): string => apiFileUrl('/questions/import/template'),
-  import: async (file: File, subjectId: number): Promise<QuestionImportResult> => {
+  import: async (file: File, subjectId: number, examSubjectId?: number): Promise<QuestionImportResult> => {
     const form = new FormData()
     form.append('file', file)
     form.append('subject_id', String(subjectId))
+    if (examSubjectId) form.append('exam_subject_id', String(examSubjectId))
     const { data } = await httpClient.post<ApiResponse<QuestionImportResult>>('/questions/import', form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
@@ -112,6 +113,10 @@ export const termResultsApi = {
 export const onlineTestsApi = {
   mine: async (): Promise<MyOnlineTestRow[]> => {
     const { data } = await httpClient.get<ApiResponse<MyOnlineTestRow[]>>('/online-tests/mine')
+    return data.data
+  },
+  questions: async (examSubjectId: number): Promise<Question[]> => {
+    const { data } = await httpClient.get<ApiResponse<Question[]>>(`/exam-subjects/${examSubjectId}/online-test-questions`)
     return data.data
   },
   syncQuestions: async (examSubjectId: number, payload: SyncOnlineTestQuestionsPayload): Promise<void> => {

@@ -707,6 +707,23 @@ direct service call) — for a long-running dev server, it also means
 confirming the process actually serving the request is the one you think
 it is.
 
+**A second real bug surfaced immediately after that round shipped:**
+opening "Configure Test" for a brand-new Online MCQ component showed
+questions already sitting in the list before anything had been imported.
+The Question Bank consolidation had scoped the question list by
+`subject_id` (a shared, reusable pool across every test on that subject) —
+correct relative to the old app-wide-unfiltered list it replaced, but not
+what was actually wanted: a test's question list should start empty and
+only grow from what's imported/created for *that* test. Fixed by re-scoping
+to the `online_test_questions` pivot instead of `subject_id` — a new `GET
+/exam-subjects/{examSubject}/online-test-questions` returns only what's
+attached to that one test, and `POST /questions` / `POST /questions/import`
+both gained an optional `exam_subject_id` that attaches straight into the
+test being configured (append, not replace) instead of leaving attachment
+as a separate manual "select from the pool, then Save" step. See
+`OnlineTestQuestionScopingTest.php` and [api.md § Question bank & online
+examinations](api.md#question-bank--online-examinations).
+
 Phase 13 itself added `tests/Feature/Security/SecurityHeadersTest.php`
 (3 tests: baseline headers present, HSTS absent over plain HTTP, HSTS
 present over HTTPS) — full suite now 248/248. The HTTPS-simulation test

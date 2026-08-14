@@ -316,6 +316,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('questions/import', QuestionImportController::class)->name('questions.import');
 
             Route::get('online-tests/mine', [OnlineTestController::class, 'myTests'])->name('online-tests.mine');
+            Route::get('exam-subjects/{examSubject}/online-test-questions', [OnlineTestController::class, 'questions'])->name('exam-subjects.online-test-questions.index');
             Route::post('exam-subjects/{examSubject}/online-test-questions', [OnlineTestController::class, 'syncQuestions'])->name('exam-subjects.online-test-questions.store');
             Route::post('exam-subjects/{examSubject}/attempts', [OnlineTestController::class, 'start'])->name('exam-subjects.attempts.start');
             Route::put('online-test-attempts/{attempt}/answers', [OnlineTestController::class, 'saveAnswer'])->name('online-test-attempts.answers.save');

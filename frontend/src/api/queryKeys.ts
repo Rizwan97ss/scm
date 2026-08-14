@@ -76,6 +76,7 @@ export const queryKeys = {
   termResult: (termId: number, studentId: number) => ['terms', termId, 'result', studentId] as const,
   onlineTestAttempt: (attemptId: number) => ['online-test-attempts', attemptId] as const,
   myOnlineTests: ['online-tests', 'mine'] as const,
+  onlineTestQuestions: (examSubjectId: number) => ['exam-subjects', examSubjectId, 'online-test-questions'] as const,
 
   homework: (params?: unknown) => ['homework', params] as const,
   homeworkItem: (id: number) => ['homework', id] as const,

@@ -270,17 +270,29 @@ online tests](database.md#exams-grading--online-tests) for how these tables
 relate. A "test" isn't its own resource; it's just an `ExamSubject` with
 `is_online: true` plus a set of attached questions. There's no standalone
 "Question Bank" page in the frontend — question create/edit/delete/Excel
--import all live inline on `OnlineTestConfigPage.tsx`, scoped to the
-component's own subject (`GET /questions?filter[subject_id]=`). The
-`/questions[/{id}]`/`import` endpoints themselves are unchanged by that —
-this is a frontend-only consolidation.
+-import all live inline on `OnlineTestConfigPage.tsx`.
+
+Questions are scoped to the specific test they were authored for, not
+shared across every test on the same subject: `GET
+/exam-subjects/{examSubject}/online-test-questions` only returns questions
+actually attached (via `OnlineTestQuestion`) to that one `ExamSubject`, so a
+freshly configured test starts empty until something is created or imported
+directly into it. `POST /questions` and `POST /questions/import` both
+accept an optional `exam_subject_id` — when present, the created/imported
+question(s) are attached to that test immediately (append, not replace),
+gated by the same "must be the assigned subject teacher, unless
+Admin/Principal" rule `online-test-questions` (POST) already enforces. The
+generic `/questions[/{id}]`/`import` endpoints themselves still work
+without `exam_subject_id` (e.g. editing/deleting a question already
+attached elsewhere) — only the *creation* path gained the optional attach.
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
-| GET/POST/PUT/DELETE | `/questions[/{id}]` | `questions.*` | `{ subject_id?, type: 'mcq'\|'true_false', text, default_marks?, explanation?, options: [{option_text, is_correct}] }`. Exactly one option must be `is_correct`; True/False requires exactly 2 options. Options are replaced wholesale on update (see the "accepted limitation" note in [database.md](database.md#exams-grading--online-tests)). |
+| GET/POST/PUT/DELETE | `/questions[/{id}]` | `questions.*` | `{ subject_id?, exam_subject_id?, type: 'mcq'\|'true_false', text, default_marks?, explanation?, options: [{option_text, is_correct}] }`. Exactly one option must be `is_correct`; True/False requires exactly 2 options. Options are replaced wholesale on update (see the "accepted limitation" note in [database.md](database.md#exams-grading--online-tests)). `exam_subject_id` (create only) attaches the new question straight into that test. |
 | GET | `/questions/import/template` | `questions.import` | Downloadable `.xlsx` template. |
-| POST | `/questions/import` | `questions.import` | `{ file, subject_id }`. |
-| POST | `/exam-subjects/{examSubject}/online-test-questions` | `online-exams.configure` | `{ questions: [{question_id, marks?}] }`. Replaces the test's question set wholesale (safe even with existing attempts — see [database.md](database.md#exams-grading--online-tests)). Teacher/Class Teacher must be the assigned subject teacher, same rule as marks entry. |
+| POST | `/questions/import` | `questions.import` | `{ file, subject_id, exam_subject_id? }`. With `exam_subject_id`, every successfully imported row is attached to that test. |
+| GET | `/exam-subjects/{examSubject}/online-test-questions` | `online-exams.configure` | This test's currently attached questions, full teacher-facing detail (`is_correct`/`explanation` included — unlike the student-facing `TestQuestionResource` used by `/attempts`). Empty for a test nothing has been attached to yet. |
+| POST | `/exam-subjects/{examSubject}/online-test-questions` | `online-exams.configure` | `{ questions: [{question_id, marks?}] }`. Replaces the test's question set wholesale (safe even with existing attempts — see [database.md](database.md#exams-grading--online-tests)). Teacher/Class Teacher must be the assigned subject teacher, same rule as marks entry. Superseded as the frontend's primary flow by the create/import auto-attach above, but kept and still tested — a valid bulk-replace primitive. |
 | GET | `/online-tests/mine` | *(Student, self-scoped)* | Every online-mode `ExamSubject` for the caller's own section, **regardless of the parent exam's publish state** — a test must be taken to produce the marks an exam gets published with, so this deliberately doesn't route through `Exam::scopeVisibleTo()`. Returns an attempt summary per test including `result_declared: boolean`; `best_score`/`max_score` are `null` until that subject's group is actually declared (same rule as the submit/show masking below), not merely once a score exists. |
 | POST | `/exam-subjects/{examSubject}/attempts` | *(Student, self-scoped)* | Starts (or resumes an in-progress) attempt. 422 if not enrolled in the section, outside the `online_starts_at`/`online_ends_at` window, or `max_attempts` exhausted — resuming an already-started attempt is never blocked by the attempt cap. Returns `{ attempt, duration_minutes, questions }`, questions sanitized (no answer key) via a dedicated resource, shuffled per-student if `shuffle_questions`. |
 | PUT | `/online-test-attempts/{attempt}/answers` | *(Student, own attempt only)* | `{ question_id, selected_option_id }`. Autosave, one call per question. 422 once the attempt is submitted. |

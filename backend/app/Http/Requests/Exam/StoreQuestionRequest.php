@@ -18,6 +18,7 @@ class StoreQuestionRequest extends FormRequest
 
         return [
             'subject_id' => ['nullable', Rule::exists('subjects', 'id')],
+            'exam_subject_id' => ['nullable', Rule::exists('exam_subjects', 'id')],
             'type' => ['required', Rule::in(['mcq', 'true_false'])],
             'text' => ['required', 'string'],
             'default_marks' => ['sometimes', 'numeric', 'min:0.01'],

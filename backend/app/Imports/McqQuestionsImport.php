@@ -2,6 +2,8 @@
 
 namespace App\Imports;
 
+use App\Models\ExamSubject;
+use App\Models\OnlineTestQuestion;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use App\Models\Subject;
@@ -34,10 +36,18 @@ class McqQuestionsImport implements OnEachRow, SkipsEmptyRows, SkipsOnFailure, W
     /** @var array<string, true> normalized (trimmed, lowercased) question text already seen in this file */
     private array $seenQuestions = [];
 
+    /** Running sequence for auto-attaching into $examSubject, continuing after whatever it already has. */
+    private int $nextSequence = 0;
+
     public function __construct(
         private readonly Subject $subject,
         private readonly User $performedBy,
-    ) {}
+        private readonly ?ExamSubject $examSubject = null,
+    ) {
+        if ($this->examSubject) {
+            $this->nextSequence = ($this->examSubject->onlineTestQuestions()->max('sequence') ?? -1) + 1;
+        }
+    }
 
     public function onRow(Row $row): void
     {
@@ -113,6 +123,14 @@ class McqQuestionsImport implements OnEachRow, SkipsEmptyRows, SkipsOnFailure, W
                     'option_text' => $text,
                     'is_correct' => $key === $correctKey,
                     'sequence' => $sequence++,
+                ]);
+            }
+
+            if ($this->examSubject) {
+                OnlineTestQuestion::query()->create([
+                    'exam_subject_id' => $this->examSubject->id,
+                    'question_id' => $question->id,
+                    'sequence' => $this->nextSequence++,
                 ]);
             }
         });
