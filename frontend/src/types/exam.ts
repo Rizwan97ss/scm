@@ -255,6 +255,12 @@ export interface QuestionImportResult {
   failures: { row: number; attribute: string; errors: string[] }[]
 }
 
+export interface ExamMarkImportResult {
+  imported_count: number
+  failed_count: number
+  failures: { row: number; attribute: string; errors: string[] }[]
+}
+
 export interface SyncOnlineTestQuestionsPayload {
   questions: { question_id: number; marks?: number | null }[]
 }
@@ -289,8 +295,11 @@ export interface OnlineTestAttempt {
   status: AttemptStatus
   started_at: string
   submitted_at: string | null
-  score: number | null
-  max_score: number | null
+  // Absent entirely (not just null) until the subject's result is declared —
+  // see OnlineTestAttemptResource's masking. A masked response is not the
+  // same as "no attempt exists," so this is `?:` rather than `| null`.
+  score?: number | null
+  max_score?: number | null
   answers?: OnlineTestAnswerReview[]
 }
 
@@ -309,6 +318,7 @@ export interface MyOnlineTestRow {
   online_ends_at: string | null
   max_attempts: number
   attempts_used: number
+  result_declared: boolean
   best_score: number | null
   max_score: number | null
 }

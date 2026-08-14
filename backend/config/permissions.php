@@ -36,7 +36,7 @@ return [
         'staff-attendance' => ['view', 'mark', 'edit', 'export'],
         'grading' => ['view', 'manage'],
         'exams' => ['view', 'create', 'edit', 'delete', 'publish'],
-        'exam-marks' => ['view', 'enter', 'edit', 'export', 'publish'],
+        'exam-marks' => ['view', 'enter', 'edit', 'export', 'publish', 'import'],
         'questions' => ['view', 'create', 'edit', 'delete', 'import'],
         'online-exams' => ['view', 'configure'],
         'homework' => ['view', 'create', 'edit', 'delete', 'grade'],

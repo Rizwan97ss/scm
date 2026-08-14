@@ -8,7 +8,7 @@ import { Badge, Button, FileUpload } from '@/components/ui'
 import { routePaths } from '@/routes/routePaths'
 import { downloadFile } from '@/utils/download'
 import type { StudentImportResult } from '@/types/student'
-import type { ApiError } from '@/api/client'
+import { formatApiError, type ApiError } from '@/api/client'
 
 export function StudentImportPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -20,7 +20,7 @@ export function StudentImportPage() {
       setResult(data)
       toast.success(`${data.imported_count} student(s) imported.`)
     },
-    onError: (error) => toast.error((error as ApiError).message),
+    onError: (error) => toast.error(formatApiError(error as ApiError)),
   })
 
   return (

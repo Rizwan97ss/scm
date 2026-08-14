@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import type { ApiError } from '@/api/client'
+import { formatApiError, type ApiError } from '@/api/client'
 import type { ListQueryParams, PaginatedResponse } from '@/types/api'
 
 export interface CrudApi<TResource, TPayload> {
@@ -42,7 +42,7 @@ export function useCrudResource<TResource, TPayload>(
   // page-wide text assertion in a smoke test was satisfied by a still-open
   // form's own field value instead of a real persisted record.
   function onError(error: unknown) {
-    toast.error((error as ApiError).message)
+    toast.error(formatApiError(error as ApiError))
   }
 
   const createMutation = useMutation({

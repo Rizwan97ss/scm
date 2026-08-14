@@ -14,7 +14,7 @@ export function MyOnlineTestsPage() {
 
   return (
     <div>
-      <PageHeader title="My Online Tests" description="Auto-graded tests for your section — results appear the moment you submit." />
+      <PageHeader title="My Online Tests" description="Auto-graded tests for your section — results appear once your teacher publishes them." />
 
       {isLoading && <Skeleton className="h-48 w-full" />}
 
@@ -37,7 +37,12 @@ export function MyOnlineTestsPage() {
           </TableHeader>
           <TableBody>
             {tests!.map((test) => {
-              const exhausted = test.attempts_used >= test.max_attempts && test.best_score !== null
+              // A submitted attempt always counts toward attempts_used, but an
+              // in-progress one is always resumable regardless of the cap (see
+              // OnlineExamService::startAttempt()) — so this only needs the raw
+              // count, not best_score, which is now masked until declared and
+              // would otherwise make an exhausted, undeclared test look retakeable.
+              const exhausted = test.attempts_used >= test.max_attempts
               return (
                 <TableRow key={test.exam_subject_id}>
                   <TableCell className="font-medium">{test.exam_name}</TableCell>
@@ -47,7 +52,11 @@ export function MyOnlineTestsPage() {
                     {test.online_starts_at ? formatDate(test.online_starts_at) : 'Open'} – {test.online_ends_at ? formatDate(test.online_ends_at) : 'No deadline'}
                   </TableCell>
                   <TableCell>{test.attempts_used} / {test.max_attempts}</TableCell>
-                  <TableCell>{test.best_score !== null ? <Badge variant="success">{test.best_score} / {test.max_score}</Badge> : '—'}</TableCell>
+                  <TableCell>
+                    {test.result_declared && test.best_score !== null && <Badge variant="success">{test.best_score} / {test.max_score}</Badge>}
+                    {!test.result_declared && test.attempts_used > 0 && <Badge variant="warning">Pending</Badge>}
+                    {!test.result_declared && test.attempts_used === 0 && '—'}
+                  </TableCell>
                   <TableCell className="text-right">
                     <Button size="sm" disabled={exhausted} onClick={() => navigate(routePaths.takeOnlineTest(test.exam_subject_id))}>
                       <PlayCircle className="h-3.5 w-3.5" /> {test.attempts_used > 0 ? 'Retake' : 'Start'}

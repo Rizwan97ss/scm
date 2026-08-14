@@ -53,7 +53,7 @@ class OnlineTestController extends Controller
         $examSubjects = ExamSubject::query()
             ->where('is_online', true)
             ->where('section_id', $student->current_section_id)
-            ->with(['subject', 'exam'])
+            ->with(['subject', 'exam', 'examSubjectGroup'])
             ->get();
 
         /** @var Collection<int, Collection<int, OnlineTestAttempt>> $attemptsByExamSubject */
@@ -67,6 +67,12 @@ class OnlineTestController extends Controller
             $attempts = $attemptsByExamSubject->get($examSubject->id, collect());
             $bestSubmitted = $attempts->where('status', 'submitted')->sortByDesc('score')->first();
 
+            // Same visibility rule as OnlineTestAttemptResource — the score
+            // this list shows a Student must not race ahead of what the
+            // subject's own detail/result view is willing to reveal.
+            $isDeclared = $bestSubmitted !== null
+                && ($examSubject->examSubjectGroup->status(true) === 'published' || $examSubject->exam->is_published);
+
             return [
                 'exam_subject_id' => $examSubject->id,
                 'exam_name' => $examSubject->exam->name,
@@ -76,8 +82,9 @@ class OnlineTestController extends Controller
                 'online_ends_at' => $examSubject->online_ends_at?->toIso8601String(),
                 'max_attempts' => $examSubject->max_attempts,
                 'attempts_used' => $attempts->count(),
-                'best_score' => $bestSubmitted?->score,
-                'max_score' => $bestSubmitted?->max_score,
+                'result_declared' => $isDeclared,
+                'best_score' => $isDeclared ? $bestSubmitted?->score : null,
+                'max_score' => $isDeclared ? $bestSubmitted?->max_score : null,
             ];
         });
 
@@ -105,7 +112,7 @@ class OnlineTestController extends Controller
         }
 
         return ApiResponse::success([
-            'attempt' => new OnlineTestAttemptResource($attempt),
+            'attempt' => new OnlineTestAttemptResource($attempt, $request->user()),
             'duration_minutes' => $examSubject->duration_minutes,
             'questions' => TestQuestionResource::collection($questions->values()),
         ]);
@@ -134,14 +141,18 @@ class OnlineTestController extends Controller
             return ApiResponse::error(collect($e->errors())->flatten()->first(), 422, $e->errors());
         }
 
-        return ApiResponse::success(new OnlineTestAttemptResource($attempt->load('answers.question.options')), 'Test submitted.');
+        $attempt->load(['answers.question.options', 'examSubject.examSubjectGroup.exam']);
+
+        return ApiResponse::success(new OnlineTestAttemptResource($attempt, $request->user()), 'Test submitted.');
     }
 
     public function show(Request $request, OnlineTestAttempt $attempt): JsonResponse
     {
         $this->authorizeOwnAttempt($request, $attempt, allowStaffView: true);
 
-        return ApiResponse::success(new OnlineTestAttemptResource($attempt->load('answers.question.options')));
+        $attempt->load(['answers.question.options', 'examSubject.examSubjectGroup.exam']);
+
+        return ApiResponse::success(new OnlineTestAttemptResource($attempt, $request->user()));
     }
 
     /**

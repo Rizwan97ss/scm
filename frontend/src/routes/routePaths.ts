@@ -44,7 +44,6 @@ export const routePaths = {
 
   gradingScales: '/exams/grading-scales',
   examConfiguration: '/exams/configuration',
-  questionBank: '/exams/question-bank',
   exams: '/exams',
   examDetail: (id: number | string = ':examId') => `/exams/${id}`,
   examSubjectMarks: (examId: number | string = ':examId', examSubjectId: number | string = ':examSubjectId') => `/exams/${examId}/subjects/${examSubjectId}/marks`,

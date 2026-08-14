@@ -7,6 +7,7 @@ import type {
   AssessmentComponentTypePayload,
   Exam,
   ExamMark,
+  ExamMarkImportResult,
   ExamPayload,
   ExamSubjectGroup,
   ExamType,
@@ -87,6 +88,15 @@ export const examMarksApi = {
   },
   correct: async (examMarkId: number, payload: { marks_obtained?: number | null; is_absent?: boolean; remarks?: string | null }): Promise<ExamMark> => {
     const { data } = await httpClient.put<ApiResponse<ExamMark>>(`/exam-marks/${examMarkId}`, payload)
+    return data.data
+  },
+  importTemplateUrl: (examSubjectId: number): string => apiFileUrl(`/exam-subjects/${examSubjectId}/marks/import/template`),
+  import: async (examSubjectId: number, file: File): Promise<ExamMarkImportResult> => {
+    const form = new FormData()
+    form.append('file', file)
+    const { data } = await httpClient.post<ApiResponse<ExamMarkImportResult>>(`/exam-subjects/${examSubjectId}/marks/import`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
     return data.data
   },
 }

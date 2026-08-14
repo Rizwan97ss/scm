@@ -39,4 +39,9 @@ class ExamMarkPolicy
     {
         return $user->can('exam-marks.export');
     }
+
+    public function import(User $user): bool
+    {
+        return $user->can('exam-marks.import');
+    }
 }

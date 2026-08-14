@@ -139,7 +139,13 @@ class OnlineExamTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_student_can_take_an_online_test_and_gets_auto_graded_instantly(): void
+    /**
+     * Auto-grading still happens instantly (the mark is written to ExamMark
+     * the moment the student submits) — but the STUDENT no longer sees it
+     * until the subject's result is actually declared, same as every other
+     * component type. A staff viewer with exam-marks.view sees it right away.
+     */
+    public function test_student_is_auto_graded_instantly_but_does_not_see_the_result_until_declared(): void
     {
         $school = $this->createSchool();
         $admin = $this->createUserWithRole($school, 'School Admin');
@@ -171,13 +177,20 @@ class OnlineExamTest extends TestCase
 
         $submitResponse = $this->actingAsInSchool($studentUser)->postJson("/api/v1/online-test-attempts/{$attemptId}/submit");
 
-        $submitResponse->assertOk()
-            ->assertJsonPath('data.status', 'submitted')
-            ->assertJsonPath('data.score', 5);
+        $submitResponse->assertOk()->assertJsonPath('data.status', 'submitted')->assertJsonMissingPath('data.score');
 
+        // The mark was still written immediately — only the student's own view of it is masked.
         $this->assertDatabaseHas('exam_marks', [
             'exam_subject_id' => $examSubject->id, 'student_id' => $student->id, 'marks_obtained' => 5,
         ]);
+
+        // Staff can see it right away via the same endpoint.
+        $this->actingAsInSchool($admin)->getJson("/api/v1/online-test-attempts/{$attemptId}")
+            ->assertOk()->assertJsonPath('data.score', 5);
+
+        // Re-fetching as the student themselves still hides it.
+        $this->actingAsInSchool($studentUser)->getJson("/api/v1/online-test-attempts/{$attemptId}")
+            ->assertOk()->assertJsonMissingPath('data.score');
     }
 
     public function test_student_cannot_start_an_attempt_for_a_section_they_are_not_in(): void
@@ -276,7 +289,9 @@ class OnlineExamTest extends TestCase
         $submitResponse = $this->actingAsInSchool($studentUser)->postJson("/api/v1/online-test-attempts/{$attemptId}/submit");
 
         // +5 (correct, no negative_marks) + -2 (wrong, negative_marks=2) = 3, no flooring needed.
-        $submitResponse->assertOk()->assertJsonPath('data.score', 3);
+        // Score isn't in the student's own submit response — see the dedicated OnlineTestResultMaskingTest; the
+        // ExamMark row below is the source of truth this test actually needs for the scoring math itself.
+        $submitResponse->assertOk()->assertJsonMissingPath('data.score');
         $this->assertDatabaseHas('online_test_answers', ['attempt_id' => $attemptId, 'question_id' => $q1->id, 'marks_awarded' => 5]);
         $this->assertDatabaseHas('online_test_answers', ['attempt_id' => $attemptId, 'question_id' => $q2->id, 'marks_awarded' => -2]);
         $this->assertDatabaseHas('exam_marks', ['exam_subject_id' => $examSubject->id, 'student_id' => $student->id, 'marks_obtained' => 3]);
@@ -316,7 +331,7 @@ class OnlineExamTest extends TestCase
         $submitResponse = $this->actingAsInSchool($studentUser)->postJson("/api/v1/online-test-attempts/{$attemptId}/submit");
 
         // Raw total would be -2 (wrong q1) + 0 (blank q2) = -2, floored to 0.
-        $submitResponse->assertOk()->assertJsonPath('data.score', 0);
+        $submitResponse->assertOk()->assertJsonMissingPath('data.score');
         $this->assertDatabaseHas('online_test_answers', ['attempt_id' => $attemptId, 'question_id' => $q1->id, 'marks_awarded' => -2]);
         $this->assertDatabaseHas('online_test_answers', ['attempt_id' => $attemptId, 'question_id' => $q2->id, 'marks_awarded' => 0]);
         $this->assertDatabaseHas('exam_marks', ['exam_subject_id' => $examSubject->id, 'student_id' => $student->id, 'marks_obtained' => 0]);

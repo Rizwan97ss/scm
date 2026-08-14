@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { AlertTriangle, Clock, Send } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Clock, Send } from 'lucide-react'
 import { onlineTestsApi } from '@/api/endpoints/exams'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Badge, Button, Card, CardContent, EmptyState } from '@/components/ui'
@@ -154,6 +154,25 @@ export function TakeOnlineTestPage() {
     return <EmptyState title="No result available" />
   }
 
+  // Graded instantly behind the scenes, but not shown until the subject's
+  // result is declared — score/max_score/answers are absent from the
+  // response entirely until then (see OnlineTestAttemptResource).
+  if (result.score === undefined) {
+    return (
+      <div className="mx-auto max-w-lg">
+        <PageHeader title="Test Submitted" />
+        <Card>
+          <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
+            <CheckCircle2 className="h-8 w-8 text-success" />
+            <p className="text-sm text-muted-foreground">
+              Your test has been submitted. Your result will be available once your teacher publishes it.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader title="Test Submitted" />
@@ -163,7 +182,7 @@ export function TakeOnlineTestPage() {
             <p className="text-sm text-muted-foreground">Score</p>
             <p className="text-2xl font-semibold">{result.score} / {result.max_score}</p>
           </div>
-          <Badge variant="success">Graded instantly</Badge>
+          <Badge variant="success">Result declared</Badge>
         </CardContent>
       </Card>
 

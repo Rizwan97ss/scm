@@ -69,6 +69,19 @@ export interface ApiError {
   status?: number
 }
 
+/**
+ * Laravel's ValidationException always carries a field-by-field `errors` map
+ * alongside its top-line `message` — but every onError handler in this app
+ * historically only rendered `.message`, so a validation failure showed a
+ * generic one-liner ("The given data was invalid.") with the actual reason
+ * silently dropped. Appends the flattened field errors when present.
+ */
+export function formatApiError(error: ApiError): string {
+  if (!error.errors) return error.message
+  const details = Object.values(error.errors).flat()
+  return details.length ? `${error.message} ${details.join(' ')}` : error.message
+}
+
 httpClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorResponse>) => {

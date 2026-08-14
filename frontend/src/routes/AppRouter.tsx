@@ -55,7 +55,6 @@ const ParentChildProfilePage = lazy(() =>
 )
 const GradingScalesPage = lazy(() => import('@/features/exams/pages/GradingScalesPage').then((m) => ({ default: m.GradingScalesPage })))
 const ExamConfigurationPage = lazy(() => import('@/features/exams/pages/ExamConfigurationPage').then((m) => ({ default: m.ExamConfigurationPage })))
-const QuestionBankPage = lazy(() => import('@/features/exams/pages/QuestionBankPage').then((m) => ({ default: m.QuestionBankPage })))
 const ExamsListPage = lazy(() => import('@/features/exams/pages/ExamsListPage').then((m) => ({ default: m.ExamsListPage })))
 const ExamDetailPage = lazy(() => import('@/features/exams/pages/ExamDetailPage').then((m) => ({ default: m.ExamDetailPage })))
 const MarksEntryPage = lazy(() => import('@/features/exams/pages/MarksEntryPage').then((m) => ({ default: m.MarksEntryPage })))
@@ -200,9 +199,6 @@ export function AppRouter() {
               <Route element={<PermissionRoute permissions={['grading.view']} />}>
                 <Route path={routePaths.gradingScales} element={<GradingScalesPage />} />
                 <Route path={routePaths.examConfiguration} element={<ExamConfigurationPage />} />
-              </Route>
-              <Route element={<PermissionRoute permissions={['questions.view']} />}>
-                <Route path={routePaths.questionBank} element={<QuestionBankPage />} />
               </Route>
               <Route element={<PermissionRoute permissions={['exams.view']} />}>
                 <Route path={routePaths.exams} element={<ExamsListPage />} />

@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\V1\DepartmentController;
 use App\Http\Controllers\Api\V1\DesignationController;
 use App\Http\Controllers\Api\V1\ExamController;
 use App\Http\Controllers\Api\V1\ExamMarkController;
+use App\Http\Controllers\Api\V1\ExamMarkImportController;
 use App\Http\Controllers\Api\V1\ExamTypeController;
 use App\Http\Controllers\Api\V1\QuestionImportController;
 use App\Http\Controllers\Api\V1\FeeCategoryController;
@@ -306,6 +307,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('exam-subjects/{examSubject}/marks', [ExamMarkController::class, 'index'])->name('exam-subjects.marks.index');
             Route::post('exam-subjects/{examSubject}/marks', [ExamMarkController::class, 'store'])->name('exam-subjects.marks.store');
             Route::put('exam-marks/{examMark}', [ExamMarkController::class, 'update'])->name('exam-marks.update');
+            Route::get('exam-subjects/{examSubject}/marks/import/template', [ExamMarkImportController::class, 'template'])->name('exam-subjects.marks.import.template');
+            Route::post('exam-subjects/{examSubject}/marks/import', ExamMarkImportController::class)->name('exam-subjects.marks.import');
 
             // ---- Question bank & online examinations ----------------------------
             Route::apiResource('questions', QuestionController::class)->only(['index', 'store', 'show', 'update', 'destroy'])->names('questions');
