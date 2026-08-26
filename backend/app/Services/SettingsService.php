@@ -82,8 +82,20 @@ class SettingsService
         Cache::forget("settings:{$this->cacheKeyFor($schoolId)}");
     }
 
+    /**
+     * $schoolId is accepted only for call-site backward compatibility and
+     * never trusted for the actual key: several call sites (scheduled
+     * commands looping over every School via $school->run(fn () => ...))
+     * omit it, which used to collapse the key to a single shared
+     * "settings:global" bucket on this app's un-tenant-tagged file cache
+     * store (CacheTenancyBootstrapper is disabled — see config/tenancy.php)
+     * — one tenant's settings would then leak into another's read for the
+     * rest of the cache TTL. tenant()->id is always the authoritative
+     * answer to "whose settings are these" per this class's own docblock,
+     * so it's used unconditionally instead of the passed-in value.
+     */
     private function cacheKeyFor(?int $schoolId): string
     {
-        return $schoolId ?? 'global';
+        return (string) (tenant()?->id ?? $schoolId ?? 'central');
     }
 }
