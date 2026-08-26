@@ -30,10 +30,32 @@ use Symfony\Component\HttpFoundation\Response;
  * `me`/`password`/MFA, and the broader app one) and platform routes need
  * the exact same protection PasswordController's tenant-side self-service
  * change gets.
+ *
+ * Also enforces the session's tenant binding (SESSION_TENANT_KEY). The
+ * 'web' guard resolves the authenticated user by a bare integer ID against
+ * whatever tenant DB tenancy.subdomain switched to for THIS request's Host
+ * header — with database-per-tenant, per-tenant user IDs restart at 1, so
+ * without this check a session cookie obtained legitimately on one school's
+ * subdomain, then replayed against a different school's subdomain, would
+ * silently authenticate as *that* school's user of the same ID (almost
+ * always its own Admin, since SchoolProvisioningService creates it first).
+ * Unlike the password-hash check below, this can't use a "trust on first
+ * sight" stash: the attacker's replay would typically BE the first request
+ * this middleware ever sees for that session, so a lazy stash would just
+ * record the wrong tenant as if it were correct. Every Auth::login()/
+ * Auth::guard(...)->login() call site stashes tenant()?->id into the
+ * session immediately at login instead, so this middleware only ever
+ * verifies against a value fixed at authentication time, never trusts one
+ * observed later.
  */
 class EnsureSessionPasswordIsCurrent
 {
     private const SESSION_KEY = 'password_hash';
+
+    public const SESSION_TENANT_KEY = 'auth_tenant_id';
+
+    /** Distinguishes "never stashed" (pre-fix session, or a bug) from a legitimately-stashed `null` (platform guard, which has no tenant). */
+    private const TENANT_UNSET = '__unset__';
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -44,6 +66,15 @@ class EnsureSessionPasswordIsCurrent
         }
 
         $guardName = $user instanceof PlatformUser ? 'platform' : 'web';
+
+        $storedTenantId = $request->session()->get(self::SESSION_TENANT_KEY, self::TENANT_UNSET);
+        if ($storedTenantId === self::TENANT_UNSET || $storedTenantId !== tenant()?->id) {
+            Auth::guard($guardName)->logout();
+            $request->session()->invalidate();
+
+            throw new AuthenticationException('Your session is no longer valid. Please log in again.');
+        }
+
         $currentHash = $user->getAuthPassword();
         $storedHash = $request->session()->get(self::SESSION_KEY);
 

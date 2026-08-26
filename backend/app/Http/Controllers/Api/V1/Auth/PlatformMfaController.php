@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureSessionPasswordIsCurrent;
 use App\Http\Resources\Platform\PlatformUserResource;
 use App\Models\Platform\PlatformUser;
 use App\Services\Mfa\MfaChallengeService;
@@ -84,6 +85,7 @@ class PlatformMfaController extends Controller
         Auth::guard('platform')->login($result['user'], $result['remember']);
         Auth::shouldUse('platform');
         $request->session()->regenerate();
+        $request->session()->put(EnsureSessionPasswordIsCurrent::SESSION_TENANT_KEY, tenant()?->id);
 
         $result['user']->forceFill(['last_login_at' => now()])->saveQuietly();
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureSessionPasswordIsCurrent;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\Mfa\MfaChallengeService;
@@ -101,6 +102,7 @@ class MfaController extends Controller
         // has to be explicit for the same reason (a non-default guard).
         Auth::guard('web')->login($result['user'], $result['remember']);
         $request->session()->regenerate();
+        $request->session()->put(EnsureSessionPasswordIsCurrent::SESSION_TENANT_KEY, tenant()?->id);
 
         $result['user']->forceFill(['last_login_at' => now()])->saveQuietly();
 

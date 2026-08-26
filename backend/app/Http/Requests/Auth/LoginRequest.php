@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Enums\UserStatus;
+use App\Http\Middleware\EnsureSessionPasswordIsCurrent;
 use App\Models\User;
 use App\Services\Mfa\MfaChallengeService;
 use Illuminate\Auth\Events\Lockout;
@@ -67,6 +68,7 @@ class LoginRequest extends FormRequest
         }
 
         Auth::login($user, $this->boolean('remember'));
+        $this->session()->put(EnsureSessionPasswordIsCurrent::SESSION_TENANT_KEY, tenant()?->id);
 
         return ['mfa_required' => false, 'challenge_token' => null];
     }

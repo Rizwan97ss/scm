@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\EnsureSessionPasswordIsCurrent;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Support\ApiResponse;
@@ -39,6 +40,7 @@ class SignupCompleteController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+        $request->session()->put(EnsureSessionPasswordIsCurrent::SESSION_TENANT_KEY, tenant()?->id);
 
         $user->forceFill(['last_login_at' => now()])->saveQuietly();
 

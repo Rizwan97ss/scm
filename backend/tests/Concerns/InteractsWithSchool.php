@@ -2,6 +2,7 @@
 
 namespace Tests\Concerns;
 
+use App\Http\Middleware\EnsureSessionPasswordIsCurrent;
 use App\Models\Platform\PlatformUser;
 use App\Models\School;
 use App\Models\User;
@@ -84,7 +85,14 @@ trait InteractsWithSchool
         tenancy()->initialize($school);
         URL::forceRootUrl($this->tenantUrl($school));
 
-        return $this->actingAs($user);
+        // actingAs() sets the guard's user directly (setUser()), bypassing
+        // Auth::login() entirely, so it never runs the tenant-binding stash
+        // every real login call site performs (see
+        // EnsureSessionPasswordIsCurrent's docblock). Without this, every
+        // request made by a test using this helper would fail its own
+        // check and 401. withSession() reproduces what a real login for
+        // this school would have stashed.
+        return $this->actingAs($user)->withSession([EnsureSessionPasswordIsCurrent::SESSION_TENANT_KEY => $school->id]);
     }
 
     /**
@@ -103,7 +111,10 @@ trait InteractsWithSchool
 
         URL::forceRootUrl(config('app.url'));
 
-        return $this->actingAs($user, 'platform');
+        // See actingAsInSchool()'s comment — same reason, platform users
+        // just never have a tenant to stash (null, matching a real
+        // platform login).
+        return $this->actingAs($user, 'platform')->withSession([EnsureSessionPasswordIsCurrent::SESSION_TENANT_KEY => null]);
     }
 
     private function tenantUrl(School $school): string

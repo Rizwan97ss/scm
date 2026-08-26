@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Http\Middleware\EnsureSessionPasswordIsCurrent;
 use App\Models\Platform\PlatformUser;
 use App\Services\Mfa\MfaChallengeService;
 use Illuminate\Auth\Events\Lockout;
@@ -59,6 +60,7 @@ class PlatformLoginRequest extends FormRequest
         }
 
         Auth::guard('platform')->login($user, $this->boolean('remember'));
+        $this->session()->put(EnsureSessionPasswordIsCurrent::SESSION_TENANT_KEY, tenant()?->id);
 
         // Authenticate middleware does this automatically for subsequent
         // requests (Illuminate\Auth\Middleware\Authenticate::authenticate())
