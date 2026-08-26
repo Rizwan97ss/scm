@@ -5,9 +5,11 @@ import { reportsApi } from '@/api/endpoints/reports'
 import { queryKeys } from '@/api/queryKeys'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card, CardContent, Skeleton, StatCard } from '@/components/ui'
+import { CHART_LTR_STYLE, useChartDirection } from '@/hooks/useChartDirection'
 
 export function EnrollmentReportPage() {
   const { t } = useTranslation()
+  const chartDir = useChartDirection()
   const { data, isLoading } = useQuery({ queryKey: queryKeys.reportsEnrollment, queryFn: reportsApi.enrollment })
 
   return (
@@ -24,11 +26,11 @@ export function EnrollmentReportPage() {
 
           <Card className="mb-6">
             <CardContent className="pt-6">
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer style={CHART_LTR_STYLE} width="100%" height={280}>
                 <BarChart data={data.trend}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="month" fontSize={12} />
-                  <YAxis allowDecimals={false} fontSize={12} />
+                  <XAxis dataKey="month" fontSize={12} {...chartDir.horizontalAxisProps} />
+                  <YAxis allowDecimals={false} fontSize={12} orientation={chartDir.startOrientation} />
                   <Tooltip />
                   <Legend />
                   <Bar dataKey="admissions" name={t('reports.admissionsSeries')} fill="var(--color-success)" radius={[4, 4, 0, 0]} />

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import {
   GraduationCap,
   Users,
@@ -27,6 +27,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatDate } from '@/utils/formatDate'
 import { routePaths } from '@/routes/routePaths'
+import { CHART_LTR_STYLE, useChartDirection } from '@/hooks/useChartDirection'
 import type { AttendanceSummary } from '@/types/attendance'
 
 function ViewAllLink({ to }: { to: string }) {
@@ -53,6 +54,7 @@ function QuickAction({ to, icon, label }: { to: string; icon: React.ReactNode; l
 export function DashboardPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const chartDir = useChartDirection()
   const { data: summary, isLoading } = useQuery({
     queryKey: queryKeys.dashboardSummary,
     queryFn: dashboardApi.summary,
@@ -131,20 +133,14 @@ export function DashboardPage() {
                   <CardTitle>{t('dashboard.attendanceTrend')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={220}>
-                    <AreaChart data={summary.attendance_trend}>
-                      <defs>
-                        <linearGradient id="attendanceFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.25} />
-                          <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
+                  <ResponsiveContainer style={CHART_LTR_STYLE} width="100%" height={220}>
+                    <LineChart data={summary.attendance_trend}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
-                      <XAxis dataKey="label" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis domain={[0, 100]} fontSize={12} tickLine={false} axisLine={false} width={32} />
+                      <XAxis dataKey="label" fontSize={12} tickLine={false} axisLine={false} {...chartDir.horizontalAxisProps} />
+                      <YAxis domain={[0, 100]} fontSize={12} tickLine={false} axisLine={false} width={32} orientation={chartDir.startOrientation} />
                       <Tooltip formatter={(value) => [value == null ? '—' : `${value}%`, t('dashboard.attendanceTrend')]} />
-                      <Area type="monotone" dataKey="percentage" stroke="var(--color-primary)" strokeWidth={2} fill="url(#attendanceFill)" connectNulls />
-                    </AreaChart>
+                      <Line type="monotone" dataKey="percentage" stroke="var(--color-primary)" strokeWidth={2} dot={false} connectNulls />
+                    </LineChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
@@ -156,11 +152,11 @@ export function DashboardPage() {
                   <CardTitle>{t('dashboard.feeCollectionTrend')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={220}>
+                  <ResponsiveContainer style={CHART_LTR_STYLE} width="100%" height={220}>
                     <BarChart data={summary.fee_trend}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
-                      <XAxis dataKey="label" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis fontSize={12} tickLine={false} axisLine={false} width={40} />
+                      <XAxis dataKey="label" fontSize={12} tickLine={false} axisLine={false} {...chartDir.horizontalAxisProps} />
+                      <YAxis fontSize={12} tickLine={false} axisLine={false} width={40} orientation={chartDir.startOrientation} />
                       <Tooltip formatter={(value) => [formatCurrency(value as number, currency), t('dashboard.feeCollectionTrend')]} />
                       <Bar dataKey="amount" fill="var(--color-success)" radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -177,20 +173,14 @@ export function DashboardPage() {
                   <CardTitle>{t('dashboard.enrollmentTrend')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <AreaChart data={summary.enrollment_trend}>
-                      <defs>
-                        <linearGradient id="enrollmentFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="var(--color-info)" stopOpacity={0.25} />
-                          <stop offset="100%" stopColor="var(--color-info)" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
+                  <ResponsiveContainer style={CHART_LTR_STYLE} width="100%" height={200}>
+                    <LineChart data={summary.enrollment_trend}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
-                      <XAxis dataKey="label" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} width={28} />
+                      <XAxis dataKey="label" fontSize={12} tickLine={false} axisLine={false} {...chartDir.horizontalAxisProps} />
+                      <YAxis allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} width={28} orientation={chartDir.startOrientation} />
                       <Tooltip formatter={(value) => [value, t('dashboard.enrollmentTrend')]} />
-                      <Area type="monotone" dataKey="count" stroke="var(--color-info)" strokeWidth={2} fill="url(#enrollmentFill)" />
-                    </AreaChart>
+                      <Line type="monotone" dataKey="count" stroke="var(--color-info)" strokeWidth={2} dot={false} />
+                    </LineChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
@@ -202,15 +192,19 @@ export function DashboardPage() {
                   <CardTitle>{t('dashboard.gradeDistribution')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={Math.max(160, summary.grade_distribution.length * 32)}>
-                    <BarChart data={summary.grade_distribution} layout="vertical" margin={{ left: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-                      <XAxis type="number" allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis type="category" dataKey="grade_level" fontSize={12} tickLine={false} axisLine={false} width={90} />
-                      <Tooltip formatter={(value) => [value, t('dashboard.activeStudents')]} />
-                      <Bar dataKey="count" fill="var(--color-primary)" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="overflow-x-auto">
+                    <div style={{ minWidth: Math.max(320, summary.grade_distribution.length * 70) }}>
+                      <ResponsiveContainer style={CHART_LTR_STYLE} width="100%" height={240}>
+                        <BarChart data={summary.grade_distribution}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+                          <XAxis dataKey="grade_level" fontSize={12} tickLine={false} axisLine={false} {...chartDir.horizontalAxisProps} />
+                          <YAxis allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} width={28} orientation={chartDir.startOrientation} />
+                          <Tooltip formatter={(value) => [value, t('dashboard.activeStudents')]} />
+                          <Bar dataKey="count" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}

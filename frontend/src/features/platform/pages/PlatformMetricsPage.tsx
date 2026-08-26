@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Building2, ClipboardList, CreditCard, GraduationCap, TrendingUp, UsersRound } from 'lucide-react'
 import { platformApi } from '@/api/endpoints/platform'
 import { queryKeys } from '@/api/queryKeys'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Badge, Card, CardContent, CardHeader, CardTitle, DataTable, Skeleton, StatCard, type DataTableColumn } from '@/components/ui'
 import { routePaths } from '@/routes/routePaths'
+import { CHART_LTR_STYLE, useChartDirection } from '@/hooks/useChartDirection'
 import type { PlatformMetricSchool } from '@/types/platform'
 
 const STATUS_LABEL_KEYS: Record<string, string> = {
@@ -45,6 +46,7 @@ const STATUS_BADGE_VARIANT: Record<string, 'success' | 'warning' | 'destructive'
 export function PlatformMetricsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const chartDir = useChartDirection()
   const { data, isLoading } = useQuery({ queryKey: queryKeys.platformMetrics, queryFn: platformApi.metrics })
 
   if (isLoading || !data) {
@@ -121,20 +123,14 @@ export function PlatformMetricsPage() {
             {data.schools_by_month.every((m) => m.count === 0) ? (
               <p className="py-8 text-center text-sm text-muted-foreground">{t('platform.noSignupsYet')}</p>
             ) : (
-              <ResponsiveContainer width="100%" height={240}>
-                <AreaChart data={data.schools_by_month}>
-                  <defs>
-                    <linearGradient id="schoolsGrowthFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.25} />
-                      <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
+              <ResponsiveContainer style={CHART_LTR_STYLE} width="100%" height={240}>
+                <LineChart data={data.schools_by_month}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
-                  <XAxis dataKey="label" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} width={28} />
+                  <XAxis dataKey="label" fontSize={12} tickLine={false} axisLine={false} {...chartDir.horizontalAxisProps} />
+                  <YAxis allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} width={28} orientation={chartDir.startOrientation} />
                   <Tooltip formatter={(value) => [value, t('platform.newSchoolsTooltip')]} labelClassName="text-foreground" />
-                  <Area type="monotone" dataKey="count" stroke="var(--color-primary)" strokeWidth={2} fill="url(#schoolsGrowthFill)" />
-                </AreaChart>
+                  <Line type="monotone" dataKey="count" stroke="var(--color-primary)" strokeWidth={2} dot={false} />
+                </LineChart>
               </ResponsiveContainer>
             )}
           </CardContent>
@@ -145,19 +141,23 @@ export function PlatformMetricsPage() {
             <CardTitle>{t('platform.billingStatusBreakdownHeading')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={statusEntries} layout="vertical" margin={{ left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-                <XAxis type="number" allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis type="category" dataKey="label" fontSize={12} tickLine={false} axisLine={false} width={110} />
-                <Tooltip formatter={(value) => [value, t('platform.schoolsTooltip')]} />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                  {statusEntries.map((entry) => (
-                    <Cell key={entry.status} fill={STATUS_COLOR[entry.status] ?? 'var(--color-muted-foreground)'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="overflow-x-auto">
+              <div style={{ minWidth: Math.max(320, statusEntries.length * 80) }}>
+                <ResponsiveContainer style={CHART_LTR_STYLE} width="100%" height={240}>
+                  <BarChart data={statusEntries}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+                    <XAxis dataKey="label" fontSize={12} tickLine={false} axisLine={false} {...chartDir.horizontalAxisProps} />
+                    <YAxis allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} width={28} orientation={chartDir.startOrientation} />
+                    <Tooltip formatter={(value) => [value, t('platform.schoolsTooltip')]} />
+                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                      {statusEntries.map((entry) => (
+                        <Cell key={entry.status} fill={STATUS_COLOR[entry.status] ?? 'var(--color-muted-foreground)'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -168,15 +168,19 @@ export function PlatformMetricsPage() {
             <CardTitle>{t('platform.largestSchoolsHeading')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={Math.max(160, topSchoolsByStudents.length * 40)}>
-              <BarChart data={topSchoolsByStudents} layout="vertical" margin={{ left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-                <XAxis type="number" allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis type="category" dataKey="name" fontSize={12} tickLine={false} axisLine={false} width={130} />
-                <Tooltip formatter={(value) => [value, t('nav.students')]} />
-                <Bar dataKey="students" fill="var(--color-primary)" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="overflow-x-auto">
+              <div style={{ minWidth: Math.max(320, topSchoolsByStudents.length * 110) }}>
+                <ResponsiveContainer style={CHART_LTR_STYLE} width="100%" height={280}>
+                  <BarChart data={topSchoolsByStudents}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+                    <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} {...chartDir.horizontalAxisProps} />
+                    <YAxis allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} width={32} orientation={chartDir.startOrientation} />
+                    <Tooltip formatter={(value) => [value, t('nav.students')]} />
+                    <Bar dataKey="students" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
