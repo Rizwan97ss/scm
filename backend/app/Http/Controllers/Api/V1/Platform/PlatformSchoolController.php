@@ -35,7 +35,12 @@ class PlatformSchoolController extends Controller
             ->allowedFilters(AllowedFilter::exact('billing_status'), AllowedFilter::exact('plan_id'), 'name')
             ->allowedSorts('name', 'created_at')
             ->defaultSort('name')
-            ->paginate($request->integer('per_page', 15))
+            // Capped: each row costs two extra cross-tenant DB connections
+            // (PlatformSchoolResource::studentCount()/staffCount(), each a
+            // full tenancy()->run() round trip) — uncapped, a large
+            // per_page could hold this request open for hundreds of
+            // sequential tenant-DB connections.
+            ->paginate(min($request->integer('per_page', 15), 100))
             ->appends($request->query());
 
         return ApiResponse::success(PlatformSchoolResource::collection($paginator->items()), meta: [
