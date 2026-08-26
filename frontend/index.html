@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Same-origin API calls actually cross an origin boundary here: the SPA
+      is served per-tenant-subdomain but VITE_API_URL is the bare central
+      domain (see src/config/env.ts), so connect-src/img-src need both
+      explicitly, not just 'self'. style-src needs 'unsafe-inline' because
+      ThemeContext.tsx sets --brand-primary/--brand-secondary via
+      element.style.setProperty (branding colors are DB-driven per tenant,
+      not known at build time) -- there's no CSP-safe way to do that
+      without a nonce plumbed through a template this static file doesn't
+      have. script-src has no such exception: this build has no inline
+      <script> anywhere, so 'self' alone is the real XSS backstop.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://%VITE_CENTRAL_DOMAIN% https://*.%VITE_CENTRAL_DOMAIN%; connect-src 'self' https://%VITE_CENTRAL_DOMAIN% https://*.%VITE_CENTRAL_DOMAIN% wss://*.pusher.com https://*.pusher.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'"
+    />
+    <title>School Management System</title>
+    <!-- Marketing/auth pages only (Landing, Login, Signup) -- the authenticated
+         app uses --font-sans (index.css) throughout and never loads these. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Public+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

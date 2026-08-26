@@ -1,0 +1,2 @@
+*.sqlite*
+tenant[0-9]*

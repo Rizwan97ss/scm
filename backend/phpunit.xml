@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <source>/+
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="BROADCAST_CONNECTION" value="null"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_URL" value=""/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <!-- Not overridden here, these two silently inherit whatever the real
+             .env has — fine for local dev (unset), but this box's .env now
+             carries production values (SANCTUM_STATEFUL_DOMAINS=academia-erp.tech,
+             TRUSTED_PROXIES=127.0.0.1). That breaks tests two different ways:
+             TestCase::setUp()'s stateful Referer no longer matches the
+             production domain list (session never initializes, throwing
+             "Session store not set on request"), and 127.0.0.1 (PHPUnit's
+             default fake-request REMOTE_ADDR) becomes a trusted proxy,
+             changing isSecure() resolution (SecurityHeadersTest's HSTS
+             assertions). Pinning both here makes the suite hermetic
+             regardless of which real .env it happens to run against. -->
+        <env name="SANCTUM_STATEFUL_DOMAINS" value="localtest.me:5173"/>
+        <env name="TRUSTED_PROXIES" value=""/>
+        <!-- Deliberately NOT overriding APP_URL here: InteractsWithSchool::
+             tenantUrl() derives every tenant subdomain URL from it, and
+             tenancy's central-domains config is (like APP_URL itself) driven
+             by the real .env's TENANCY_CENTRAL_DOMAIN. Pinning APP_URL to a
+             host that doesn't match that central-domain config breaks
+             subdomain tenancy resolution for the whole suite (confirmed:
+             tried it, ~260 tests started 404ing). SecurityHeadersTest's own
+             "plain http" case is fixed directly in that test instead, with
+             an explicit absolute http:// URL for just that one request. -->
+        <!-- Explicitly blank, not inherited from .env's real value — StripeWebhookTest
+             posts unsigned payloads, which only stays valid if VerifyWebhookSignature
+             never attaches (see WebhookController::__construct). -->
+        <env name="STRIPE_WEBHOOK_SECRET" value=""/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
+    </php>
+</phpunit>
