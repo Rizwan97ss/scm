@@ -108,7 +108,13 @@ class StudentAttendanceController extends Controller
 
     public function sectionSummary(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', StudentAttendance::class);
+        // Gated on 'mark' (student-attendance.mark), not 'viewAny' —
+        // student-attendance.view is also held by Student/Parent, and this
+        // endpoint takes an arbitrary section_id with no per-record
+        // visibleTo() scoping, so it would otherwise let a Student/Parent
+        // pull attendance-percentage data for any section in the school,
+        // not just their own/their child's.
+        $this->authorize('mark', StudentAttendance::class);
 
         $section = Section::query()->findOrFail($request->integer('section_id'));
         $this->assertSectionMarkable($request, $section);

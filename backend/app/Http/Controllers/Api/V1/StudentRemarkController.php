@@ -48,6 +48,23 @@ class StudentRemarkController extends CrudController
         return ApiResponse::success(StudentRemarkResource::collection($paginator->items()), meta: $this->paginationMeta($paginator));
     }
 
+    /**
+     * Overrides CrudController::show() — same reason as index(): without
+     * scoping via visibleTo() first, the blanket remarks.view permission
+     * would let a Student/Parent fetch any remark in the school by ID,
+     * including ones about a different family's child and ones marked
+     * !visible_to_guardian.
+     */
+    public function show(int $id): JsonResponse
+    {
+        $request = request();
+        $studentRemark = StudentRemark::query()->with(self::WITH)->visibleTo($request->user())->findOrFail($id);
+
+        $this->authorize('view', $studentRemark);
+
+        return ApiResponse::success(new StudentRemarkResource($studentRemark));
+    }
+
     public function store(StoreStudentRemarkRequest $request): JsonResponse
     {
         $this->authorize('create', StudentRemark::class);

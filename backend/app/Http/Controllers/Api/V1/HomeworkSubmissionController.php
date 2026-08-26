@@ -24,7 +24,13 @@ class HomeworkSubmissionController extends Controller
      */
     public function index(Request $request, Homework $homework): JsonResponse
     {
-        $this->authorize('view', $homework);
+        // Gated on 'grade', not 'view' — homework.view is also held by
+        // Student/Parent (for their own read-only submission view via
+        // HomeworkController::show()), but this roster endpoint returns
+        // every OTHER student's submission content and grades for the
+        // section, which no Student/Parent should ever see regardless of
+        // whose homework it is.
+        $this->authorize('grade', $homework);
         $this->assertCanGrade($request, $homework);
 
         $students = Student::query()
