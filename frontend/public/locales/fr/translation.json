@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "Test Soumis Automatiquement",
     "autoSubmittedViolationMessage": "Vous avez quitté la fenêtre de l'examen (changement d'onglet, d'application, ou sortie du plein écran), votre test a donc été soumis immédiatement avec ce que vous aviez répondu.",
     "autoSubmittedTimeExpiredMessage": "Votre temps est écoulé, votre test a donc été soumis automatiquement avec ce que vous aviez répondu.",
-    "leaveWarning": "Quitter cette page mettra fin à votre tentative de test."
+    "leaveWarning": "Quitter cette page mettra fin à votre tentative de test.",
+    "examTimetable": "Emploi du Temps des Examens",
+    "examTimetableDescription": "Date et heure de chaque matière, par classe et section.",
+    "startTime": "Heure de début",
+    "endTime": "Heure de fin",
+    "saveTimetable": "Enregistrer l'Emploi du Temps",
+    "timetableSavedToast": "Emploi du temps enregistré."
   },
   "fees": {
     "addItem": "Ajouter une ligne",

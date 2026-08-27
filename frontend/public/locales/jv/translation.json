@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "Tes Dikirim Kanthi Otomatis",
     "autoSubmittedViolationMessage": "Sampeyan ninggalake jendhela ujian (ngganti tab, ngganti aplikasi, utawa metu saka layar kebak), mula tes sampeyan langsung dikirim karo wangsulan sing wis diisi.",
     "autoSubmittedTimeExpiredMessage": "Wektu sampeyan wis entek, mula tes sampeyan dikirim kanthi otomatis karo wangsulan sing wis diisi.",
-    "leaveWarning": "Ninggalake kaca iki bakal mungkasi upaya tes sampeyan."
+    "leaveWarning": "Ninggalake kaca iki bakal mungkasi upaya tes sampeyan.",
+    "examTimetable": "Jadwal Ujian",
+    "examTimetableDescription": "Tanggal lan wektu kanggo saben mata pelajaran, miturut kelas lan bagean.",
+    "startTime": "Wektu Wiwitan",
+    "endTime": "Wektu Rampung",
+    "saveTimetable": "Simpen Jadwal",
+    "timetableSavedToast": "Jadwal wis disimpen."
   },
   "fees": {
     "addItem": "Tambah item",

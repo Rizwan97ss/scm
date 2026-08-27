@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "تم تسليم الاختبار تلقائيًا",
     "autoSubmittedViolationMessage": "لقد غادرت نافذة الاختبار (بتبديل التبويب أو التطبيق أو الخروج من وضع ملء الشاشة)، لذا تم تسليم اختبارك فورًا بالإجابات التي كنت قد أدخلتها.",
     "autoSubmittedTimeExpiredMessage": "انتهى وقتك، لذا تم تسليم اختبارك تلقائيًا بالإجابات التي كنت قد أدخلتها.",
-    "leaveWarning": "مغادرة هذه الصفحة ستُنهي محاولتك في الاختبار."
+    "leaveWarning": "مغادرة هذه الصفحة ستُنهي محاولتك في الاختبار.",
+    "examTimetable": "جدول الامتحانات",
+    "examTimetableDescription": "تاريخ ووقت كل مادة، حسب الصف والشعبة.",
+    "startTime": "وقت البدء",
+    "endTime": "وقت الانتهاء",
+    "saveTimetable": "حفظ الجدول",
+    "timetableSavedToast": "تم حفظ الجدول."
   },
   "fees": {
     "addItem": "إضافة بند",

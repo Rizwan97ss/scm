@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "測驗已自動提交",
     "autoSubmittedViolationMessage": "你離開了測驗視窗（切換了分頁、切換了應用程式，或退出了全螢幕），因此系統已立即用你已作答的內容提交了測驗。",
     "autoSubmittedTimeExpiredMessage": "你的時間已用完，系統已自動用你已作答的內容提交了測驗。",
-    "leaveWarning": "離開此頁面將結束你的測驗作答。"
+    "leaveWarning": "離開此頁面將結束你的測驗作答。",
+    "examTimetable": "考試時間表",
+    "examTimetableDescription": "按班級和分組顯示每門科目的日期和時間。",
+    "startTime": "開始時間",
+    "endTime": "結束時間",
+    "saveTimetable": "儲存時間表",
+    "timetableSavedToast": "時間表已儲存。"
   },
   "fees": {
     "addItem": "新增項目",

@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "Test Submitted Automatically",
     "autoSubmittedViolationMessage": "You left the exam window — switched tabs, switched apps, or exited fullscreen — so your test was submitted immediately with whatever you had answered.",
     "autoSubmittedTimeExpiredMessage": "Your time ran out, so your test was submitted automatically with whatever you had answered.",
-    "leaveWarning": "Leaving this page will end your test attempt."
+    "leaveWarning": "Leaving this page will end your test attempt.",
+    "examTimetable": "Exam Timetable",
+    "examTimetableDescription": "Date and time for each subject, by class and section.",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "saveTimetable": "Save Timetable",
+    "timetableSavedToast": "Timetable saved."
   },
   "fees": {
     "addItem": "Add item",

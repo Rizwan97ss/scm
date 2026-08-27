@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "Teste Submetido Automaticamente",
     "autoSubmittedViolationMessage": "Saiu da janela do exame (mudou de separador, de aplicação, ou saiu do ecrã inteiro), por isso o seu teste foi submetido de imediato com o que tinha respondido.",
     "autoSubmittedTimeExpiredMessage": "O seu tempo esgotou-se, por isso o seu teste foi submetido automaticamente com o que tinha respondido.",
-    "leaveWarning": "Sair desta página terminará a sua tentativa de teste."
+    "leaveWarning": "Sair desta página terminará a sua tentativa de teste.",
+    "examTimetable": "Horário de Exames",
+    "examTimetableDescription": "Data e hora de cada disciplina, por turma e secção.",
+    "startTime": "Hora de início",
+    "endTime": "Hora de fim",
+    "saveTimetable": "Guardar Horário",
+    "timetableSavedToast": "Horário guardado."
   },
   "fees": {
     "addItem": "Adicionar item",

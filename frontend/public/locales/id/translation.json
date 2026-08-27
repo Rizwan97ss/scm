@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "Tes Dikirim Secara Otomatis",
     "autoSubmittedViolationMessage": "Anda meninggalkan jendela ujian (berpindah tab, berpindah aplikasi, atau keluar dari layar penuh), sehingga tes Anda langsung dikirim dengan jawaban yang sudah Anda isi.",
     "autoSubmittedTimeExpiredMessage": "Waktu Anda habis, sehingga tes Anda dikirim secara otomatis dengan jawaban yang sudah Anda isi.",
-    "leaveWarning": "Meninggalkan halaman ini akan mengakhiri percobaan tes Anda."
+    "leaveWarning": "Meninggalkan halaman ini akan mengakhiri percobaan tes Anda.",
+    "examTimetable": "Jadwal Ujian",
+    "examTimetableDescription": "Tanggal dan waktu setiap mata pelajaran, berdasarkan kelas dan bagian.",
+    "startTime": "Waktu Mulai",
+    "endTime": "Waktu Selesai",
+    "saveTimetable": "Simpan Jadwal",
+    "timetableSavedToast": "Jadwal disimpan."
   },
   "fees": {
     "addItem": "Tambah item",

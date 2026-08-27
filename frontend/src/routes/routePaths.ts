@@ -51,6 +51,7 @@ export const routePaths = {
   takeOnlineTest: (examSubjectId: number | string = ':examSubjectId') => `/exams/take/${examSubjectId}`,
   myOnlineTests: '/exams/my-tests',
   myResults: '/exams/my-results',
+  examTimetable: '/exams/timetable',
 
   homework: '/homework',
   homeworkDetail: (id: number | string = ':id') => `/homework/${id}`,

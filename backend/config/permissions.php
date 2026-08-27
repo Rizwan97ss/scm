@@ -39,6 +39,7 @@ return [
         'exam-marks' => ['view', 'enter', 'edit', 'export', 'publish', 'import'],
         'questions' => ['view', 'create', 'edit', 'delete', 'import'],
         'online-exams' => ['view', 'configure'],
+        'exam-timetable' => ['view', 'edit'],
         'homework' => ['view', 'create', 'edit', 'delete', 'grade'],
         'remarks' => ['view', 'create', 'edit', 'delete'],
         'dashboard' => ['view'],

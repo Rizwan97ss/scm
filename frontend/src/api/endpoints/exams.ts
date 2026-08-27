@@ -10,6 +10,8 @@ import type {
   ExamMarkImportResult,
   ExamPayload,
   ExamSubjectGroup,
+  ExamTimetable,
+  ExamTimetableItemInput,
   ExamType,
   ExamTypePayload,
   GradingScale,
@@ -78,6 +80,16 @@ export const examsApi = {
     return data.data
   },
   reportCardPdfUrl: (examId: number, studentId: number) => apiFileUrl(`/exams/${examId}/report-card/pdf?student_id=${studentId}`),
+  timetable: async (examId: number, params: { sectionId?: number; studentId?: number }): Promise<ExamTimetable> => {
+    const { data } = await httpClient.get<ApiResponse<ExamTimetable>>(`/exams/${examId}/timetable`, {
+      params: { section_id: params.sectionId, student_id: params.studentId },
+    })
+    return data.data
+  },
+  saveTimetable: async (examId: number, sectionId: number, items: ExamTimetableItemInput[]): Promise<ExamTimetable> => {
+    const { data } = await httpClient.put<ApiResponse<ExamTimetable>>(`/exams/${examId}/timetable`, { section_id: sectionId, items })
+    return data.data
+  },
 }
 
 export const examMarksApi = {

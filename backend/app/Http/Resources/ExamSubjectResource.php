@@ -22,6 +22,8 @@ class ExamSubjectResource extends JsonResource
             'sequence' => $this->sequence,
             'max_marks' => $this->max_marks,
             'exam_date' => $this->exam_date?->toDateString(),
+            'start_time' => $this->start_time,
+            'end_time' => $this->end_time,
             'is_online' => $this->is_online,
             'duration_minutes' => $this->duration_minutes,
             'online_starts_at' => $this->online_starts_at?->toIso8601String(),

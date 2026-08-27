@@ -33,6 +33,8 @@ class StoreExamRequest extends FormRequest
             'exam_subject_groups.*.components.*.max_marks' => ['required', 'numeric', 'min:1'],
             'exam_subject_groups.*.components.*.sequence' => ['nullable', 'integer', 'min:0'],
             'exam_subject_groups.*.components.*.exam_date' => ['nullable', 'date'],
+            'exam_subject_groups.*.components.*.start_time' => ['nullable', 'date_format:H:i'],
+            'exam_subject_groups.*.components.*.end_time' => ['nullable', 'date_format:H:i', 'after:exam_subject_groups.*.components.*.start_time'],
             'exam_subject_groups.*.components.*.is_online' => ['sometimes', 'boolean'],
             'exam_subject_groups.*.components.*.duration_minutes' => ['nullable', 'integer', 'min:1'],
             'exam_subject_groups.*.components.*.online_starts_at' => ['nullable', 'date'],

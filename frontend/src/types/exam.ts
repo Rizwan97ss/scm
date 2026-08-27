@@ -70,6 +70,8 @@ export interface ExamSubject {
   sequence: number
   max_marks: number
   exam_date: string | null
+  start_time: string | null
+  end_time: string | null
   is_online: boolean
   duration_minutes: number | null
   online_starts_at: string | null
@@ -83,6 +85,8 @@ export interface ExamSubjectComponentInput {
   max_marks: number
   sequence?: number
   exam_date?: string | null
+  start_time?: string | null
+  end_time?: string | null
   is_online?: boolean
   duration_minutes?: number | null
   online_starts_at?: string | null
@@ -336,4 +340,26 @@ export interface MyOnlineTestRow {
   result_declared: boolean
   best_score: number | null
   max_score: number | null
+}
+
+export interface ExamTimetableRow {
+  exam_subject_id: number
+  subject_name: string
+  component_name: string | null
+  exam_date: string | null
+  start_time: string | null
+  end_time: string | null
+}
+
+export interface ExamTimetable {
+  section: { id: number; name: string }
+  can_edit: boolean
+  rows: ExamTimetableRow[]
+}
+
+export interface ExamTimetableItemInput {
+  exam_subject_id: number
+  exam_date?: string | null
+  start_time?: string | null
+  end_time?: string | null
 }

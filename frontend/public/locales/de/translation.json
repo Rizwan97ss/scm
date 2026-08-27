@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "Test Automatisch Abgegeben",
     "autoSubmittedViolationMessage": "Du hast das Prüfungsfenster verlassen (Tab gewechselt, App gewechselt oder Vollbild verlassen), daher wurde dein Test sofort mit deinen bisherigen Antworten abgegeben.",
     "autoSubmittedTimeExpiredMessage": "Deine Zeit ist abgelaufen, daher wurde dein Test automatisch mit deinen bisherigen Antworten abgegeben.",
-    "leaveWarning": "Wenn du diese Seite verlässt, wird dein Testversuch beendet."
+    "leaveWarning": "Wenn du diese Seite verlässt, wird dein Testversuch beendet.",
+    "examTimetable": "Prüfungsplan",
+    "examTimetableDescription": "Datum und Uhrzeit für jedes Fach, nach Klasse und Abteilung.",
+    "startTime": "Startzeit",
+    "endTime": "Endzeit",
+    "saveTimetable": "Plan Speichern",
+    "timetableSavedToast": "Plan gespeichert."
   },
   "fees": {
     "addItem": "Position hinzufügen",

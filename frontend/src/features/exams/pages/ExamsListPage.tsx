@@ -42,6 +42,14 @@ export function ExamsListPage() {
   const columns: DataTableColumn<Exam>[] = [
     { key: 'name', header: t('common.name'), sortable: true, render: (row) => <span className="font-medium">{row.name}</span> },
     { key: 'exam_type', header: t('exams.type'), render: (row) => row.exam_type?.name ?? '—' },
+    {
+      key: 'sections',
+      header: t('entities.section'),
+      render: (row) => {
+        const names = [...new Set(row.exam_subject_groups.map((g) => g.section?.name).filter((name): name is string => !!name))]
+        return names.length > 0 ? names.join(', ') : '—'
+      },
+    },
     { key: 'subjects', header: t('nav.subjects'), render: (row) => row.exam_subject_groups.length },
     { key: 'weight', header: t('exams.weight'), render: (row) => row.weight },
     { key: 'status', header: t('common.status'), render: (row) => <Badge variant={row.is_published ? 'success' : 'default'}>{row.is_published ? t('exams.published') : t('exams.draft')}</Badge> },

@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "시험이 자동으로 제출되었습니다",
     "autoSubmittedViolationMessage": "시험 창을 벗어났기 때문에(탭 전환, 앱 전환, 또는 전체 화면 종료) 지금까지 작성한 답안으로 시험이 즉시 제출되었습니다.",
     "autoSubmittedTimeExpiredMessage": "시간이 종료되어 지금까지 작성한 답안으로 시험이 자동으로 제출되었습니다.",
-    "leaveWarning": "이 페이지를 벗어나면 시험 응시가 종료됩니다."
+    "leaveWarning": "이 페이지를 벗어나면 시험 응시가 종료됩니다.",
+    "examTimetable": "시험 시간표",
+    "examTimetableDescription": "학급 및 섹션별 각 과목의 날짜와 시간.",
+    "startTime": "시작 시간",
+    "endTime": "종료 시간",
+    "saveTimetable": "시간표 저장",
+    "timetableSavedToast": "시간표가 저장되었습니다."
   },
   "fees": {
     "addItem": "항목 추가",

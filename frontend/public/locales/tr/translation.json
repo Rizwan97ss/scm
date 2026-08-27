@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "Sınav Otomatik Olarak Gönderildi",
     "autoSubmittedViolationMessage": "Sınav penceresinden ayrıldınız (sekme değiştirdiniz, uygulama değiştirdiniz veya tam ekrandan çıktınız), bu nedenle o ana kadar verdiğiniz cevaplarla sınavınız anında gönderildi.",
     "autoSubmittedTimeExpiredMessage": "Süreniz doldu, bu nedenle o ana kadar verdiğiniz cevaplarla sınavınız otomatik olarak gönderildi.",
-    "leaveWarning": "Bu sayfadan ayrılmak sınav denemenizi sona erdirecektir."
+    "leaveWarning": "Bu sayfadan ayrılmak sınav denemenizi sona erdirecektir.",
+    "examTimetable": "Sınav Programı",
+    "examTimetableDescription": "Sınıf ve şubeye göre her ders için tarih ve saat.",
+    "startTime": "Başlangıç Saati",
+    "endTime": "Bitiş Saati",
+    "saveTimetable": "Programı Kaydet",
+    "timetableSavedToast": "Program kaydedildi."
   },
   "fees": {
     "addItem": "Kalem ekle",

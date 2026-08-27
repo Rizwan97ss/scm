@@ -62,6 +62,7 @@ const OnlineTestConfigPage = lazy(() => import('@/features/exams/pages/OnlineTes
 const TakeOnlineTestPage = lazy(() => import('@/features/exams/pages/TakeOnlineTestPage').then((m) => ({ default: m.TakeOnlineTestPage })))
 const MyOnlineTestsPage = lazy(() => import('@/features/exams/pages/MyOnlineTestsPage').then((m) => ({ default: m.MyOnlineTestsPage })))
 const StudentResultsPage = lazy(() => import('@/features/exams/pages/StudentResultsPage').then((m) => ({ default: m.StudentResultsPage })))
+const ExamTimetablePage = lazy(() => import('@/features/exams/pages/ExamTimetablePage').then((m) => ({ default: m.ExamTimetablePage })))
 const HomeworkListPage = lazy(() => import('@/features/homework/pages/HomeworkListPage').then((m) => ({ default: m.HomeworkListPage })))
 const HomeworkDetailPage = lazy(() => import('@/features/homework/pages/HomeworkDetailPage').then((m) => ({ default: m.HomeworkDetailPage })))
 const FeeCategoriesPage = lazy(() => import('@/features/fees/pages/FeeCategoriesPage').then((m) => ({ default: m.FeeCategoriesPage })))
@@ -214,6 +215,9 @@ export function AppRouter() {
               <Route path={routePaths.takeOnlineTest()} element={<TakeOnlineTestPage />} />
               <Route path={routePaths.myOnlineTests} element={<MyOnlineTestsPage />} />
               <Route path={routePaths.myResults} element={<StudentResultsPage />} />
+              <Route element={<PermissionRoute permissions={['exam-timetable.view']} />}>
+                <Route path={routePaths.examTimetable} element={<ExamTimetablePage />} />
+              </Route>
 
               <Route element={<PermissionRoute permissions={['homework.view']} />}>
                 <Route path={routePaths.homework} element={<HomeworkListPage />} />

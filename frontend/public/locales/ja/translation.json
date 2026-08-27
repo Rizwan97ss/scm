@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "テストが自動的に提出されました",
     "autoSubmittedViolationMessage": "試験画面から離れた（タブの切り替え、アプリの切り替え、または全画面表示の終了）ため、それまでに回答した内容でテストが即座に提出されました。",
     "autoSubmittedTimeExpiredMessage": "時間切れになったため、それまでに回答した内容でテストが自動的に提出されました。",
-    "leaveWarning": "このページを離れるとテストの受験は終了します。"
+    "leaveWarning": "このページを離れるとテストの受験は終了します。",
+    "examTimetable": "試験時間割",
+    "examTimetableDescription": "クラス・セクションごとの各科目の日付と時間。",
+    "startTime": "開始時刻",
+    "endTime": "終了時刻",
+    "saveTimetable": "時間割を保存",
+    "timetableSavedToast": "時間割を保存しました。"
   },
   "fees": {
     "addItem": "項目を追加",

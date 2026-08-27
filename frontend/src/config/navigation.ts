@@ -85,6 +85,7 @@ export const NAV_GROUPS: NavGroupConfig[] = [
     label: 'Exams',
     items: [
       { label: 'Exams', to: routePaths.exams, icon: ClipboardList, permissions: ['exams.view'] },
+      { label: 'Exam Timetable', to: routePaths.examTimetable, icon: CalendarClock, permissions: ['exam-timetable.view'] },
       { label: 'Grading Scales', to: routePaths.gradingScales, icon: Sigma, permissions: ['grading.view'] },
       { label: 'Exam Configuration', to: routePaths.examConfiguration, icon: Settings, permissions: ['grading.view'] },
     ],
@@ -207,6 +208,7 @@ export const STUDENT_NAV_GROUPS: NavGroupConfig[] = [
     items: [
       { label: 'Dashboard', to: routePaths.dashboard, icon: LayoutDashboard },
       { label: 'My Results', to: routePaths.myResults, icon: ClipboardList },
+      { label: 'Exam Timetable', to: routePaths.examTimetable, icon: CalendarClock },
       { label: 'Homework', to: routePaths.homework, icon: NotebookPen },
       { label: 'My Online Tests', to: routePaths.myOnlineTests, icon: FileQuestion },
       { label: 'My Fees', to: routePaths.invoices, icon: Receipt },

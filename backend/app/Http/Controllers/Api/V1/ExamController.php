@@ -276,6 +276,10 @@ class ExamController extends CrudController
             'max_marks' => $data['max_marks'],
             'sequence' => $data['sequence'] ?? 0,
             'exam_date' => $data['exam_date'] ?? null,
+            // Normalized to H:i:s — see ExamTimetableController::update()'s
+            // comment for why this matters across SQLite vs MySQL.
+            'start_time' => isset($data['start_time']) ? $data['start_time'].':00' : null,
+            'end_time' => isset($data['end_time']) ? $data['end_time'].':00' : null,
             'is_online' => $data['is_online'] ?? false,
             'duration_minutes' => $data['duration_minutes'] ?? null,
             'online_starts_at' => $data['online_starts_at'] ?? null,

@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\V1\AssessmentComponentTypeController;
 use App\Http\Controllers\Api\V1\DepartmentController;
 use App\Http\Controllers\Api\V1\DesignationController;
 use App\Http\Controllers\Api\V1\ExamController;
+use App\Http\Controllers\Api\V1\ExamTimetableController;
 use App\Http\Controllers\Api\V1\ExamMarkController;
 use App\Http\Controllers\Api\V1\ExamMarkImportController;
 use App\Http\Controllers\Api\V1\ExamTypeController;
@@ -315,6 +316,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('exams/{exam}/exam-subject-groups/{group}/unpublish', [ExamController::class, 'unpublishGroup'])->name('exams.exam-subject-groups.unpublish');
             Route::get('exams/{exam}/exam-subject-groups/{group}/result', [ExamController::class, 'groupResult'])->name('exams.exam-subject-groups.result');
             Route::delete('exams/{exam}/exam-subject-groups/{group}/components/{examSubject}', [ExamController::class, 'destroyComponent'])->name('exams.exam-subject-groups.components.destroy');
+            Route::get('exams/{exam}/timetable', [ExamTimetableController::class, 'show'])->name('exams.timetable.show');
+            Route::put('exams/{exam}/timetable', [ExamTimetableController::class, 'update'])->name('exams.timetable.update');
 
             Route::get('exam-subjects/{examSubject}/marks', [ExamMarkController::class, 'index'])->name('exam-subjects.marks.index');
             Route::post('exam-subjects/{examSubject}/marks', [ExamMarkController::class, 'store'])->name('exam-subjects.marks.store');

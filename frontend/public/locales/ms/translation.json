@@ -647,7 +647,13 @@
     "autoSubmittedViolationTitle": "Ujian Dihantar Secara Automatik",
     "autoSubmittedViolationMessage": "Anda telah meninggalkan tetingkap peperiksaan (menukar tab, menukar aplikasi, atau keluar daripada skrin penuh), jadi ujian anda telah dihantar serta-merta dengan jawapan yang telah anda isi.",
     "autoSubmittedTimeExpiredMessage": "Masa anda telah tamat, jadi ujian anda telah dihantar secara automatik dengan jawapan yang telah anda isi.",
-    "leaveWarning": "Meninggalkan halaman ini akan menamatkan percubaan ujian anda."
+    "leaveWarning": "Meninggalkan halaman ini akan menamatkan percubaan ujian anda.",
+    "examTimetable": "Jadual Peperiksaan",
+    "examTimetableDescription": "Tarikh dan masa bagi setiap subjek, mengikut kelas dan bahagian.",
+    "startTime": "Masa Mula",
+    "endTime": "Masa Tamat",
+    "saveTimetable": "Simpan Jadual",
+    "timetableSavedToast": "Jadual disimpan."
   },
   "fees": {
     "addItem": "Tambah item",
