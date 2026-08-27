@@ -74,9 +74,9 @@ export function DataTable<T>({
                   {column.sortable &&
                     (activeSortKey === column.key ? (
                       activeSortDesc ? (
-                        <ArrowDown className="h-3 w-3" />
+                        <ArrowDown className="h-3 w-3 text-primary" />
                       ) : (
-                        <ArrowUp className="h-3 w-3" />
+                        <ArrowUp className="h-3 w-3 text-primary" />
                       )
                     ) : (
                       <ArrowUpDown className="h-3 w-3 opacity-40" />

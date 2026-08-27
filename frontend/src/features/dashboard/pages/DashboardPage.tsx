@@ -21,13 +21,14 @@ import {
 import { dashboardApi } from '@/api/endpoints/dashboard'
 import { queryKeys } from '@/api/queryKeys'
 import { useAuth } from '@/context/AuthContext'
-import { Card, CardContent, CardHeader, CardTitle, StatCard } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle, StatCard, type StatTone } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatDate } from '@/utils/formatDate'
 import { routePaths } from '@/routes/routePaths'
 import { CHART_LTR_STYLE, useChartDirection } from '@/hooks/useChartDirection'
+import { cn } from '@/utils/cn'
 import type { AttendanceSummary } from '@/types/attendance'
 
 function ViewAllLink({ to }: { to: string }) {
@@ -39,13 +40,24 @@ function ViewAllLink({ to }: { to: string }) {
   )
 }
 
-function QuickAction({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
+const QUICK_ACTION_TONE_CLASSES: Record<StatTone, string> = {
+  primary: 'bg-primary/15 text-primary',
+  success: 'bg-success/15 text-success',
+  warning: 'bg-warning/15 text-warning',
+  destructive: 'bg-destructive/15 text-destructive',
+  info: 'bg-info/15 text-info',
+  violet: 'bg-violet-500/15 text-violet-600 dark:text-violet-400',
+  rose: 'bg-rose-500/15 text-rose-600 dark:text-rose-400',
+  cyan: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400',
+}
+
+function QuickAction({ to, icon, label, tone = 'primary' }: { to: string; icon: React.ReactNode; label: string; tone?: StatTone }) {
   return (
     <Link
       to={to}
       className="flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent"
     >
-      <span className="rounded-full bg-primary/10 p-2.5 text-primary">{icon}</span>
+      <span className={cn('rounded-full p-2.5', QUICK_ACTION_TONE_CLASSES[tone])}>{icon}</span>
       <span className="text-sm font-medium">{label}</span>
     </Link>
   )
@@ -119,10 +131,10 @@ export function DashboardPage() {
           <div>
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">{t('dashboard.quickActions')}</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <QuickAction to={routePaths.attendanceTake} icon={<CalendarCheck className="h-4 w-4" />} label={t('dashboard.takeAttendance')} />
-              <QuickAction to={routePaths.studentAdmission} icon={<ClipboardPlus className="h-4 w-4" />} label={t('dashboard.newAdmission')} />
-              <QuickAction to={routePaths.invoices} icon={<Receipt className="h-4 w-4" />} label={t('dashboard.createInvoice')} />
-              <QuickAction to={routePaths.noticeBoard} icon={<Megaphone className="h-4 w-4" />} label={t('dashboard.postAnnouncement')} />
+              <QuickAction to={routePaths.attendanceTake} icon={<CalendarCheck className="h-4 w-4" />} label={t('dashboard.takeAttendance')} tone="success" />
+              <QuickAction to={routePaths.studentAdmission} icon={<ClipboardPlus className="h-4 w-4" />} label={t('dashboard.newAdmission')} tone="primary" />
+              <QuickAction to={routePaths.invoices} icon={<Receipt className="h-4 w-4" />} label={t('dashboard.createInvoice')} tone="warning" />
+              <QuickAction to={routePaths.noticeBoard} icon={<Megaphone className="h-4 w-4" />} label={t('dashboard.postAnnouncement')} tone="violet" />
             </div>
           </div>
 
@@ -200,7 +212,7 @@ export function DashboardPage() {
                           <XAxis dataKey="grade_level" fontSize={12} tickLine={false} axisLine={false} {...chartDir.horizontalAxisProps} />
                           <YAxis allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} width={28} orientation={chartDir.startOrientation} />
                           <Tooltip formatter={(value) => [value, t('dashboard.activeStudents')]} />
-                          <Bar dataKey="count" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="count" fill="var(--color-violet-500)" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>

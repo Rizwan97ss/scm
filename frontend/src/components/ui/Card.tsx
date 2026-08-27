@@ -2,7 +2,15 @@ import type { HTMLAttributes, ReactNode } from 'react'
 import { cn } from '@/utils/cn'
 
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('rounded-xl border border-border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md', className)} {...props} />
+  return (
+    <div
+      className={cn(
+        'rounded-xl border border-border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md hover:shadow-primary/5',
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
@@ -27,15 +35,16 @@ export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElemen
 
 export type StatTone = 'primary' | 'success' | 'warning' | 'destructive' | 'info' | 'violet' | 'rose' | 'cyan'
 
+/** Solid tone fill, not a pale tint — the one deliberately saturated accent against an otherwise plain-white card. */
 const STAT_TONE_CLASSES: Record<StatTone, string> = {
-  primary: 'bg-primary/10 text-primary',
-  success: 'bg-success/10 text-success',
-  warning: 'bg-warning/10 text-warning',
-  destructive: 'bg-destructive/10 text-destructive',
-  info: 'bg-info/10 text-info',
-  violet: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
-  rose: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
-  cyan: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400',
+  primary: 'bg-primary text-primary-foreground shadow-sm shadow-primary/30',
+  success: 'bg-success text-success-foreground shadow-sm shadow-success/30',
+  warning: 'bg-warning text-warning-foreground shadow-sm shadow-warning/30',
+  destructive: 'bg-destructive text-destructive-foreground shadow-sm shadow-destructive/30',
+  info: 'bg-info text-info-foreground shadow-sm shadow-info/30',
+  violet: 'bg-violet-500 text-white shadow-sm shadow-violet-500/30',
+  rose: 'bg-rose-500 text-white shadow-sm shadow-rose-500/30',
+  cyan: 'bg-cyan-500 text-white shadow-sm shadow-cyan-500/30',
 }
 
 export function StatCard({

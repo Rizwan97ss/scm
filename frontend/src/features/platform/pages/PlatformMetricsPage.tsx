@@ -176,7 +176,7 @@ export function PlatformMetricsPage() {
                     <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} {...chartDir.horizontalAxisProps} />
                     <YAxis allowDecimals={false} fontSize={12} tickLine={false} axisLine={false} width={32} orientation={chartDir.startOrientation} />
                     <Tooltip formatter={(value) => [value, t('nav.students')]} />
-                    <Bar dataKey="students" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="students" fill="var(--color-cyan-500)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

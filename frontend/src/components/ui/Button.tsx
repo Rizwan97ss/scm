@@ -6,11 +6,11 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'des
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-primary-foreground hover:opacity-90',
-  secondary: 'bg-secondary text-secondary-foreground hover:opacity-90',
-  outline: 'border border-border bg-transparent text-foreground hover:bg-muted',
-  ghost: 'bg-transparent text-foreground hover:bg-muted',
-  destructive: 'bg-destructive text-destructive-foreground hover:opacity-90',
+  primary: 'bg-primary text-primary-foreground shadow-sm shadow-primary/25 hover:opacity-90',
+  secondary: 'bg-secondary text-secondary-foreground shadow-sm shadow-secondary/25 hover:opacity-90',
+  outline: 'border border-border bg-transparent text-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary',
+  ghost: 'bg-transparent text-foreground hover:bg-primary/5 hover:text-primary',
+  destructive: 'bg-destructive text-destructive-foreground shadow-sm shadow-destructive/25 hover:opacity-90',
   link: 'bg-transparent text-primary underline-offset-4 hover:underline p-0 h-auto',
 }
 

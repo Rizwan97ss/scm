@@ -5,11 +5,11 @@ export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'dest
 
 const VARIANT_CLASSES: Record<BadgeVariant, string> = {
   default: 'bg-muted text-muted-foreground',
-  primary: 'bg-primary/10 text-primary',
-  success: 'bg-success/10 text-success',
-  warning: 'bg-warning/10 text-warning',
-  destructive: 'bg-destructive/10 text-destructive',
-  info: 'bg-info/10 text-info',
+  primary: 'bg-primary/15 text-primary ring-1 ring-inset ring-primary/25',
+  success: 'bg-success/15 text-success ring-1 ring-inset ring-success/25',
+  warning: 'bg-warning/15 text-warning ring-1 ring-inset ring-warning/25',
+  destructive: 'bg-destructive/15 text-destructive ring-1 ring-inset ring-destructive/25',
+  info: 'bg-info/15 text-info ring-1 ring-inset ring-info/25',
   outline: 'border border-border text-foreground',
 }
 
