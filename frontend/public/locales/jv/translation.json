@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "Acak urutan pitakonan kanggo saben siswa",
     "start": "Wiwiti",
     "startTest": "Wiwiti Tes",
-    "startTestWarning": "Yen wis diwiwiti, timer langsung mlaku lan ora bisa dieneng. Priksa manawa sampeyan wis siyap sadurunge nerusake.",
+    "startTestWarning": "Tes iki mlaku ing mode layar kebak lan dipantau kanggo owah tab, owah aplikasi, lan metu saka layar kebak. Sawise diwiwiti, tumindak kasebut bakal ngirim tes sampeyan sanalika — tanpa peringatan lan tanpa kesempatan kaping pindho. Priksa manawa sampeyan wis siyap sadurunge nerusake.",
     "statusCalculated": "Diétung",
     "subjectAddedToast": "Mata pelajaran ditambahake.",
     "submitTest": "Kirim Tes",
@@ -640,7 +640,14 @@
     "weightedGpa": "GPA Kabobot",
     "weightedPercentage": "Persentase Kabobot",
     "window": "Jendhela wektu",
-    "yourLocalTime": "Wektu lokal sampeyan"
+    "yourLocalTime": "Wektu lokal sampeyan",
+    "notYetOpenTitle": "Tes Iki Durung Dibukak",
+    "notYetOpenMessage": "Sampeyan bisa miwiti ing {{time}}.",
+    "opensInLabel": "Dibukak sajrone",
+    "autoSubmittedViolationTitle": "Tes Dikirim Kanthi Otomatis",
+    "autoSubmittedViolationMessage": "Sampeyan ninggalake jendhela ujian (ngganti tab, ngganti aplikasi, utawa metu saka layar kebak), mula tes sampeyan langsung dikirim karo wangsulan sing wis diisi.",
+    "autoSubmittedTimeExpiredMessage": "Wektu sampeyan wis entek, mula tes sampeyan dikirim kanthi otomatis karo wangsulan sing wis diisi.",
+    "leaveWarning": "Ninggalake kaca iki bakal mungkasi upaya tes sampeyan."
   },
   "fees": {
     "addItem": "Tambah item",

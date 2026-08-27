@@ -282,6 +282,8 @@ class ExamController extends CrudController
             'online_ends_at' => $data['online_ends_at'] ?? null,
             'shuffle_questions' => $data['shuffle_questions'] ?? true,
             'max_attempts' => $data['max_attempts'] ?? 1,
+            'early_access_minutes' => $data['early_access_minutes'] ?? 5,
+            'late_join_grace_minutes' => $data['late_join_grace_minutes'] ?? 2,
         ];
     }
 

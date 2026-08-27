@@ -39,6 +39,8 @@ class StoreExamRequest extends FormRequest
             'exam_subject_groups.*.components.*.online_ends_at' => ['nullable', 'date', 'after:exam_subject_groups.*.components.*.online_starts_at'],
             'exam_subject_groups.*.components.*.shuffle_questions' => ['sometimes', 'boolean'],
             'exam_subject_groups.*.components.*.max_attempts' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'exam_subject_groups.*.components.*.early_access_minutes' => ['nullable', 'integer', 'min:0', 'max:60'],
+            'exam_subject_groups.*.components.*.late_join_grace_minutes' => ['nullable', 'integer', 'min:0', 'max:60'],
         ];
     }
 }

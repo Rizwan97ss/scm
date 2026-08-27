@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "Embaralhar a ordem das questões por aluno",
     "start": "Iniciar",
     "startTest": "Iniciar Teste",
-    "startTestWarning": "Assim que você iniciar, o cronômetro começa imediatamente e não pode ser pausado. Certifique-se de estar pronto antes de continuar.",
+    "startTestWarning": "Este teste é executado em tela cheia e é monitorizado quanto a trocas de separador, de aplicação ou saída do modo de ecrã inteiro. Depois de iniciado, qualquer uma dessas ações submete o seu teste de imediato, sem avisos nem segundas oportunidades. Certifique-se de que está pronto antes de continuar.",
     "statusCalculated": "Calculado",
     "subjectAddedToast": "Disciplina adicionada.",
     "submitTest": "Enviar Teste",
@@ -640,7 +640,14 @@
     "weightedGpa": "GPA Ponderado",
     "weightedPercentage": "Percentual Ponderado",
     "window": "Janela",
-    "yourLocalTime": "Seu horário local"
+    "yourLocalTime": "Seu horário local",
+    "notYetOpenTitle": "Este Teste Ainda Não Está Aberto",
+    "notYetOpenMessage": "Poderá começar às {{time}}.",
+    "opensInLabel": "Abre em",
+    "autoSubmittedViolationTitle": "Teste Submetido Automaticamente",
+    "autoSubmittedViolationMessage": "Saiu da janela do exame (mudou de separador, de aplicação, ou saiu do ecrã inteiro), por isso o seu teste foi submetido de imediato com o que tinha respondido.",
+    "autoSubmittedTimeExpiredMessage": "O seu tempo esgotou-se, por isso o seu teste foi submetido automaticamente com o que tinha respondido.",
+    "leaveWarning": "Sair desta página terminará a sua tentativa de teste."
   },
   "fees": {
     "addItem": "Adicionar item",

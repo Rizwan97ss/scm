@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "Mélanger l'ordre des questions par élève",
     "start": "Démarrer",
     "startTest": "Démarrer le Test",
-    "startTestWarning": "Une fois démarré, le chronomètre commence immédiatement et ne peut pas être mis en pause. Assurez-vous d'être prêt avant de continuer.",
+    "startTestWarning": "Ce test s'exécute en plein écran et une surveillance détecte tout changement d'onglet, d'application ou toute sortie du plein écran. Une fois commencé, chacune de ces actions soumet votre test immédiatement, sans avertissement ni seconde chance. Assurez-vous d'être prêt avant de continuer.",
     "statusCalculated": "Calculé",
     "subjectAddedToast": "Matière ajoutée.",
     "submitTest": "Soumettre le Test",
@@ -640,7 +640,14 @@
     "weightedGpa": "GPA Pondéré",
     "weightedPercentage": "Pourcentage Pondéré",
     "window": "Créneau",
-    "yourLocalTime": "Votre heure locale"
+    "yourLocalTime": "Votre heure locale",
+    "notYetOpenTitle": "Ce Test N'est Pas Encore Ouvert",
+    "notYetOpenMessage": "Vous pourrez commencer à {{time}}.",
+    "opensInLabel": "Ouvre dans",
+    "autoSubmittedViolationTitle": "Test Soumis Automatiquement",
+    "autoSubmittedViolationMessage": "Vous avez quitté la fenêtre de l'examen (changement d'onglet, d'application, ou sortie du plein écran), votre test a donc été soumis immédiatement avec ce que vous aviez répondu.",
+    "autoSubmittedTimeExpiredMessage": "Votre temps est écoulé, votre test a donc été soumis automatiquement avec ce que vous aviez répondu.",
+    "leaveWarning": "Quitter cette page mettra fin à votre tentative de test."
   },
   "fees": {
     "addItem": "Ajouter une ligne",

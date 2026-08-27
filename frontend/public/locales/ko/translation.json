@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "학생마다 문제 순서 섞기",
     "start": "시작",
     "startTest": "시험 시작",
-    "startTestWarning": "시작하면 타이머가 즉시 시작되며 일시 중지할 수 없습니다. 계속하기 전에 준비가 되었는지 확인하세요.",
+    "startTestWarning": "이 시험은 전체 화면으로 진행되며 탭 전환, 앱 전환, 전체 화면 종료 여부를 감시합니다. 시작한 후에는 이 중 하나라도 발생하면 즉시 시험이 제출됩니다 — 경고도, 두 번째 기회도 없습니다. 계속하기 전에 준비가 되었는지 확인하세요.",
     "statusCalculated": "계산됨",
     "subjectAddedToast": "과목이 추가되었습니다.",
     "submitTest": "시험 제출",
@@ -640,7 +640,14 @@
     "weightedGpa": "가중 GPA",
     "weightedPercentage": "가중 백분율",
     "window": "응시 가능 기간",
-    "yourLocalTime": "현지 시간"
+    "yourLocalTime": "현지 시간",
+    "notYetOpenTitle": "아직 시작되지 않은 시험입니다",
+    "notYetOpenMessage": "{{time}}에 시작할 수 있습니다.",
+    "opensInLabel": "시작까지",
+    "autoSubmittedViolationTitle": "시험이 자동으로 제출되었습니다",
+    "autoSubmittedViolationMessage": "시험 창을 벗어났기 때문에(탭 전환, 앱 전환, 또는 전체 화면 종료) 지금까지 작성한 답안으로 시험이 즉시 제출되었습니다.",
+    "autoSubmittedTimeExpiredMessage": "시간이 종료되어 지금까지 작성한 답안으로 시험이 자동으로 제출되었습니다.",
+    "leaveWarning": "이 페이지를 벗어나면 시험 응시가 종료됩니다."
   },
   "fees": {
     "addItem": "항목 추가",

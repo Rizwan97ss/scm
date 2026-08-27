@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "Her öğrenci için soru sırasını karıştır",
     "start": "Başlat",
     "startTest": "Sınavı Başlat",
-    "startTestWarning": "Başladığınızda zamanlayıcı hemen başlar ve duraklatılamaz. Devam etmeden önce hazır olduğunuzdan emin olun.",
+    "startTestWarning": "Bu sınav tam ekran modunda çalışır ve sekme değiştirme, uygulama değiştirme ve tam ekrandan çıkma izlenir. Başladıktan sonra bunlardan herhangi biri sınavınızı anında gönderir — uyarı yoktur ve ikinci bir şans yoktur. Devam etmeden önce hazır olduğunuzdan emin olun.",
     "statusCalculated": "Hesaplandı",
     "subjectAddedToast": "Ders eklendi.",
     "submitTest": "Sınavı Gönder",
@@ -640,7 +640,14 @@
     "weightedGpa": "Ağırlıklı GPA",
     "weightedPercentage": "Ağırlıklı Yüzde",
     "window": "Zaman aralığı",
-    "yourLocalTime": "Yerel saatiniz"
+    "yourLocalTime": "Yerel saatiniz",
+    "notYetOpenTitle": "Bu Sınav Henüz Açılmadı",
+    "notYetOpenMessage": "{{time}} itibarıyla başlayabileceksiniz.",
+    "opensInLabel": "Şu sürede açılır",
+    "autoSubmittedViolationTitle": "Sınav Otomatik Olarak Gönderildi",
+    "autoSubmittedViolationMessage": "Sınav penceresinden ayrıldınız (sekme değiştirdiniz, uygulama değiştirdiniz veya tam ekrandan çıktınız), bu nedenle o ana kadar verdiğiniz cevaplarla sınavınız anında gönderildi.",
+    "autoSubmittedTimeExpiredMessage": "Süreniz doldu, bu nedenle o ana kadar verdiğiniz cevaplarla sınavınız otomatik olarak gönderildi.",
+    "leaveWarning": "Bu sayfadan ayrılmak sınav denemenizi sona erdirecektir."
   },
   "fees": {
     "addItem": "Kalem ekle",

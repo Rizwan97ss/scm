@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "Fragenreihenfolge pro Schüler mischen",
     "start": "Starten",
     "startTest": "Test starten",
-    "startTestWarning": "Sobald Sie starten, läuft der Timer sofort und kann nicht pausiert werden. Stellen Sie sicher, dass Sie bereit sind, bevor Sie fortfahren.",
+    "startTestWarning": "Dieser Test läuft im Vollbildmodus und wird auf Tab-Wechsel, App-Wechsel und das Verlassen des Vollbildmodus überwacht. Nach dem Start führt jede dieser Aktionen zur sofortigen Abgabe deines Tests — ohne Warnung und ohne zweite Chance. Stelle sicher, dass du bereit bist, bevor du fortfährst.",
     "statusCalculated": "Berechnet",
     "subjectAddedToast": "Fach hinzugefügt.",
     "submitTest": "Test einreichen",
@@ -640,7 +640,14 @@
     "weightedGpa": "Gewichteter GPA",
     "weightedPercentage": "Gewichteter Prozentsatz",
     "window": "Zeitfenster",
-    "yourLocalTime": "Ihre Ortszeit"
+    "yourLocalTime": "Ihre Ortszeit",
+    "notYetOpenTitle": "Dieser Test Ist Noch Nicht Geöffnet",
+    "notYetOpenMessage": "Du kannst um {{time}} beginnen.",
+    "opensInLabel": "Öffnet in",
+    "autoSubmittedViolationTitle": "Test Automatisch Abgegeben",
+    "autoSubmittedViolationMessage": "Du hast das Prüfungsfenster verlassen (Tab gewechselt, App gewechselt oder Vollbild verlassen), daher wurde dein Test sofort mit deinen bisherigen Antworten abgegeben.",
+    "autoSubmittedTimeExpiredMessage": "Deine Zeit ist abgelaufen, daher wurde dein Test automatisch mit deinen bisherigen Antworten abgegeben.",
+    "leaveWarning": "Wenn du diese Seite verlässt, wird dein Testversuch beendet."
   },
   "fees": {
     "addItem": "Position hinzufügen",

@@ -9,6 +9,7 @@ use App\Models\OnlineTestAnswer;
 use App\Models\OnlineTestAttempt;
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -43,15 +44,50 @@ class OnlineExamService
      * Eligibility is checked here, not a Policy — it's a business rule
      * (enrolled in the section, within the time window, attempts remaining),
      * not a role/permission concern.
+     *
+     * The join window is deliberately asymmetric: early_access_minutes lets
+     * a student open and start up to N minutes before the scheduled start
+     * (settling in, reading instructions) but late_join_grace_minutes is
+     * short and one-directional — once that grace has passed, a student who
+     * never started at all is locked out entirely, same as walking into a
+     * physical exam hall after the papers were handed out. Resuming an
+     * attempt that already legitimately started is a completely separate
+     * question, governed only by that attempt's own deadline (see
+     * attemptDeadline()), never by the join window — a student who started
+     * on time but reloads the page after online_starts_at has since passed
+     * must still be able to get back into their own in-progress attempt.
      */
     public function startAttempt(ExamSubject $examSubject, Student $student): OnlineTestAttempt
     {
         throw_unless($examSubject->is_online, ValidationException::withMessages(['exam_subject' => 'This subject is not configured for an online test.']));
         throw_unless($student->current_section_id === $examSubject->section_id, ValidationException::withMessages(['student' => 'You are not enrolled in this section.']));
 
+        $inProgress = OnlineTestAttempt::query()
+            ->where('exam_subject_id', $examSubject->id)
+            ->where('student_id', $student->id)
+            ->where('status', 'in_progress')
+            ->first();
+
+        if ($inProgress) {
+            $deadline = $this->attemptDeadline($inProgress);
+            if ($deadline && now()->gt($deadline)) {
+                throw ValidationException::withMessages(['window' => 'Your time for this test has ended.']);
+            }
+
+            return $inProgress;
+        }
+
+        // Only a genuinely new attempt is gated by the join window — resuming
+        // (above) already returned.
         $now = now();
-        if ($examSubject->online_starts_at && $now->lt($examSubject->online_starts_at)) {
+        $earlyOpensAt = $examSubject->online_starts_at?->copy()->subMinutes($examSubject->early_access_minutes);
+        $lateJoinCutoff = $examSubject->online_starts_at?->copy()->addMinutes($examSubject->late_join_grace_minutes);
+
+        if ($earlyOpensAt && $now->lt($earlyOpensAt)) {
             throw ValidationException::withMessages(['window' => 'This test has not opened yet.']);
+        }
+        if ($lateJoinCutoff && $now->gt($lateJoinCutoff)) {
+            throw ValidationException::withMessages(['window' => 'This test has already started and can no longer be joined.']);
         }
         if ($examSubject->online_ends_at && $now->gt($examSubject->online_ends_at)) {
             throw ValidationException::withMessages(['window' => 'This test has closed.']);
@@ -61,21 +97,6 @@ class OnlineExamService
             ->where('exam_subject_id', $examSubject->id)
             ->where('student_id', $student->id)
             ->count();
-
-        // Resuming an already-started attempt must never be blocked by the
-        // attempt cap — the cap only limits starting a genuinely NEW attempt.
-        // Checking it before this would make a student who has one in-progress
-        // attempt at max_attempts=1 unable to resume it after e.g. a page
-        // reload, which defeats the point of having a resumable attempt.
-        $inProgress = OnlineTestAttempt::query()
-            ->where('exam_subject_id', $examSubject->id)
-            ->where('student_id', $student->id)
-            ->where('status', 'in_progress')
-            ->first();
-
-        if ($inProgress) {
-            return $inProgress;
-        }
 
         throw_if($existingAttempts >= $examSubject->max_attempts, ValidationException::withMessages(['attempts' => 'No attempts remaining.']));
 
@@ -88,14 +109,74 @@ class OnlineExamService
         ]);
     }
 
-    public function saveAnswer(OnlineTestAttempt $attempt, int $questionId, ?int $selectedOptionId): OnlineTestAnswer
+    public function saveAnswer(OnlineTestAttempt $attempt, int $questionId, ?int $selectedOptionId, User $actingUser): OnlineTestAnswer
     {
-        throw_unless($attempt->status === 'in_progress', ValidationException::withMessages(['attempt' => 'This attempt has already been submitted.']));
+        $this->autoSubmitIfExpired($attempt, $actingUser);
+
+        throw_unless($attempt->fresh()->status === 'in_progress', ValidationException::withMessages(['attempt' => 'This attempt has already been submitted.']));
 
         return OnlineTestAnswer::query()->updateOrCreate(
             ['attempt_id' => $attempt->id, 'question_id' => $questionId],
             ['selected_option_id' => $selectedOptionId]
         );
+    }
+
+    /**
+     * Logs one integrity event (tab_hidden/window_blur/fullscreen_exit) and
+     * immediately force-submits — this app's policy is zero-tolerance, not
+     * warn-then-flag, so there's no separate "just log it" path. Submitting
+     * through the exact same submitAttempt() as a normal Submit click means
+     * whatever the student had answered still counts; nothing about a
+     * violation forfeits already-earned marks.
+     */
+    public function recordViolationAndSubmit(OnlineTestAttempt $attempt, string $eventType, User $actingUser): OnlineTestAttempt
+    {
+        $attempt->events()->create(['event_type' => $eventType]);
+        $attempt->increment('violation_count');
+
+        if ($attempt->fresh()->status === 'in_progress') {
+            return $this->submitAttempt($attempt, $actingUser, autoReason: 'violation');
+        }
+
+        return $attempt->fresh();
+    }
+
+    /**
+     * The earliest of "this attempt's own duration ran out" and "the exam's
+     * global window closed" — either one ends it. Null (no deadline at all)
+     * only when the exam subject has neither duration_minutes nor
+     * online_ends_at set, which existing data predating this feature may
+     * still have.
+     */
+    private function attemptDeadline(OnlineTestAttempt $attempt): ?Carbon
+    {
+        $examSubject = $attempt->examSubject;
+
+        return collect([
+            $examSubject->duration_minutes ? $attempt->started_at->copy()->addMinutes($examSubject->duration_minutes) : null,
+            $examSubject->online_ends_at,
+        ])->filter()->min();
+    }
+
+    /**
+     * The client-side countdown (TakeOnlineTestPage) is the primary
+     * mechanism for a student still actively on the page, and the
+     * scheduled autoSubmitExpired() sweep is the backstop for a closed
+     * tab — but neither protects against a student who keeps calling this
+     * API directly after their own time is up while the tab stays open.
+     * This closes that gap the moment it's next relevant, on the very next
+     * save, rather than waiting up to 5 minutes for the cron sweep.
+     */
+    private function autoSubmitIfExpired(OnlineTestAttempt $attempt, User $actingUser): void
+    {
+        if ($attempt->status !== 'in_progress') {
+            return;
+        }
+
+        $deadline = $this->attemptDeadline($attempt);
+        if ($deadline && now()->gt($deadline)) {
+            $this->submitAttempt($attempt, $actingUser, autoReason: 'time_expired');
+        }
     }
 
     /**
@@ -114,11 +195,11 @@ class OnlineExamService
      * (confirmed default — a school's total never displays negative even
      * if wrong answers outweigh correct ones).
      */
-    public function submitAttempt(OnlineTestAttempt $attempt, User $actingUser): OnlineTestAttempt
+    public function submitAttempt(OnlineTestAttempt $attempt, User $actingUser, ?string $autoReason = null): OnlineTestAttempt
     {
         throw_unless($attempt->status === 'in_progress', ValidationException::withMessages(['attempt' => 'This attempt has already been submitted.']));
 
-        return DB::transaction(function () use ($attempt, $actingUser) {
+        return DB::transaction(function () use ($attempt, $actingUser, $autoReason) {
             // Re-check under a row lock, not the pre-transaction in-memory
             // model — two near-simultaneous submit requests could otherwise
             // both pass the throw_unless() above before either had written
@@ -161,6 +242,7 @@ class OnlineExamService
                 'submitted_at' => now(),
                 'score' => $totalScore,
                 'max_score' => $maxScore,
+                'auto_submit_reason' => $autoReason,
             ]);
 
             $this->syncExamMark($attempt, $totalScore, $actingUser);
@@ -179,17 +261,16 @@ class OnlineExamService
      * the student answered before disappearing still counts, blank
      * questions score 0/negative like any other unanswered question.
      *
-     * Attributed to the school's own admin (there's no real acting human
-     * for a scheduled sweep) — a tenant with zero School Admin accounts is
-     * skipped for this run rather than crashing the whole batch, logged so
-     * it doesn't fail silently.
+     * Attributed to a School Admin account (there's no real acting human
+     * for a scheduled sweep) — if none exists yet, this run is skipped
+     * rather than crashing, logged so it doesn't fail silently.
      */
     public function autoSubmitExpired(): int
     {
         $systemActor = User::role('School Admin')->first();
 
         if (! $systemActor) {
-            Log::warning('exams:auto-submit-expired skipped a tenant with no School Admin account to attribute submissions to.', ['tenant' => tenant()?->id]);
+            Log::warning('exams:auto-submit-expired skipped: no School Admin account to attribute submissions to.');
 
             return 0;
         }
@@ -203,7 +284,7 @@ class OnlineExamService
 
         foreach ($expiredAttempts as $attempt) {
             try {
-                $this->submitAttempt($attempt, $systemActor);
+                $this->submitAttempt($attempt, $systemActor, autoReason: 'time_expired');
                 $submitted++;
             } catch (Throwable $e) {
                 Log::error('exams:auto-submit-expired failed for one attempt — continuing with the rest.', [

@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "Kocok susunan soalan bagi setiap pelajar",
     "start": "Mula",
     "startTest": "Mula Ujian",
-    "startTestWarning": "Sebaik sahaja anda mula, pemasa akan bermula serta-merta dan tidak boleh dijeda. Pastikan anda bersedia sebelum meneruskan.",
+    "startTestWarning": "Ujian ini berjalan dalam mod skrin penuh dan dipantau untuk pertukaran tab, pertukaran aplikasi, dan keluar daripada skrin penuh. Selepas bermula, mana-mana daripada tindakan tersebut akan menghantar ujian anda serta-merta — tiada amaran dan tiada peluang kedua. Pastikan anda bersedia sebelum meneruskan.",
     "statusCalculated": "Dikira",
     "subjectAddedToast": "Mata pelajaran ditambah.",
     "submitTest": "Hantar Ujian",
@@ -640,7 +640,14 @@
     "weightedGpa": "GPA Berwajaran",
     "weightedPercentage": "Peratusan Berwajaran",
     "window": "Tempoh masa",
-    "yourLocalTime": "Waktu tempatan anda"
+    "yourLocalTime": "Waktu tempatan anda",
+    "notYetOpenTitle": "Ujian Ini Belum Dibuka",
+    "notYetOpenMessage": "Anda boleh mula pada {{time}}.",
+    "opensInLabel": "Dibuka dalam",
+    "autoSubmittedViolationTitle": "Ujian Dihantar Secara Automatik",
+    "autoSubmittedViolationMessage": "Anda telah meninggalkan tetingkap peperiksaan (menukar tab, menukar aplikasi, atau keluar daripada skrin penuh), jadi ujian anda telah dihantar serta-merta dengan jawapan yang telah anda isi.",
+    "autoSubmittedTimeExpiredMessage": "Masa anda telah tamat, jadi ujian anda telah dihantar secara automatik dengan jawapan yang telah anda isi.",
+    "leaveWarning": "Meninggalkan halaman ini akan menamatkan percubaan ujian anda."
   },
   "fees": {
     "addItem": "Tambah item",

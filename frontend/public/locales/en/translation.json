@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "Shuffle question order per student",
     "start": "Start",
     "startTest": "Start Test",
-    "startTestWarning": "Once you start, the timer begins immediately and cannot be paused. Make sure you're ready before continuing.",
+    "startTestWarning": "This test runs in fullscreen and is monitored for tab switches, app switches, and exiting fullscreen. Once started, any of those submits your test immediately — there are no warnings and no second chances. Make sure you're ready before continuing.",
     "statusCalculated": "Calculated",
     "subjectAddedToast": "Subject added.",
     "submitTest": "Submit Test",
@@ -640,7 +640,14 @@
     "weightedGpa": "Weighted GPA",
     "weightedPercentage": "Weighted Percentage",
     "window": "Window",
-    "yourLocalTime": "Your local time"
+    "yourLocalTime": "Your local time",
+    "notYetOpenTitle": "This Test Isn't Open Yet",
+    "notYetOpenMessage": "You'll be able to start at {{time}}.",
+    "opensInLabel": "Opens in",
+    "autoSubmittedViolationTitle": "Test Submitted Automatically",
+    "autoSubmittedViolationMessage": "You left the exam window — switched tabs, switched apps, or exited fullscreen — so your test was submitted immediately with whatever you had answered.",
+    "autoSubmittedTimeExpiredMessage": "Your time ran out, so your test was submitted automatically with whatever you had answered.",
+    "leaveWarning": "Leaving this page will end your test attempt."
   },
   "fees": {
     "addItem": "Add item",

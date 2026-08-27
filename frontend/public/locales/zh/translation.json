@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "为每位学生打乱题目顺序",
     "start": "开始",
     "startTest": "开始测试",
-    "startTestWarning": "一旦开始,计时器将立即启动且无法暂停。请在继续之前确保您已准备好。",
+    "startTestWarning": "本测验将以全屏模式进行，系统会监测切换标签页、切换应用或退出全屏的行为。测验开始后，出现上述任一行为都会立即提交你的答卷——不会有警告，也没有第二次机会。请在继续之前确认自己已准备就绪。",
     "statusCalculated": "已计算",
     "subjectAddedToast": "科目已添加。",
     "submitTest": "提交测试",
@@ -640,7 +640,14 @@
     "weightedGpa": "加权绩点",
     "weightedPercentage": "加权百分比",
     "window": "开放时段",
-    "yourLocalTime": "您的当地时间"
+    "yourLocalTime": "您的当地时间",
+    "notYetOpenTitle": "该测验尚未开放",
+    "notYetOpenMessage": "你将可以在 {{time}} 开始。",
+    "opensInLabel": "开放倒计时",
+    "autoSubmittedViolationTitle": "测验已自动提交",
+    "autoSubmittedViolationMessage": "你离开了测验窗口（切换了标签页、切换了应用，或退出了全屏），因此系统已立即用你已作答的内容提交了测验。",
+    "autoSubmittedTimeExpiredMessage": "你的时间已用完，系统已自动用你已作答的内容提交了测验。",
+    "leaveWarning": "离开此页面将结束你的测验作答。"
   },
   "fees": {
     "addItem": "添加项目",

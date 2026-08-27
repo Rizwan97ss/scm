@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "Acak urutan pertanyaan untuk setiap siswa",
     "start": "Mulai",
     "startTest": "Mulai Ujian",
-    "startTestWarning": "Setelah Anda memulai, penghitung waktu akan langsung berjalan dan tidak dapat dijeda. Pastikan Anda siap sebelum melanjutkan.",
+    "startTestWarning": "Tes ini berjalan dalam mode layar penuh dan dipantau untuk perpindahan tab, perpindahan aplikasi, dan keluar dari layar penuh. Setelah dimulai, tindakan apa pun tersebut akan langsung mengirimkan tes Anda — tanpa peringatan dan tanpa kesempatan kedua. Pastikan Anda siap sebelum melanjutkan.",
     "statusCalculated": "Dihitung",
     "subjectAddedToast": "Mata pelajaran ditambahkan.",
     "submitTest": "Kirim Ujian",
@@ -640,7 +640,14 @@
     "weightedGpa": "GPA Terbobot",
     "weightedPercentage": "Persentase Terbobot",
     "window": "Jendela waktu",
-    "yourLocalTime": "Waktu lokal Anda"
+    "yourLocalTime": "Waktu lokal Anda",
+    "notYetOpenTitle": "Tes Ini Belum Dibuka",
+    "notYetOpenMessage": "Anda dapat mulai pada {{time}}.",
+    "opensInLabel": "Dibuka dalam",
+    "autoSubmittedViolationTitle": "Tes Dikirim Secara Otomatis",
+    "autoSubmittedViolationMessage": "Anda meninggalkan jendela ujian (berpindah tab, berpindah aplikasi, atau keluar dari layar penuh), sehingga tes Anda langsung dikirim dengan jawaban yang sudah Anda isi.",
+    "autoSubmittedTimeExpiredMessage": "Waktu Anda habis, sehingga tes Anda dikirim secara otomatis dengan jawaban yang sudah Anda isi.",
+    "leaveWarning": "Meninggalkan halaman ini akan mengakhiri percobaan tes Anda."
   },
   "fees": {
     "addItem": "Tambah item",

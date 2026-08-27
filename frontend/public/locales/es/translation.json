@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "Mezclar el orden de las preguntas por estudiante",
     "start": "Iniciar",
     "startTest": "Iniciar Prueba",
-    "startTestWarning": "Una vez que inicie, el temporizador comienza de inmediato y no se puede pausar. Asegúrese de estar listo antes de continuar.",
+    "startTestWarning": "Esta prueba se ejecuta en pantalla completa y se supervisa si cambias de pestaña, de aplicación o sales de pantalla completa. Una vez iniciada, cualquiera de esas acciones envía tu prueba de inmediato, sin avisos ni segundas oportunidades. Asegúrate de estar listo antes de continuar.",
     "statusCalculated": "Calculado",
     "subjectAddedToast": "Asignatura añadida.",
     "submitTest": "Enviar Prueba",
@@ -640,7 +640,14 @@
     "weightedGpa": "GPA Ponderado",
     "weightedPercentage": "Porcentaje Ponderado",
     "window": "Ventana",
-    "yourLocalTime": "Su hora local"
+    "yourLocalTime": "Su hora local",
+    "notYetOpenTitle": "Esta Prueba Aún No Está Disponible",
+    "notYetOpenMessage": "Podrás empezar a las {{time}}.",
+    "opensInLabel": "Abre en",
+    "autoSubmittedViolationTitle": "Prueba Enviada Automáticamente",
+    "autoSubmittedViolationMessage": "Saliste de la ventana del examen (cambiaste de pestaña, de aplicación o saliste de pantalla completa), así que tu prueba se envió de inmediato con lo que habías respondido.",
+    "autoSubmittedTimeExpiredMessage": "Se acabó tu tiempo, así que tu prueba se envió automáticamente con lo que habías respondido.",
+    "leaveWarning": "Salir de esta página finalizará tu intento de prueba."
   },
   "fees": {
     "addItem": "Agregar línea",

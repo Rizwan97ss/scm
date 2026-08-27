@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'school_id', 'exam_id', 'exam_subject_group_id', 'assessment_component_type_id', 'subject_id', 'section_id',
     'sequence', 'max_marks', 'exam_date',
     'is_online', 'duration_minutes', 'online_starts_at', 'online_ends_at', 'shuffle_questions', 'max_attempts',
+    'early_access_minutes', 'late_join_grace_minutes',
 ])]
 class ExamSubject extends Model
 {

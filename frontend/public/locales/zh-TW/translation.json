@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "為每位學生打亂題目順序",
     "start": "開始",
     "startTest": "開始測驗",
-    "startTestWarning": "一旦開始,計時器將立即啟動且無法暫停。請在繼續之前確保您已準備好。",
+    "startTestWarning": "本測驗將以全螢幕模式進行，系統會監測切換分頁、切換應用程式或退出全螢幕的行為。測驗開始後，出現上述任一行為都會立即提交你的答卷——不會有警告，也沒有第二次機會。請在繼續之前確認自己已經準備就緒。",
     "statusCalculated": "已計算",
     "subjectAddedToast": "科目已新增。",
     "submitTest": "提交測驗",
@@ -640,7 +640,14 @@
     "weightedGpa": "加權 GPA",
     "weightedPercentage": "加權百分比",
     "window": "開放時段",
-    "yourLocalTime": "您的當地時間"
+    "yourLocalTime": "您的當地時間",
+    "notYetOpenTitle": "此測驗尚未開放",
+    "notYetOpenMessage": "你將可以在 {{time}} 開始。",
+    "opensInLabel": "開放倒數",
+    "autoSubmittedViolationTitle": "測驗已自動提交",
+    "autoSubmittedViolationMessage": "你離開了測驗視窗（切換了分頁、切換了應用程式，或退出了全螢幕），因此系統已立即用你已作答的內容提交了測驗。",
+    "autoSubmittedTimeExpiredMessage": "你的時間已用完，系統已自動用你已作答的內容提交了測驗。",
+    "leaveWarning": "離開此頁面將結束你的測驗作答。"
   },
   "fees": {
     "addItem": "新增項目",

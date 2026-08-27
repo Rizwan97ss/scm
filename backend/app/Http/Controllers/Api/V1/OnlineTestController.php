@@ -144,12 +144,66 @@ class OnlineTestController extends Controller
         $this->authorizeOwnAttempt($request, $attempt);
 
         try {
-            $this->onlineExams->saveAnswer($attempt, $request->integer('question_id'), $request->input('selected_option_id') ? (int) $request->input('selected_option_id') : null);
+            $this->onlineExams->saveAnswer(
+                $attempt,
+                $request->integer('question_id'),
+                $request->input('selected_option_id') ? (int) $request->input('selected_option_id') : null,
+                $request->user(),
+            );
         } catch (ValidationException $e) {
             return ApiResponse::error(collect($e->errors())->flatten()->first(), 422, $e->errors());
         }
 
         return ApiResponse::success(null, 'Answer saved.');
+    }
+
+    /**
+     * Zero-tolerance integrity reporting: the frontend calls this the
+     * instant it detects the student left the exam window (tab hidden,
+     * window blur, or exited fullscreen) and this both logs the event and
+     * force-submits in the same call — there's no separate "just warn"
+     * step. Idempotent by design: if the attempt was already submitted by
+     * the time this lands (e.g. it raced the deadline auto-submit), this
+     * still logs the event but simply returns the attempt as-is rather
+     * than erroring, since nothing actually went wrong from the caller's
+     * point of view — the exam is over either way.
+     */
+    public function reportViolation(Request $request, OnlineTestAttempt $attempt): JsonResponse
+    {
+        $this->authorizeOwnAttempt($request, $attempt);
+
+        $data = $request->validate([
+            'event_type' => ['required', 'string', 'in:tab_hidden,window_blur,fullscreen_exit'],
+        ]);
+
+        $attempt = $this->onlineExams->recordViolationAndSubmit($attempt, $data['event_type'], $request->user());
+        $attempt->load(['answers.question.options', 'examSubject.examSubjectGroup.exam']);
+
+        return ApiResponse::success(new OnlineTestAttemptResource($attempt, $request->user()), 'Left the exam window — test submitted.');
+    }
+
+    /**
+     * Lightweight, pre-attempt metadata for the waiting-room screen — title,
+     * timing, and the join-window bounds, but never the question list
+     * itself (that only exists once start() actually creates an attempt).
+     * server_time lets the frontend correct for its own clock being wrong
+     * rather than trusting the browser's Date.now() outright.
+     */
+    public function onlineStatus(Request $request, ExamSubject $examSubject): JsonResponse
+    {
+        $student = $this->resolveActingStudent($request);
+        abort_unless($student->current_section_id === $examSubject->section_id, 403, 'You are not enrolled in this section.');
+
+        return ApiResponse::success([
+            'exam_name' => $examSubject->exam->name,
+            'subject_name' => $examSubject->subject->name,
+            'duration_minutes' => $examSubject->duration_minutes,
+            'online_starts_at' => $examSubject->online_starts_at?->toIso8601String(),
+            'online_ends_at' => $examSubject->online_ends_at?->toIso8601String(),
+            'early_access_minutes' => $examSubject->early_access_minutes,
+            'late_join_grace_minutes' => $examSubject->late_join_grace_minutes,
+            'server_time' => now()->toIso8601String(),
+        ]);
     }
 
     public function submit(Request $request, OnlineTestAttempt $attempt): JsonResponse

@@ -35,6 +35,10 @@ class OnlineTestAttemptResource extends JsonResource
             'status' => $this->status,
             'started_at' => $this->started_at?->toIso8601String(),
             'submitted_at' => $this->submitted_at?->toIso8601String(),
+            // Status metadata, not the answer key — always visible so the
+            // student sees *why* their test ended, not just that it did.
+            'auto_submit_reason' => $this->auto_submit_reason,
+            'violation_count' => $this->violation_count,
             // Score, and the full answer key, are only meaningful once
             // submitted AND the subject's result has actually been declared —
             // matches every other component type's Draft/Calculated/Published

@@ -622,7 +622,7 @@
     "shuffleQuestionsLabel": "生徒ごとに問題の順序をシャッフルする",
     "start": "開始",
     "startTest": "テストを開始",
-    "startTestWarning": "開始すると、タイマーはすぐに動き出し、一時停止できません。続行する前に準備ができていることを確認してください。",
+    "startTestWarning": "このテストは全画面表示で実行され、タブの切り替え、アプリの切り替え、全画面表示の終了が監視されます。開始後は、これらのいずれかが発生すると即座にテストが提出されます — 警告はなく、やり直しもできません。続行する前に準備ができていることを確認してください。",
     "statusCalculated": "計算済み",
     "subjectAddedToast": "科目を追加しました。",
     "submitTest": "テストを提出",
@@ -640,7 +640,14 @@
     "weightedGpa": "加重GPA",
     "weightedPercentage": "加重パーセンテージ",
     "window": "受験可能期間",
-    "yourLocalTime": "現地時間"
+    "yourLocalTime": "現地時間",
+    "notYetOpenTitle": "このテストはまだ開始されていません",
+    "notYetOpenMessage": "{{time}} に開始できます。",
+    "opensInLabel": "開始まで",
+    "autoSubmittedViolationTitle": "テストが自動的に提出されました",
+    "autoSubmittedViolationMessage": "試験画面から離れた（タブの切り替え、アプリの切り替え、または全画面表示の終了）ため、それまでに回答した内容でテストが即座に提出されました。",
+    "autoSubmittedTimeExpiredMessage": "時間切れになったため、それまでに回答した内容でテストが自動的に提出されました。",
+    "leaveWarning": "このページを離れるとテストの受験は終了します。"
   },
   "fees": {
     "addItem": "項目を追加",

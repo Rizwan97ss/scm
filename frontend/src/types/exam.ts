@@ -284,6 +284,8 @@ export interface OnlineTestAnswerReview {
   explanation: string | null
 }
 
+export type AutoSubmitReason = 'time_expired' | 'violation' | null
+
 export interface OnlineTestAttempt {
   id: number
   exam_subject_id: number
@@ -292,6 +294,8 @@ export interface OnlineTestAttempt {
   status: AttemptStatus
   started_at: string
   submitted_at: string | null
+  auto_submit_reason: AutoSubmitReason
+  violation_count: number
   // Absent entirely (not just null) until the subject's result is declared —
   // see OnlineTestAttemptResource's masking. A masked response is not the
   // same as "no attempt exists," so this is `?:` rather than `| null`.
@@ -305,6 +309,20 @@ export interface StartAttemptResponse {
   duration_minutes: number | null
   questions: TestQuestion[]
 }
+
+/** Pre-attempt metadata for the waiting-room screen — never the question list. */
+export interface OnlineTestStatus {
+  exam_name: string
+  subject_name: string
+  duration_minutes: number | null
+  online_starts_at: string | null
+  online_ends_at: string | null
+  early_access_minutes: number
+  late_join_grace_minutes: number
+  server_time: string
+}
+
+export type ViolationEventType = 'tab_hidden' | 'window_blur' | 'fullscreen_exit'
 
 export interface MyOnlineTestRow {
   exam_subject_id: number

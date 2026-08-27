@@ -330,9 +330,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('online-tests/mine', [OnlineTestController::class, 'myTests'])->name('online-tests.mine');
             Route::get('exam-subjects/{examSubject}/online-test-questions', [OnlineTestController::class, 'questions'])->name('exam-subjects.online-test-questions.index');
             Route::post('exam-subjects/{examSubject}/online-test-questions', [OnlineTestController::class, 'syncQuestions'])->name('exam-subjects.online-test-questions.store');
-            Route::post('exam-subjects/{examSubject}/attempts', [OnlineTestController::class, 'start'])->name('exam-subjects.attempts.start');
+            Route::get('exam-subjects/{examSubject}/online-status', [OnlineTestController::class, 'onlineStatus'])->name('exam-subjects.online-status');
+            Route::post('exam-subjects/{examSubject}/attempts', [OnlineTestController::class, 'start'])->name('exam-subjects.attempts.start')->middleware('throttle:10,1');
             Route::put('online-test-attempts/{attempt}/answers', [OnlineTestController::class, 'saveAnswer'])->name('online-test-attempts.answers.save');
             Route::post('online-test-attempts/{attempt}/submit', [OnlineTestController::class, 'submit'])->name('online-test-attempts.submit');
+            Route::post('online-test-attempts/{attempt}/violations', [OnlineTestController::class, 'reportViolation'])->name('online-test-attempts.violations.store')->middleware('throttle:20,1');
             Route::get('online-test-attempts/{attempt}', [OnlineTestController::class, 'show'])->name('online-test-attempts.show');
 
             Route::get('terms/{term}/result', [TermResultController::class, 'show'])->name('terms.result');

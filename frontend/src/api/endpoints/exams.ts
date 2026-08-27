@@ -16,6 +16,7 @@ import type {
   GradingScalePayload,
   MarkExamEntry,
   MyOnlineTestRow,
+  OnlineTestStatus,
   Question,
   QuestionImportResult,
   QuestionPayload,
@@ -24,6 +25,7 @@ import type {
   SubjectResultRow,
   SyncOnlineTestQuestionsPayload,
   TermResult,
+  ViolationEventType,
   OnlineTestAttempt,
 } from '@/types/exam'
 
@@ -135,6 +137,14 @@ export const onlineTestsApi = {
   },
   getAttempt: async (attemptId: number): Promise<OnlineTestAttempt> => {
     const { data } = await httpClient.get<ApiResponse<OnlineTestAttempt>>(`/online-test-attempts/${attemptId}`)
+    return data.data
+  },
+  onlineStatus: async (examSubjectId: number): Promise<OnlineTestStatus> => {
+    const { data } = await httpClient.get<ApiResponse<OnlineTestStatus>>(`/exam-subjects/${examSubjectId}/online-status`)
+    return data.data
+  },
+  reportViolation: async (attemptId: number, eventType: ViolationEventType): Promise<OnlineTestAttempt> => {
+    const { data } = await httpClient.post<ApiResponse<OnlineTestAttempt>>(`/online-test-attempts/${attemptId}/violations`, { event_type: eventType })
     return data.data
   },
 }

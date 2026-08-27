@@ -1,19 +1,40 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { AlertTriangle, CheckCircle2, Clock, Send } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Clock, Lock, Send, ShieldAlert } from 'lucide-react'
 import { onlineTestsApi } from '@/api/endpoints/exams'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Badge, Button, Card, CardContent, EmptyState } from '@/components/ui'
-import type { OnlineTestAttempt, TestQuestion } from '@/types/exam'
+import type { OnlineTestAttempt, OnlineTestStatus, TestQuestion, ViolationEventType } from '@/types/exam'
 import type { ApiError } from '@/api/client'
 
 function formatTime(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  }
   return `${minutes}:${String(seconds).padStart(2, '0')}`
+}
+
+/** How long a tab/app switch or fullscreen exit is tolerated before it counts as a violation — long enough to absorb the
+ *  browser's own momentary focus flicker (e.g. its fullscreen-confirm dialog), nowhere near long enough to actually cheat in. */
+const VIOLATION_DEBOUNCE_MS = 1000
+
+function requestFullscreenBestEffort(): void {
+  document.documentElement.requestFullscreen?.().catch(() => {
+    // Denied, unsupported, or not a user-gesture context — the exam still
+    // proceeds; there's simply nothing to "exit" later in that case.
+  })
+}
+
+function exitFullscreenBestEffort(): void {
+  if (document.fullscreenElement) {
+    document.exitFullscreen?.().catch(() => {})
+  }
 }
 
 export function TakeOnlineTestPage() {
@@ -28,6 +49,46 @@ export function TakeOnlineTestPage() {
   const [deadline, setDeadline] = useState<number | null>(null)
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null)
   const [result, setResult] = useState<OnlineTestAttempt | null>(null)
+  const [serverNowOffset, setServerNowOffset] = useState<number | null>(null)
+  const [countdownToOpen, setCountdownToOpen] = useState<number | null>(null)
+
+  // Guards against a real violation firing twice (e.g. a tab switch trips
+  // both visibilitychange and window blur for the same event) and against
+  // reporting one after the attempt is already on its way to being submitted.
+  const violationReportedRef = useRef(false)
+  const wasFullscreenRef = useRef(false)
+
+  const { data: status } = useQuery<OnlineTestStatus>({
+    queryKey: ['online-test-status', id],
+    queryFn: () => onlineTestsApi.onlineStatus(id),
+    enabled: phase === 'landing',
+  })
+
+  useEffect(() => {
+    if (!status) return
+    setServerNowOffset(new Date(status.server_time).getTime() - Date.now())
+  }, [status])
+
+  const earlyOpensAtMs = status?.online_starts_at && serverNowOffset !== null
+    ? new Date(status.online_starts_at).getTime() - status.early_access_minutes * 60_000
+    : null
+
+  useEffect(() => {
+    if (earlyOpensAtMs === null || serverNowOffset === null) {
+      setCountdownToOpen(null)
+      return
+    }
+
+    const tick = () => {
+      const effectiveNow = Date.now() + serverNowOffset
+      const secondsLeft = Math.max(0, Math.round((earlyOpensAtMs - effectiveNow) / 1000))
+      setCountdownToOpen(secondsLeft)
+    }
+
+    tick()
+    const interval = setInterval(tick, 1000)
+    return () => clearInterval(interval)
+  }, [earlyOpensAtMs, serverNowOffset])
 
   const startMutation = useMutation({
     mutationFn: () => onlineTestsApi.start(id),
@@ -38,6 +99,8 @@ export function TakeOnlineTestPage() {
         const startedAtMs = new Date(data.attempt.started_at).getTime()
         setDeadline(startedAtMs + data.duration_minutes * 60_000)
       }
+      violationReportedRef.current = false
+      wasFullscreenRef.current = !!document.fullscreenElement
       setPhase('in-progress')
     },
     onError: (error) => toast.error((error as ApiError).message),
@@ -47,15 +110,32 @@ export function TakeOnlineTestPage() {
     mutationFn: ({ questionId, optionId }: { questionId: number; optionId: number }) => onlineTestsApi.saveAnswer(attempt!.id, questionId, optionId),
   })
 
+  function finishAttempt(data: OnlineTestAttempt) {
+    exitFullscreenBestEffort()
+    setResult(data)
+    setPhase('result')
+  }
+
   const submitMutation = useMutation({
     mutationFn: () => onlineTestsApi.submit(attempt!.id),
     onSuccess: (data) => {
-      setResult(data)
-      setPhase('result')
+      finishAttempt(data)
       toast.success(t('exams.testSubmittedToast'))
     },
     onError: (error) => toast.error((error as ApiError).message),
   })
+
+  const violationMutation = useMutation({
+    mutationFn: (eventType: ViolationEventType) => onlineTestsApi.reportViolation(attempt!.id, eventType),
+    onSuccess: (data) => finishAttempt(data),
+    onError: (error) => toast.error((error as ApiError).message),
+  })
+
+  function reportViolationOnce(eventType: ViolationEventType) {
+    if (violationReportedRef.current) return
+    violationReportedRef.current = true
+    violationMutation.mutate(eventType)
+  }
 
   // Auto-submits the moment the countdown hits zero — a student who leaves
   // the tab open past the deadline still gets graded on whatever they'd
@@ -76,24 +156,120 @@ export function TakeOnlineTestPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, deadline])
 
+  // Zero-tolerance integrity monitoring: a tab switch, an app switch (window
+  // losing OS focus), or exiting fullscreen all end the attempt immediately.
+  // Each listener starts a short debounce on the "away" edge and cancels it
+  // on the "back" edge, so a momentary flicker from the browser's own UI
+  // (e.g. its fullscreen-confirm dialog) can't cause a false submit.
+  useEffect(() => {
+    if (phase !== 'in-progress') return
+
+    let hiddenTimer: ReturnType<typeof setTimeout> | null = null
+    let blurTimer: ReturnType<typeof setTimeout> | null = null
+    let fullscreenTimer: ReturnType<typeof setTimeout> | null = null
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        hiddenTimer = setTimeout(() => reportViolationOnce('tab_hidden'), VIOLATION_DEBOUNCE_MS)
+      } else if (hiddenTimer) {
+        clearTimeout(hiddenTimer)
+        hiddenTimer = null
+      }
+    }
+
+    function handleBlur() {
+      blurTimer = setTimeout(() => reportViolationOnce('window_blur'), VIOLATION_DEBOUNCE_MS)
+    }
+
+    function handleFocus() {
+      if (blurTimer) {
+        clearTimeout(blurTimer)
+        blurTimer = null
+      }
+    }
+
+    function handleFullscreenChange() {
+      const isFullscreen = !!document.fullscreenElement
+      if (isFullscreen) {
+        wasFullscreenRef.current = true
+        if (fullscreenTimer) {
+          clearTimeout(fullscreenTimer)
+          fullscreenTimer = null
+        }
+        return
+      }
+      if (wasFullscreenRef.current) {
+        fullscreenTimer = setTimeout(() => reportViolationOnce('fullscreen_exit'), VIOLATION_DEBOUNCE_MS)
+      }
+    }
+
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('blur', handleBlur)
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      if (hiddenTimer) clearTimeout(hiddenTimer)
+      if (blurTimer) clearTimeout(blurTimer)
+      if (fullscreenTimer) clearTimeout(fullscreenTimer)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('blur', handleBlur)
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase])
+
   function selectOption(questionId: number, optionId: number) {
     setAnswers((prev) => ({ ...prev, [questionId]: optionId }))
     answerMutation.mutate({ questionId, optionId })
   }
 
+  function handleStartClick() {
+    // Must run synchronously inside the click handler, not inside the
+    // mutation's async callback — some browsers only honor a fullscreen
+    // request made directly within a user-gesture event.
+    requestFullscreenBestEffort()
+    startMutation.mutate()
+  }
+
   if (phase === 'landing') {
+    const notYetOpen = countdownToOpen !== null && countdownToOpen > 0
+
     return (
       <div className="mx-auto max-w-lg">
         <PageHeader title={t('exams.onlineTest')} />
         <Card>
           <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
-            <AlertTriangle className="h-8 w-8 text-warning" />
-            <p className="text-sm text-muted-foreground">
-              {t('exams.startTestWarning')}
-            </p>
-            <Button onClick={() => startMutation.mutate()} isLoading={startMutation.isPending}>
-              {t('exams.startTest')}
-            </Button>
+            {notYetOpen ? (
+              <>
+                <Lock className="h-8 w-8 text-muted-foreground" />
+                <p className="font-medium">{t('exams.notYetOpenTitle')}</p>
+                {status?.online_starts_at && (
+                  <p className="text-sm text-muted-foreground">
+                    {t('exams.notYetOpenMessage', { time: new Date(status.online_starts_at).toLocaleString() })}
+                  </p>
+                )}
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" /> {t('exams.opensInLabel')} {formatTime(countdownToOpen)}
+                </Badge>
+              </>
+            ) : (
+              <>
+                <AlertTriangle className="h-8 w-8 text-warning" />
+                <p className="text-sm text-muted-foreground">{t('exams.startTestWarning')}</p>
+                <Button onClick={handleStartClick} isLoading={startMutation.isPending}>
+                  {t('exams.startTest')}
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -118,7 +294,7 @@ export function TakeOnlineTestPage() {
           </Button>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex select-none flex-col gap-4" onCopy={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()}>
           {questions.map((question, index) => (
             <Card key={question.question_id}>
               <CardContent className="pt-4 sm:pt-6">
@@ -154,6 +330,24 @@ export function TakeOnlineTestPage() {
 
   if (!result) {
     return <EmptyState title={t('exams.noResultAvailable')} />
+  }
+
+  if (result.auto_submit_reason === 'violation' || result.auto_submit_reason === 'time_expired') {
+    return (
+      <div className="mx-auto max-w-lg">
+        <PageHeader title={t('exams.autoSubmittedViolationTitle')} />
+        <Card>
+          <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
+            <ShieldAlert className="h-8 w-8 text-destructive" />
+            <p className="text-sm text-muted-foreground">
+              {result.auto_submit_reason === 'violation'
+                ? t('exams.autoSubmittedViolationMessage')
+                : t('exams.autoSubmittedTimeExpiredMessage')}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   // Graded instantly behind the scenes, but not shown until the subject's
