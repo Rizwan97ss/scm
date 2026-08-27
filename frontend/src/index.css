@@ -112,8 +112,20 @@ body {
   font-family: var(--font-sans);
 }
 
-* {
-  border-color: var(--color-border);
+/*
+ * Layered (not a bare global rule) so it sits at the same cascade priority
+ * as Tailwind's own base reset — unlayered CSS unconditionally beats every
+ * layered rule regardless of specificity, so a plain `* { border-color }`
+ * here would silently override every `border-{color}` utility class
+ * (border-primary, border-destructive, ...) app-wide, no matter how
+ * specific. This just gives a bare `border` (no color utility) a sensible
+ * themed default; an explicit color utility (in the later `utilities`
+ * layer) still wins as expected.
+ */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
 }
 
 :focus-visible {
