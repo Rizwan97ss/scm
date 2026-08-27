@@ -183,6 +183,21 @@ class OnlineTestController extends Controller
     }
 
     /**
+     * Called on a short interval by a genuinely open exam tab, purely to
+     * keep the login lock (see OnlineExamService::hasActiveExamLock()) alive
+     * for as long as the student is actually still there — see
+     * OnlineExamService::heartbeat() for what happens once these stop.
+     */
+    public function heartbeat(Request $request, OnlineTestAttempt $attempt): JsonResponse
+    {
+        $this->authorizeOwnAttempt($request, $attempt);
+
+        $this->onlineExams->heartbeat($attempt);
+
+        return ApiResponse::success(null);
+    }
+
+    /**
      * Lightweight, pre-attempt metadata for the waiting-room screen — title,
      * timing, and the join-window bounds, but never the question list
      * itself (that only exists once start() actually creates an attempt).

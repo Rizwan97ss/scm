@@ -156,6 +156,20 @@ export function TakeOnlineTestPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, deadline])
 
+  // Keeps the account's login lock alive (see backend LoginRequest) for as
+  // long as this tab is genuinely still open — a dropped connection simply
+  // stops refreshing it, so another device can log back in and resume
+  // after a short gap rather than being locked out indefinitely.
+  useEffect(() => {
+    if (phase !== 'in-progress' || !attempt) return
+
+    const interval = setInterval(() => {
+      onlineTestsApi.heartbeat(attempt.id).catch(() => {})
+    }, 20_000)
+
+    return () => clearInterval(interval)
+  }, [phase, attempt])
+
   // Zero-tolerance integrity monitoring: a tab switch, an app switch (window
   // losing OS focus), or exiting fullscreen all end the attempt immediately.
   // Each listener starts a short debounce on the "away" edge and cancels it

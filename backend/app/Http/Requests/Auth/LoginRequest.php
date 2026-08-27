@@ -6,6 +6,7 @@ use App\Enums\UserStatus;
 use App\Http\Middleware\EnsureSessionPasswordIsCurrent;
 use App\Models\User;
 use App\Services\Mfa\MfaChallengeService;
+use App\Services\OnlineExamService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -56,6 +57,17 @@ class LoginRequest extends FormRequest
         if ($user->status !== UserStatus::Active) {
             throw ValidationException::withMessages([
                 'email' => 'This account is not active. Contact your administrator.',
+            ]);
+        }
+
+        // Zero-tolerance exam integrity: a student mid-attempt (a recent
+        // heartbeat from a genuinely open tab, not merely an unfinished row)
+        // can't be logged into from anywhere else — see
+        // OnlineExamService::hasActiveExamLock() for how this self-clears
+        // once that tab actually goes away.
+        if (app(OnlineExamService::class)->hasActiveExamLock($user)) {
+            throw ValidationException::withMessages([
+                'email' => 'This account has an online exam in progress on another device. Please wait a moment and try again.',
             ]);
         }
 

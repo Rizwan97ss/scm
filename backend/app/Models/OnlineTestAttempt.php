@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['school_id', 'exam_subject_id', 'student_id', 'attempt_number', 'status', 'started_at', 'submitted_at', 'score', 'max_score', 'auto_submit_reason', 'violation_count'])]
+#[Fillable(['school_id', 'exam_subject_id', 'student_id', 'attempt_number', 'status', 'started_at', 'submitted_at', 'score', 'max_score', 'auto_submit_reason', 'violation_count', 'last_seen_at'])]
 class OnlineTestAttempt extends Model
 {
     use HasFactory;
@@ -18,6 +18,7 @@ class OnlineTestAttempt extends Model
         return [
             'started_at' => 'datetime',
             'submitted_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'score' => 'float',
             'max_score' => 'float',
         ];

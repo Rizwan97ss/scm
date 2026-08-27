@@ -147,4 +147,7 @@ export const onlineTestsApi = {
     const { data } = await httpClient.post<ApiResponse<OnlineTestAttempt>>(`/online-test-attempts/${attemptId}/violations`, { event_type: eventType })
     return data.data
   },
+  heartbeat: async (attemptId: number): Promise<void> => {
+    await httpClient.post(`/online-test-attempts/${attemptId}/heartbeat`)
+  },
 }

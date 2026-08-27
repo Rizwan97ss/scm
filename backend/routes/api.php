@@ -335,6 +335,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::put('online-test-attempts/{attempt}/answers', [OnlineTestController::class, 'saveAnswer'])->name('online-test-attempts.answers.save');
             Route::post('online-test-attempts/{attempt}/submit', [OnlineTestController::class, 'submit'])->name('online-test-attempts.submit');
             Route::post('online-test-attempts/{attempt}/violations', [OnlineTestController::class, 'reportViolation'])->name('online-test-attempts.violations.store')->middleware('throttle:20,1');
+            Route::post('online-test-attempts/{attempt}/heartbeat', [OnlineTestController::class, 'heartbeat'])->name('online-test-attempts.heartbeat')->middleware('throttle:20,1');
             Route::get('online-test-attempts/{attempt}', [OnlineTestController::class, 'show'])->name('online-test-attempts.show');
 
             Route::get('terms/{term}/result', [TermResultController::class, 'show'])->name('terms.result');

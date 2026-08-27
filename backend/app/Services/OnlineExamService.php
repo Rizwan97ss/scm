@@ -18,6 +18,16 @@ use Throwable;
 class OnlineExamService
 {
     /**
+     * How long a heartbeat-less attempt is still treated as "live" for the
+     * login lock (see hasActiveExamLock()) — long enough to absorb one
+     * missed beat at the frontend's own interval, short enough that a
+     * genuine disconnect (crash, closed laptop, dead network) lets the
+     * student back in within well under a minute rather than needing an
+     * admin to intervene.
+     */
+    private const LOCK_LIVENESS_SECONDS = 45;
+
+    /**
      * Replaces the online test's question list wholesale — safe even with
      * existing attempts, since OnlineTestAnswer references question_id
      * directly, not the pivot row, so re-attaching the same question keeps
@@ -74,6 +84,8 @@ class OnlineExamService
                 throw ValidationException::withMessages(['window' => 'Your time for this test has ended.']);
             }
 
+            $inProgress->update(['last_seen_at' => now()]);
+
             return $inProgress;
         }
 
@@ -106,7 +118,45 @@ class OnlineExamService
             'attempt_number' => $existingAttempts + 1,
             'status' => 'in_progress',
             'started_at' => $now,
+            'last_seen_at' => $now,
         ]);
+    }
+
+    /**
+     * Keeps this attempt "live" for the login lock below — called by the
+     * frontend on a short interval while the tab is genuinely open. A no-op
+     * once the attempt is no longer in_progress; a heartbeat racing a
+     * just-submitted attempt isn't an error from the caller's point of view.
+     */
+    public function heartbeat(OnlineTestAttempt $attempt): void
+    {
+        if ($attempt->status === 'in_progress') {
+            $attempt->update(['last_seen_at' => now()]);
+        }
+    }
+
+    /**
+     * The exam-integrity login lock: while a student has an in-progress
+     * attempt with a recent heartbeat, a second login for that same account
+     * is refused (see LoginRequest::authenticate()) — someone else can't log
+     * in with shared/leaked credentials while the real student is mid-exam.
+     * Liveness, not mere existence, is what's checked: once the heartbeat
+     * goes stale (tab closed, crash, dead connection) the lock lifts on its
+     * own within LOCK_LIVENESS_SECONDS, so the legitimate student can always
+     * log back in to resume without needing anyone to intervene.
+     */
+    public function hasActiveExamLock(User $user): bool
+    {
+        $student = Student::query()->where('user_id', $user->id)->first();
+        if (! $student) {
+            return false;
+        }
+
+        return OnlineTestAttempt::query()
+            ->where('student_id', $student->id)
+            ->where('status', 'in_progress')
+            ->where('last_seen_at', '>', now()->subSeconds(self::LOCK_LIVENESS_SECONDS))
+            ->exists();
     }
 
     public function saveAnswer(OnlineTestAttempt $attempt, int $questionId, ?int $selectedOptionId, User $actingUser): OnlineTestAnswer
