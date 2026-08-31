@@ -67,6 +67,8 @@ export interface ApiError {
   message: string
   errors?: Record<string, string[]>
   status?: number
+  /** Only ever set on a 429 — Laravel's throttle middleware always sends this header, in seconds, on a rate-limited response. Lets the UI say "try again in Ns" instead of a vague "try again later." */
+  retryAfterSeconds?: number
 }
 
 /**
@@ -82,13 +84,46 @@ export function formatApiError(error: ApiError): string {
   return details.length ? `${error.message} ${details.join(' ')}` : error.message
 }
 
+/** Single source of truth for "was this a 401" — used by app/queryClient.ts to detect a session that's expired mid-use (as opposed to AuthContext's initial /auth/me check, which is its own expected, silent 401 for a not-yet-logged-in user). */
+export function isUnauthenticatedError(error: unknown): error is ApiError {
+  return !!error && typeof error === 'object' && 'status' in error && (error as ApiError).status === 401
+}
+
+/**
+ * Every throttled endpoint returns the same generic Laravel default ("Too
+ * Many Attempts."), which says nothing about how long to actually wait.
+ * Laravel's throttle middleware always sends a `Retry-After` header (in
+ * seconds) alongside a 429, so this turns "try again later" into an actual
+ * number, right at the source — every one of the onError call sites across
+ * the app just reads `error.message`/`formatApiError(error)`, so fixing it
+ * here means all of them get it for free, not just whichever ones happen to
+ * check `error.status === 429` themselves.
+ *
+ * 403 is deliberately left untouched: Laravel policies already send a
+ * specific, human-readable message per action ("You can only edit your own
+ * leave requests," not just "Forbidden") — overriding it with a generic
+ * string would throw away real information for no gain.
+ */
+function describeStatus(status: number | undefined, retryAfterSeconds: number | undefined, fallback: string): string {
+  if (status === 429) {
+    return retryAfterSeconds ? `Too many requests — please wait ${retryAfterSeconds}s and try again.` : 'Too many requests — please wait a moment and try again.'
+  }
+  return fallback
+}
+
 httpClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorResponse>) => {
+    const retryAfterHeader = error.response?.headers?.['retry-after']
+    const retryAfterSeconds = retryAfterHeader !== undefined ? Number(retryAfterHeader) : undefined
+    const status = error.response?.status
+    const validRetryAfterSeconds = Number.isFinite(retryAfterSeconds) ? retryAfterSeconds : undefined
+
     const apiError: ApiError = {
-      message: error.response?.data?.message ?? error.message ?? 'Something went wrong.',
+      message: describeStatus(status, validRetryAfterSeconds, error.response?.data?.message ?? error.message ?? 'Something went wrong.'),
       errors: error.response?.data?.errors,
-      status: error.response?.status,
+      status,
+      retryAfterSeconds: validRetryAfterSeconds,
     }
     return Promise.reject(apiError)
   }

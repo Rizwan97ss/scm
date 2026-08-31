@@ -4,7 +4,12 @@
     "target": "es2023",
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
-    "types": ["vite/client"],
+    // "node" is only actually used by src/testing/mswHandlers.ts, which reads
+    // the real translation JSON off disk (see its own docblock) for MSW to
+    // serve in tests -- adding it here (rather than a separate project, like
+    // tsconfig.node.json's) is the standard Vite+Vitest pattern, and doesn't
+    // change what runs in the browser bundle.
+    "types": ["vite/client", "node"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 

@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react'
+import { Suspense, type ReactElement, type ReactNode } from 'react'
 import { render, type RenderOptions } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
@@ -21,13 +21,18 @@ export function renderWithProviders(ui: ReactElement, options?: { route?: string
 
   function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={[route]}>
-          <ThemeProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </ThemeProvider>
-        </MemoryRouter>
-      </QueryClientProvider>
+      // setupTests.ts preloads 'en' before any test runs, so this never
+      // actually suspends in practice -- kept for parity with AppProviders,
+      // and as a safety net if a test explicitly switches language.
+      <Suspense fallback={null}>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={[route]}>
+            <ThemeProvider>
+              <AuthProvider>{children}</AuthProvider>
+            </ThemeProvider>
+          </MemoryRouter>
+        </QueryClientProvider>
+      </Suspense>
     )
   }
 

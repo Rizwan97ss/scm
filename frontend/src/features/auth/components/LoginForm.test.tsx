@@ -5,15 +5,15 @@ import { http, HttpResponse } from 'msw'
 import { LoginForm } from './LoginForm'
 import { renderWithProviders } from '@/testing/testUtils'
 import { server } from '@/testing/mswServer'
-import { env } from '@/config/env'
+import { apiUrl } from '@/api/client'
 
-const apiV1 = `${env.apiUrl}/v1`
+const apiV1 = `${apiUrl}/v1`
 
 describe('LoginForm', () => {
   it('shows validation errors when submitted empty', async () => {
     renderWithProviders(<LoginForm />)
 
-    await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
     expect(await screen.findByText('Email or username is required')).toBeInTheDocument()
     expect(screen.getByText('Password is required')).toBeInTheDocument()
@@ -30,7 +30,7 @@ describe('LoginForm', () => {
 
     await userEvent.type(screen.getByLabelText(/Email or username/), 'wrong@example.com')
     await userEvent.type(screen.getByLabelText(/^Password/), 'wrong-password')
-    await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
     expect(await screen.findByText('These credentials do not match our records.')).toBeInTheDocument()
   })
@@ -52,7 +52,7 @@ describe('LoginForm', () => {
 
     await userEvent.type(screen.getByLabelText(/Email or username/), 'alice@example.com')
     await userEvent.type(screen.getByLabelText(/^Password/), 'correct-password')
-    await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
     await waitFor(() => {
       expect(receivedBody).toMatchObject({ email: 'alice@example.com', password: 'correct-password' })
