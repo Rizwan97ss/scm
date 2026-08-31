@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchPublicSettings } from '@/api/endpoints/settings'
 import { queryKeys } from '@/api/queryKeys'
 import { env } from '@/config/env'
+import { setLocalizationDefaults } from '@/utils/localizationDefaults'
 
 type ThemePreference = 'light' | 'dark' | 'system'
 
@@ -44,11 +45,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const logoUrl = (settings?.['branding.logo_url'] as string | undefined) || null
   const currency = (settings?.['localization.currency'] as string | undefined) ?? 'USD'
   const dateFormat = (settings?.['localization.date_format'] as string | undefined) ?? 'yyyy-MM-dd'
+  const timeFormat = (settings?.['localization.time_format'] as string | undefined) ?? 'HH:mm'
 
   useEffect(() => {
     document.documentElement.style.setProperty('--brand-primary', primaryColor)
     document.documentElement.style.setProperty('--brand-secondary', secondaryColor)
   }, [primaryColor, secondaryColor])
+
+  // See utils/localizationDefaults.ts — keeps formatDate/formatCurrency's
+  // fallback in sync with the school's actual configured settings, without
+  // every one of their call sites needing to read this context itself.
+  useEffect(() => {
+    setLocalizationDefaults({ currency, dateFormat, timeFormat })
+  }, [currency, dateFormat, timeFormat])
 
   useEffect(() => {
     const root = document.documentElement

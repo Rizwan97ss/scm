@@ -1,26 +1,29 @@
 import { format, parseISO } from 'date-fns'
-
-const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd'
-const DEFAULT_TIME_FORMAT = 'HH:mm'
+import { getLocalizationDefaults } from './localizationDefaults'
 
 /**
  * Formats an ISO date/datetime string using the school's configured format
- * (settings key `localization.date_format`) when provided, falling back to
- * an ISO-like default so the UI never crashes on a missing setting.
+ * (settings key `localization.date_format`) via `getLocalizationDefaults()`
+ * — kept in sync by `ThemeContext` — so a call site never needs to thread
+ * the setting through itself. Pass `pattern` explicitly only to override
+ * the school's default for a specific case (e.g. a compact table column).
+ * Falls back to an ISO-like default (`localizationDefaults`'s own default)
+ * before settings have loaded, so the UI never crashes on a missing one.
  */
-export function formatDate(value: string | null | undefined, pattern: string = DEFAULT_DATE_FORMAT): string {
+export function formatDate(value: string | null | undefined, pattern?: string): string {
   if (!value) return '—'
   try {
-    return format(parseISO(value), pattern)
+    return format(parseISO(value), pattern ?? getLocalizationDefaults().dateFormat)
   } catch {
     return value
   }
 }
 
-export function formatDateTime(value: string | null | undefined, datePattern?: string, timePattern: string = DEFAULT_TIME_FORMAT): string {
+export function formatDateTime(value: string | null | undefined, datePattern?: string, timePattern?: string): string {
   if (!value) return '—'
   try {
-    return format(parseISO(value), `${datePattern ?? DEFAULT_DATE_FORMAT} ${timePattern}`)
+    const defaults = getLocalizationDefaults()
+    return format(parseISO(value), `${datePattern ?? defaults.dateFormat} ${timePattern ?? defaults.timeFormat}`)
   } catch {
     return value
   }
