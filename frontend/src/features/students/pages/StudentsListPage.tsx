@@ -1,18 +1,20 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Download, Plus, Search, Upload } from 'lucide-react'
+import { Download, Plus, TrendingUp, Upload } from 'lucide-react'
 import { studentsApi } from '@/api/endpoints/students'
 import { queryKeys } from '@/api/queryKeys'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
 import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, DataTable, Input, LinkButton, type DataTableColumn } from '@/components/ui'
+import { Badge, BulkActionBar, Button, DataTable, LinkButton, SearchInput, type DataTableColumn } from '@/components/ui'
 import { STUDENT_STATUS_LABEL_KEYS } from '@/types/enums'
 import type { Student } from '@/types/student'
 import { routePaths } from '@/routes/routePaths'
 import { downloadFile } from '@/utils/download'
 import { useNavigate } from 'react-router-dom'
+import { BulkPromoteModal } from '../components/BulkPromoteModal'
 
 export function StudentsListPage() {
   const { t } = useTranslation()
@@ -20,8 +22,10 @@ export function StudentsListPage() {
   const navigate = useNavigate()
   const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('first_name', 'first_name')
   const debouncedSearch = useDebounce(search)
+  const [selectedIds, setSelectedIds] = useState<Set<string | number>>(new Set())
+  const [promoteModalOpen, setPromoteModalOpen] = useState(false)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.students({ ...queryParams, 'filter[first_name]': debouncedSearch }),
     queryFn: () => studentsApi.list({ ...queryParams, 'filter[first_name]': debouncedSearch || undefined }),
   })
@@ -42,6 +46,8 @@ export function StudentsListPage() {
       ),
     },
   ]
+
+  const selectedIdList = Array.from(selectedIds).map(Number)
 
   return (
     <div>
@@ -70,17 +76,33 @@ export function StudentsListPage() {
       />
 
       <div className="mb-4 max-w-sm">
-        <div className="relative">
-          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder={t('students.searchByName')} className="ps-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
+        <SearchInput placeholder={t('students.searchByName')} value={search} onChange={setSearch} />
       </div>
+
+      <BulkActionBar count={selectedIds.size} onClear={() => setSelectedIds(new Set())}>
+        {can('students.export') && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => downloadFile(`${studentsApi.exportUrl}?ids=${selectedIdList.join(',')}`, 'students-selected.xlsx')}
+          >
+            <Download className="h-3.5 w-3.5" /> {t('common.exportSelected')}
+          </Button>
+        )}
+        {can('enrollment.manage') && (
+          <Button variant="outline" size="sm" onClick={() => setPromoteModalOpen(true)}>
+            <TrendingUp className="h-3.5 w-3.5" /> {t('students.promoteSelected')}
+          </Button>
+        )}
+      </BulkActionBar>
 
       <DataTable
         columns={columns}
         data={data?.data}
         rowKey={(row) => row.id}
         isLoading={isLoading}
+        isError={isError}
+        onRetry={refetch}
         meta={data?.meta}
         onPageChange={setPage}
         sort={sort}
@@ -88,6 +110,17 @@ export function StudentsListPage() {
         onRowClick={(row) => navigate(routePaths.studentProfile(row.id))}
         emptyTitle={t('students.noStudentsFound')}
         emptyDescription={can('students.create') ? t('students.admitFirstStudent') : undefined}
+        selectedKeys={selectedIds}
+        onSelectionChange={setSelectedIds}
+      />
+
+      <BulkPromoteModal
+        studentIds={selectedIdList}
+        open={promoteModalOpen}
+        onOpenChange={(open) => {
+          setPromoteModalOpen(open)
+          if (!open) setSelectedIds(new Set())
+        }}
       />
     </div>
   )

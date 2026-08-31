@@ -34,6 +34,16 @@ class UserPolicy
         return $user->can('users.create') && $this->canAssignRoles($user, $roles);
     }
 
+    public function import(User $user): bool
+    {
+        return $user->can('users.import');
+    }
+
+    public function export(User $user): bool
+    {
+        return $user->can('users.export');
+    }
+
     public function update(User $user, User $model): bool
     {
         return $user->can('users.edit') || $user->id === $model->id;

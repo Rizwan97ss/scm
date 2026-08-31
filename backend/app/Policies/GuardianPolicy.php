@@ -23,6 +23,11 @@ class GuardianPolicy
         return $user->can('guardians.create');
     }
 
+    public function import(User $user): bool
+    {
+        return $user->can('guardians.import');
+    }
+
     public function update(User $user, Guardian $guardian): bool
     {
         return $user->can('guardians.edit');

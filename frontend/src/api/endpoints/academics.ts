@@ -1,5 +1,5 @@
 import { httpClient } from '@/api/client'
-import { createCrudEndpoints } from './crudFactory'
+import { createCrudEndpoints, createImportEndpoints } from './crudFactory'
 import type { ApiResponse } from '@/types/api'
 import type {
   AcademicYear,
@@ -35,11 +35,11 @@ export const academicYearsApi = {
 }
 
 export const termsApi = createCrudEndpoints<Term, TermPayload>('terms')
-export const departmentsApi = createCrudEndpoints<Department, DepartmentPayload>('departments')
-export const gradeLevelsApi = createCrudEndpoints<GradeLevel, GradeLevelPayload>('grade-levels')
-export const sectionsApi = createCrudEndpoints<Section, SectionPayload>('sections')
-export const subjectsApi = createCrudEndpoints<Subject, SubjectPayload>('subjects')
-export const roomsApi = createCrudEndpoints<Room, RoomPayload>('rooms')
+export const departmentsApi = { ...createCrudEndpoints<Department, DepartmentPayload>('departments'), ...createImportEndpoints('departments') }
+export const gradeLevelsApi = { ...createCrudEndpoints<GradeLevel, GradeLevelPayload>('grade-levels'), ...createImportEndpoints('grade-levels') }
+export const sectionsApi = { ...createCrudEndpoints<Section, SectionPayload>('sections'), ...createImportEndpoints('sections') }
+export const subjectsApi = { ...createCrudEndpoints<Subject, SubjectPayload>('subjects'), ...createImportEndpoints('subjects') }
+export const roomsApi = { ...createCrudEndpoints<Room, RoomPayload>('rooms'), ...createImportEndpoints('rooms') }
 export const holidaysApi = createCrudEndpoints<Holiday, HolidayPayload>('holidays')
 export const timetablePeriodsApi = createCrudEndpoints<TimetablePeriod, TimetablePeriodPayload>('timetable-periods')
 

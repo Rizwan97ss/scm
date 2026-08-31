@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DataExportController;
 use App\Http\Controllers\Api\V1\AssessmentComponentTypeController;
 use App\Http\Controllers\Api\V1\DepartmentController;
+use App\Http\Controllers\Api\V1\DepartmentImportController;
 use App\Http\Controllers\Api\V1\DesignationController;
 use App\Http\Controllers\Api\V1\ExamController;
 use App\Http\Controllers\Api\V1\ExamTimetableController;
@@ -40,8 +41,10 @@ use App\Http\Controllers\Api\V1\FeeCategoryController;
 use App\Http\Controllers\Api\V1\FeeReportController;
 use App\Http\Controllers\Api\V1\FeeStructureController;
 use App\Http\Controllers\Api\V1\GradeLevelController;
+use App\Http\Controllers\Api\V1\GradeLevelImportController;
 use App\Http\Controllers\Api\V1\GradingScaleController;
 use App\Http\Controllers\Api\V1\GuardianController;
+use App\Http\Controllers\Api\V1\GuardianImportController;
 use App\Http\Controllers\Api\V1\HolidayController;
 use App\Http\Controllers\Api\V1\HomeworkController;
 use App\Http\Controllers\Api\V1\HomeworkSubmissionController;
@@ -49,6 +52,8 @@ use App\Http\Controllers\Api\V1\HostelAllocationController;
 use App\Http\Controllers\Api\V1\HostelController;
 use App\Http\Controllers\Api\V1\HostelRoomController;
 use App\Http\Controllers\Api\V1\IdCardController;
+use App\Http\Controllers\Api\V1\ImportFilePreviewController;
+use App\Http\Controllers\Api\V1\ImportLogController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\LeaveRequestController;
 use App\Http\Controllers\Api\V1\MediaController;
@@ -67,11 +72,13 @@ use App\Http\Controllers\Api\V1\QuestionController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\RoomController;
+use App\Http\Controllers\Api\V1\RoomImportController;
 use App\Http\Controllers\Api\V1\RouteController as TransportRouteController;
 use App\Http\Controllers\Api\V1\SalaryStructureController;
 use App\Http\Controllers\Api\V1\SchoolController;
 use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\SectionController;
+use App\Http\Controllers\Api\V1\SectionImportController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\StaffAttendanceController;
 use App\Http\Controllers\Api\V1\StudentAttendanceController;
@@ -84,12 +91,16 @@ use App\Http\Controllers\Api\V1\StudentImportController;
 use App\Http\Controllers\Api\V1\StudentRemarkController;
 use App\Http\Controllers\Api\V1\StudentTransportAssignmentController;
 use App\Http\Controllers\Api\V1\SubjectController;
+use App\Http\Controllers\Api\V1\SubjectImportController;
+use App\Http\Controllers\Api\V1\SystemHealthController;
 use App\Http\Controllers\Api\V1\TermController;
 use App\Http\Controllers\Api\V1\TermResultController;
 use App\Http\Controllers\Api\V1\TimetableController;
 use App\Http\Controllers\Api\V1\TimetableEntryController;
 use App\Http\Controllers\Api\V1\TimetablePeriodController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\UserExportController;
+use App\Http\Controllers\Api\V1\UserImportController;
 use App\Http\Controllers\Api\V1\VehicleController;
 use App\Http\Controllers\Api\V1\VisitorController;
 use Illuminate\Broadcasting\BroadcastController;
@@ -208,6 +219,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
             Route::get('users', [UserController::class, 'index'])->name('users.index');
             Route::post('users', [UserController::class, 'store'])->name('users.store');
+            Route::get('users/export', UserExportController::class)->name('users.export');
+            Route::get('users/import/template', [UserImportController::class, 'template'])->name('users.import.template');
+            Route::post('users/import', UserImportController::class)->name('users.import')->middleware('throttle:10,1');
             Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
             Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
             Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
@@ -221,8 +235,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
             Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
             Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+            Route::get('settings/health', [SystemHealthController::class, 'index'])->name('settings.health');
 
             Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+
+            Route::post('import-preview', ImportFilePreviewController::class)->name('import-preview')->middleware('throttle:10,1');
+            Route::get('import-logs', [ImportLogController::class, 'index'])->name('import-logs.index');
+            Route::get('import-logs/{importLog}', [ImportLogController::class, 'show'])->name('import-logs.show');
+            Route::post('import-logs/{importLog}/undo', [ImportLogController::class, 'undo'])->name('import-logs.undo');
 
             // ---- Data export (Phase 15) -------------------------------------
             Route::post('account/data-export', [DataExportController::class, 'storeSelf'])->name('account.data-export.store');
@@ -239,10 +259,20 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
             Route::apiResource('terms', TermController::class)->names('terms');
             Route::apiResource('departments', DepartmentController::class)->names('departments');
+            Route::get('departments/import/template', [DepartmentImportController::class, 'template'])->name('departments.import.template');
+            Route::post('departments/import', DepartmentImportController::class)->name('departments.import')->middleware('throttle:10,1');
             Route::apiResource('grade-levels', GradeLevelController::class)->names('grade-levels');
+            Route::get('grade-levels/import/template', [GradeLevelImportController::class, 'template'])->name('grade-levels.import.template');
+            Route::post('grade-levels/import', GradeLevelImportController::class)->name('grade-levels.import')->middleware('throttle:10,1');
             Route::apiResource('sections', SectionController::class)->names('sections');
+            Route::get('sections/import/template', [SectionImportController::class, 'template'])->name('sections.import.template');
+            Route::post('sections/import', SectionImportController::class)->name('sections.import')->middleware('throttle:10,1');
             Route::apiResource('subjects', SubjectController::class)->names('subjects');
+            Route::get('subjects/import/template', [SubjectImportController::class, 'template'])->name('subjects.import.template');
+            Route::post('subjects/import', SubjectImportController::class)->name('subjects.import')->middleware('throttle:10,1');
             Route::apiResource('rooms', RoomController::class)->names('rooms');
+            Route::get('rooms/import/template', [RoomImportController::class, 'template'])->name('rooms.import.template');
+            Route::post('rooms/import', RoomImportController::class)->name('rooms.import')->middleware('throttle:10,1');
             Route::apiResource('holidays', HolidayController::class)->names('holidays');
 
             Route::get('class-subject-teachers', [ClassSubjectTeacherController::class, 'index'])->name('class-subject-teachers.index');
@@ -260,7 +290,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('students', [StudentController::class, 'index'])->name('students.index');
             Route::post('students', [StudentController::class, 'store'])->name('students.store');
             Route::get('students/import/template', [StudentImportController::class, 'template'])->name('students.import.template');
-            Route::post('students/import', StudentImportController::class)->name('students.import');
+            Route::post('students/import', StudentImportController::class)->name('students.import')->middleware('throttle:10,1');
             Route::get('students/export', StudentExportController::class)->name('students.export');
             Route::post('students/bulk/promote', [StudentEnrollmentController::class, 'bulkPromote'])->name('students.bulk-promote');
             Route::get('students/{student}', [StudentController::class, 'show'])->name('students.show');
@@ -284,6 +314,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('students/{student}/invite-portal-user', [StudentController::class, 'invitePortalUser'])->name('students.invite-portal-user');
 
             Route::get('guardians', [GuardianController::class, 'index'])->name('guardians.index');
+            Route::get('guardians/import/template', [GuardianImportController::class, 'template'])->name('guardians.import.template');
+            Route::post('guardians/import', GuardianImportController::class)->name('guardians.import')->middleware('throttle:10,1');
             Route::get('guardians/{guardian}', [GuardianController::class, 'show'])->name('guardians.show');
             Route::post('guardians/{guardian}/invite', [GuardianController::class, 'invite'])->name('guardians.invite');
 

@@ -1,16 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { Search, Send } from 'lucide-react'
+import { Send, Upload } from 'lucide-react'
 import { guardiansApi } from '@/api/endpoints/guardians'
 import { queryKeys } from '@/api/queryKeys'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
 import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, DataTable, Input, type DataTableColumn } from '@/components/ui'
+import { Badge, Button, DataTable, LinkButton, SearchInput, type DataTableColumn } from '@/components/ui'
 import type { Guardian } from '@/types/student'
 import type { ApiError } from '@/api/client'
+import { routePaths } from '@/routes/routePaths'
 
 export function GuardiansListPage() {
   const { t } = useTranslation()
@@ -19,7 +20,7 @@ export function GuardiansListPage() {
   const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('first_name', 'first_name')
   const debouncedSearch = useDebounce(search)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.guardians({ ...queryParams, 'filter[first_name]': debouncedSearch }),
     queryFn: () => guardiansApi.list({ ...queryParams, 'filter[first_name]': debouncedSearch || undefined }),
   })
@@ -65,13 +66,20 @@ export function GuardiansListPage() {
 
   return (
     <div>
-      <PageHeader title={t('nav.guardians')} description={t('students.guardiansPageDescription')} />
+      <PageHeader
+        title={t('nav.guardians')}
+        description={t('students.guardiansPageDescription')}
+        actions={
+          can('guardians.import') && (
+            <LinkButton to={routePaths.guardianImport} variant="outline">
+              <Upload className="h-4 w-4" /> {t('common.import')}
+            </LinkButton>
+          )
+        }
+      />
 
       <div className="mb-4 max-w-sm">
-        <div className="relative">
-          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder={t('students.searchByName')} className="ps-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
+        <SearchInput placeholder={t('students.searchByName')} value={search} onChange={setSearch} />
       </div>
 
       <DataTable
@@ -79,6 +87,8 @@ export function GuardiansListPage() {
         data={data?.data}
         rowKey={(row) => row.id}
         isLoading={isLoading}
+        isError={isError}
+        onRetry={refetch}
         meta={data?.meta}
         onPageChange={setPage}
         sort={sort}

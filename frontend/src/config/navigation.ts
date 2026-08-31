@@ -44,6 +44,8 @@ import {
   LineChart,
   TrendingUp,
   Activity,
+  History,
+  Upload,
 } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { routePaths } from '@/routes/routePaths'
@@ -183,9 +185,12 @@ export const NAV_GROUPS: NavGroupConfig[] = [
     items: [
       { label: 'Roles & Permissions', to: routePaths.roles, icon: ShieldCheck, permissions: ['roles.view'] },
       { label: 'Settings', to: routePaths.settings, icon: Settings, permissions: ['settings.view'] },
+      { label: 'System Health', to: routePaths.systemHealth, icon: Activity, permissions: ['settings.view'] },
       { label: 'Billing', to: routePaths.settingsBilling, icon: CreditCard, permissions: ['billing.view'] },
       { label: 'Audit Log', to: routePaths.auditLogs, icon: ScrollText, permissions: ['audit-logs.view'] },
+      { label: 'Import Logs', to: routePaths.importLogs, icon: History, permissions: ['audit-logs.view'] },
       { label: 'Data Export', to: routePaths.dataExports, icon: Download, permissions: ['data-export.school'] },
+      { label: 'Import Center', to: routePaths.importCenter, icon: Upload, permissions: ['students.import', 'users.import'] },
     ],
   },
 ]

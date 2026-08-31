@@ -10,6 +10,8 @@ export const queryKeys = {
   plans: ['plans'] as const,
   publicSettings: (school?: string) => ['settings', 'public', school ?? null] as const,
   settings: ['settings'] as const,
+  systemHealth: ['settings', 'health'] as const,
+  importLogs: (params?: unknown) => ['import-logs', params] as const,
 
   schools: (params?: unknown) => ['schools', params] as const,
   school: (id: number) => ['schools', id] as const,

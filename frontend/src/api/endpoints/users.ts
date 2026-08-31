@@ -2,6 +2,7 @@ import { httpClient } from '@/api/client'
 import type { ApiResponse, ListQueryParams, PaginatedResponse } from '@/types/api'
 import type { UserStatus } from '@/types/enums'
 import type { User as UserModel } from '@/types/auth'
+import type { ImportResult } from '@/types/import'
 
 export interface CreateUserPayload {
   first_name: string
@@ -59,5 +60,16 @@ export const usersApi = {
   },
   resetMfa: async (id: number): Promise<void> => {
     await httpClient.post(`/users/${id}/mfa/reset`)
+  },
+  exportUrl: '/users/export',
+  importTemplateUrl: '/users/import/template',
+  import: async (file: File, dryRun = false): Promise<ImportResult> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (dryRun) formData.append('dry_run', '1')
+    const { data } = await httpClient.post<ApiResponse<ImportResult>>('/users/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return data.data
   },
 }

@@ -39,4 +39,9 @@ abstract class BaseModulePolicy
     {
         return $user->can("{$this->permissionPrefix}.delete");
     }
+
+    public function import(User $user): bool
+    {
+        return $user->can("{$this->permissionPrefix}.import");
+    }
 }

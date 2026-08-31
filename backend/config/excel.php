@@ -224,7 +224,9 @@ return [
     |
     */
     'value_binder'       => [
-        'default' => Maatwebsite\Excel\DefaultValueBinder::class,
+        // Neutralizes CSV/Excel formula injection on every export app-wide —
+        // see App\Support\FormulaInjectionSafeValueBinder's docblock.
+        'default' => App\Support\FormulaInjectionSafeValueBinder::class,
     ],
 
     'cache'        => [

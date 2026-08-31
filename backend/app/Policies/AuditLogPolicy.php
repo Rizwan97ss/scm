@@ -16,4 +16,10 @@ class AuditLogPolicy
     {
         return $user->can('audit-logs.view');
     }
+
+    /** Undoing an import deletes data — deliberately a separate, stricter permission than just viewing the audit trail. */
+    public function undo(User $user): bool
+    {
+        return $user->can('audit-logs.manage');
+    }
 }

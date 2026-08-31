@@ -26,8 +26,12 @@ const HelpGuidePage = lazy(() => import('@/features/help/pages/HelpGuidePage').t
 const MfaSetupPage = lazy(() => import('@/features/auth/pages/MfaSetupPage').then((m) => ({ default: m.MfaSetupPage })))
 const PlatformMfaSetupPage = lazy(() => import('@/features/platform/pages/PlatformMfaSetupPage').then((m) => ({ default: m.PlatformMfaSetupPage })))
 const UsersListPage = lazy(() => import('@/features/users/pages/UsersListPage').then((m) => ({ default: m.UsersListPage })))
+const UserImportPage = lazy(() => import('@/features/users/pages/UserImportPage').then((m) => ({ default: m.UserImportPage })))
+const ImportCenterPage = lazy(() => import('@/features/imports/pages/ImportCenterPage').then((m) => ({ default: m.ImportCenterPage })))
+const ImportLogsPage = lazy(() => import('@/features/imports/pages/ImportLogsPage').then((m) => ({ default: m.ImportLogsPage })))
 const RolesListPage = lazy(() => import('@/features/roles/pages/RolesListPage').then((m) => ({ default: m.RolesListPage })))
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage').then((m) => ({ default: m.SettingsPage })))
+const SystemHealthPage = lazy(() => import('@/features/settings/pages/SystemHealthPage').then((m) => ({ default: m.SystemHealthPage })))
 const BillingPage = lazy(() => import('@/features/settings/pages/BillingPage').then((m) => ({ default: m.BillingPage })))
 const AuditLogsPage = lazy(() => import('@/features/auditLogs/pages/AuditLogsPage').then((m) => ({ default: m.AuditLogsPage })))
 const MyDataExportPage = lazy(() => import('@/features/dataExports/pages/MyDataExportPage').then((m) => ({ default: m.MyDataExportPage })))
@@ -36,10 +40,15 @@ const SchoolsListPage = lazy(() => import('@/features/schools/pages/SchoolsListP
 const AcademicYearsPage = lazy(() => import('@/features/academics/pages/AcademicYearsPage').then((m) => ({ default: m.AcademicYearsPage })))
 const TermsPage = lazy(() => import('@/features/academics/pages/TermsPage').then((m) => ({ default: m.TermsPage })))
 const DepartmentsPage = lazy(() => import('@/features/academics/pages/DepartmentsPage').then((m) => ({ default: m.DepartmentsPage })))
+const DepartmentImportPage = lazy(() => import('@/features/academics/pages/DepartmentImportPage').then((m) => ({ default: m.DepartmentImportPage })))
 const GradeLevelsPage = lazy(() => import('@/features/academics/pages/GradeLevelsPage').then((m) => ({ default: m.GradeLevelsPage })))
+const GradeLevelImportPage = lazy(() => import('@/features/academics/pages/GradeLevelImportPage').then((m) => ({ default: m.GradeLevelImportPage })))
 const SectionsPage = lazy(() => import('@/features/academics/pages/SectionsPage').then((m) => ({ default: m.SectionsPage })))
+const SectionImportPage = lazy(() => import('@/features/academics/pages/SectionImportPage').then((m) => ({ default: m.SectionImportPage })))
 const SubjectsPage = lazy(() => import('@/features/academics/pages/SubjectsPage').then((m) => ({ default: m.SubjectsPage })))
+const SubjectImportPage = lazy(() => import('@/features/academics/pages/SubjectImportPage').then((m) => ({ default: m.SubjectImportPage })))
 const RoomsPage = lazy(() => import('@/features/academics/pages/RoomsPage').then((m) => ({ default: m.RoomsPage })))
+const RoomImportPage = lazy(() => import('@/features/academics/pages/RoomImportPage').then((m) => ({ default: m.RoomImportPage })))
 const HolidaysPage = lazy(() => import('@/features/academics/pages/HolidaysPage').then((m) => ({ default: m.HolidaysPage })))
 const TimetablePage = lazy(() => import('@/features/academics/pages/TimetablePage').then((m) => ({ default: m.TimetablePage })))
 const StudentsListPage = lazy(() => import('@/features/students/pages/StudentsListPage').then((m) => ({ default: m.StudentsListPage })))
@@ -47,6 +56,7 @@ const StudentAdmissionPage = lazy(() => import('@/features/students/pages/Studen
 const StudentProfilePage = lazy(() => import('@/features/students/pages/StudentProfilePage').then((m) => ({ default: m.StudentProfilePage })))
 const StudentImportPage = lazy(() => import('@/features/students/pages/StudentImportPage').then((m) => ({ default: m.StudentImportPage })))
 const GuardiansListPage = lazy(() => import('@/features/students/pages/GuardiansListPage').then((m) => ({ default: m.GuardiansListPage })))
+const GuardianImportPage = lazy(() => import('@/features/students/pages/GuardianImportPage').then((m) => ({ default: m.GuardianImportPage })))
 const TakeAttendancePage = lazy(() => import('@/features/attendance/pages/TakeAttendancePage').then((m) => ({ default: m.TakeAttendancePage })))
 const StaffAttendancePage = lazy(() => import('@/features/attendance/pages/StaffAttendancePage').then((m) => ({ default: m.StaffAttendancePage })))
 const ParentChildrenPage = lazy(() => import('@/features/dashboard/pages/ParentChildrenPage').then((m) => ({ default: m.ParentChildrenPage })))
@@ -133,8 +143,13 @@ export function AppRouter() {
               <Route path={routePaths.parentChildren} element={<ParentChildrenPage />} />
               <Route path={routePaths.parentChildProfile()} element={<ParentChildProfilePage />} />
 
+              <Route path={routePaths.importCenter} element={<ImportCenterPage />} />
+
               <Route element={<PermissionRoute permissions={['users.view']} />}>
                 <Route path={routePaths.users} element={<UsersListPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['users.import']} />}>
+                <Route path={routePaths.userImport} element={<UserImportPage />} />
               </Route>
 
               <Route element={<PermissionRoute permissions={['roles.view']} />}>
@@ -143,6 +158,7 @@ export function AppRouter() {
 
               <Route element={<PermissionRoute permissions={['settings.view']} />}>
                 <Route path={routePaths.settings} element={<SettingsPage />} />
+                <Route path={routePaths.systemHealth} element={<SystemHealthPage />} />
               </Route>
 
               <Route element={<PermissionRoute permissions={['billing.view']} />}>
@@ -151,6 +167,7 @@ export function AppRouter() {
 
               <Route element={<PermissionRoute permissions={['audit-logs.view']} />}>
                 <Route path={routePaths.auditLogs} element={<AuditLogsPage />} />
+                <Route path={routePaths.importLogs} element={<ImportLogsPage />} />
               </Route>
 
               {/* Self-service — no permission gate, every role can export
@@ -173,6 +190,13 @@ export function AppRouter() {
                 <Route path={routePaths.rooms} element={<RoomsPage />} />
                 <Route path={routePaths.holidays} element={<HolidaysPage />} />
               </Route>
+              <Route element={<PermissionRoute permissions={['academic-structure.import']} />}>
+                <Route path={routePaths.departmentImport} element={<DepartmentImportPage />} />
+                <Route path={routePaths.gradeLevelImport} element={<GradeLevelImportPage />} />
+                <Route path={routePaths.sectionImport} element={<SectionImportPage />} />
+                <Route path={routePaths.subjectImport} element={<SubjectImportPage />} />
+                <Route path={routePaths.roomImport} element={<RoomImportPage />} />
+              </Route>
 
               <Route element={<PermissionRoute permissions={['timetable.view']} />}>
                 <Route path={routePaths.timetable} element={<TimetablePage />} />
@@ -191,6 +215,9 @@ export function AppRouter() {
 
               <Route element={<PermissionRoute permissions={['guardians.view']} />}>
                 <Route path={routePaths.guardians} element={<GuardiansListPage />} />
+              </Route>
+              <Route element={<PermissionRoute permissions={['guardians.import']} />}>
+                <Route path={routePaths.guardianImport} element={<GuardianImportPage />} />
               </Route>
 
               <Route element={<PermissionRoute permissions={['student-attendance.mark']} />}>

@@ -25,16 +25,16 @@ class SchoolProvisioningService
 {
     private const SCHOOL_SCOPED_ROLE_PERMISSIONS = [
         'School Admin' => [
-            'users.view', 'users.create', 'users.edit', 'users.delete', 'users.manage-mfa',
+            'users.view', 'users.create', 'users.edit', 'users.delete', 'users.manage-mfa', 'users.import', 'users.export',
             'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
             'settings.view', 'settings.edit',
-            'audit-logs.view',
+            'audit-logs.view', 'audit-logs.manage',
             'data-export.school',
             'academic-years.view', 'academic-years.create', 'academic-years.edit', 'academic-years.delete',
-            'academic-structure.view', 'academic-structure.create', 'academic-structure.edit', 'academic-structure.delete',
+            'academic-structure.view', 'academic-structure.create', 'academic-structure.edit', 'academic-structure.delete', 'academic-structure.import',
             'timetable.view', 'timetable.create', 'timetable.edit', 'timetable.delete',
             'students.view', 'students.create', 'students.edit', 'students.delete', 'students.import', 'students.export',
-            'guardians.view', 'guardians.create', 'guardians.edit', 'guardians.delete',
+            'guardians.view', 'guardians.create', 'guardians.edit', 'guardians.delete', 'guardians.import',
             'enrollment.manage',
             'student-attendance.view', 'student-attendance.mark', 'student-attendance.edit', 'student-attendance.export',
             'staff-attendance.view', 'staff-attendance.mark', 'staff-attendance.edit', 'staff-attendance.export',
@@ -67,7 +67,7 @@ class SchoolProvisioningService
             'settings.view',
             'audit-logs.view',
             'academic-years.view',
-            'academic-structure.view', 'academic-structure.create', 'academic-structure.edit', 'academic-structure.delete',
+            'academic-structure.view', 'academic-structure.create', 'academic-structure.edit', 'academic-structure.delete', 'academic-structure.import',
             'timetable.view', 'timetable.create', 'timetable.edit', 'timetable.delete',
             'students.view', 'students.export',
             'guardians.view',
@@ -138,7 +138,7 @@ class SchoolProvisioningService
             'invoices.record-payment', 'invoices.issue-credit-note', 'invoices.view-reports',
         ],
         'HR Staff' => [
-            'users.view', 'users.create', 'users.edit', 'users.delete',
+            'users.view', 'users.create', 'users.edit', 'users.delete', 'users.import', 'users.export',
             'roles.view',
             'academic-years.view', 'academic-structure.view',
             'timetable.view',

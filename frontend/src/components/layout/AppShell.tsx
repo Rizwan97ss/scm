@@ -5,6 +5,7 @@ import { Topbar } from './Topbar'
 import { RoleBasedNav } from './RoleBasedNav'
 import { BillingStatusBanner } from './BillingStatusBanner'
 import { MfaSetupBanner } from './MfaSetupBanner'
+import { OfflineBanner } from './OfflineBanner'
 import { Drawer } from '@/components/ui/Drawer'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
@@ -33,6 +34,7 @@ export function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onMenuClick={() => setMobileNavOpen(true)} />
         <BillingStatusBanner />
+        <OfflineBanner />
         {mfaDaysRemaining !== null && <MfaSetupBanner setupPath={routePaths.mfaSetup} daysRemaining={mfaDaysRemaining} />}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <Outlet />

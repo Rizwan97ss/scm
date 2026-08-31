@@ -17,20 +17,20 @@ return [
 
     'modules' => [
         'schools' => ['manage'],
-        'users' => ['view', 'create', 'edit', 'delete', 'manage-mfa'],
+        'users' => ['view', 'create', 'edit', 'delete', 'manage-mfa', 'import', 'export'],
         'roles' => ['view', 'create', 'edit', 'delete'],
         'settings' => ['view', 'edit'],
-        'audit-logs' => ['view'],
+        'audit-logs' => ['view', 'manage'],
         // Phase 15 — admin bulk "export the whole school's data"
         // (data-export.school). Self-service "export my own data" is
         // deliberately ungated, same self-service shape as leave requests/
         // payslips — see DataExportController.
         'data-export' => ['school'],
         'academic-years' => ['view', 'create', 'edit', 'delete'],
-        'academic-structure' => ['view', 'create', 'edit', 'delete'],
+        'academic-structure' => ['view', 'create', 'edit', 'delete', 'import'],
         'timetable' => ['view', 'create', 'edit', 'delete'],
         'students' => ['view', 'create', 'edit', 'delete', 'import', 'export'],
-        'guardians' => ['view', 'create', 'edit', 'delete'],
+        'guardians' => ['view', 'create', 'edit', 'delete', 'import'],
         'enrollment' => ['manage'],
         'student-attendance' => ['view', 'mark', 'edit', 'export'],
         'staff-attendance' => ['view', 'mark', 'edit', 'export'],

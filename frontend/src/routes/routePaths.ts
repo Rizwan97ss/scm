@@ -14,21 +14,31 @@ export const routePaths = {
   help: '/help',
 
   users: '/users',
+  userImport: '/users/import',
   roles: '/roles',
   settings: '/settings',
   settingsBilling: '/settings/billing',
+  systemHealth: '/settings/health',
   auditLogs: '/audit-logs',
   myDataExport: '/account/data-export',
   dataExports: '/data-exports',
   schools: '/schools',
 
+  importCenter: '/imports',
+  importLogs: '/imports/logs',
+
   academicYears: '/academics/years',
   terms: '/academics/terms',
   departments: '/academics/departments',
+  departmentImport: '/academics/departments/import',
   gradeLevels: '/academics/grade-levels',
+  gradeLevelImport: '/academics/grade-levels/import',
   sections: '/academics/sections',
+  sectionImport: '/academics/sections/import',
   subjects: '/academics/subjects',
+  subjectImport: '/academics/subjects/import',
   rooms: '/academics/rooms',
+  roomImport: '/academics/rooms/import',
   holidays: '/academics/holidays',
   timetable: '/academics/timetable',
 
@@ -38,6 +48,7 @@ export const routePaths = {
   studentImport: '/students/import',
 
   guardians: '/guardians',
+  guardianImport: '/guardians/import',
 
   attendanceTake: '/attendance/take',
   attendanceStaff: '/attendance/staff',
