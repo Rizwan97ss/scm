@@ -25,42 +25,51 @@
         @page { size: 243pt 153pt; margin: 0; }
         * { box-sizing: border-box; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 8px; color: #1a1a1a; margin: 0; padding: 0; width: 243pt; height: 153pt; }
-        /* box-shadow, not border — a border participates in the box-sizing:
-           border-box width even at 1px, and that alone was enough to push
-           the side strip (whose right edge sits exactly at the card's
-           243pt width) onto a second, overflow page. box-shadow paints
-           without consuming any box-model space. */
-        .card { position: relative; width: 243pt; height: 153pt; border-radius: 6px; overflow: hidden; box-shadow: inset 0 0 0 1px #d5d5d5; }
+        /* box-shadow, not border — see id-card-student's matching note: a
+           border participates in border-box width even at 1px, enough to
+           push a right-edge-flush element onto a second, overflow page. */
+        .card { position: relative; width: 243pt; height: 153pt; border-radius: 6px; overflow: hidden; box-shadow: inset 0 0 0 1px #d5d5d5; background: #ffffff; }
         .abs { position: absolute; }
-        .brand { top: 8pt; left: 9pt; width: 160pt; font-size: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-        .name { top: 20pt; left: 9pt; width: 160pt; font-size: 10px; font-weight: bold; line-height: 1.15; max-height: 22pt; overflow: hidden; }
-        .meta-role { top: 44pt; left: 9pt; width: 160pt; font-size: 7px; color: #555555; }
-        .meta-phone { top: 53pt; left: 9pt; width: 160pt; font-size: 7px; color: #555555; }
-        .photo { top: 8pt; left: 176pt; width: 40pt; height: 46pt; border: 1px solid #cccccc; border-radius: 3px; overflow: hidden; background: #f1f1f1; text-align: center; }
-        .photo img { width: 40pt; height: 46pt; }
-        .initials { display: block; font-size: 15px; font-weight: bold; color: #999999; line-height: 46pt; }
-        .qr { top: 112pt; left: 9pt; width: 26pt; height: 26pt; }
-        .id-label { top: 112pt; left: 41pt; width: 130pt; font-size: 6.5px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; }
-        .id-value { top: 120pt; left: 41pt; width: 130pt; font-size: 9px; font-weight: bold; }
-        .issued { top: 131pt; left: 41pt; width: 130pt; font-size: 6.5px; color: #888888; }
-        /* Colored badge strip along the right edge — the accent color is
-           the school's own branding.primary_color setting, fetched
-           server-side (IdCardController), so this reflects each school's
-           actual brand instead of a hardcoded color. dompdf's CSS
-           transform/writing-mode support is too unreliable to rotate a
-           single text run here (it silently dropped the label and threw
-           the page count off instead) — one letter per line is a plain
-           block technique that always renders correctly. */
-        .side { top: 0; left: 224pt; width: 18pt; height: 153pt; background: {{ $accentColor }}; text-align: center; }
-        .side-text { top: 60pt; left: 0; width: 18pt; color: #ffffff; font-size: 7px; font-weight: bold; line-height: 1.4; }
+        /* Header band -- a plain solid background-color (unlike the student
+           card's gradient), which dompdf renders correctly and reliably;
+           see CardGradientGenerator's docblock for why a gradient here
+           would instead need to be a raster image. */
+        .header { top: 0; left: 0; width: 243pt; height: 38pt; background: {{ $accentColor }}; }
+        .logo-badge { top: 8pt; left: 9pt; width: 20pt; height: 20pt; border-radius: 50%; background: #ffffff; text-align: center; overflow: hidden; }
+        .logo-badge img { width: 20pt; height: 20pt; }
+        .logo-badge .monogram { display: block; font-size: 11px; font-weight: bold; color: #1a1a1a; line-height: 20pt; }
+        .org-name { top: 9pt; left: 35pt; width: 195pt; font-size: 9px; font-weight: bold; color: #ffffff; text-transform: uppercase; letter-spacing: 0.4px; line-height: 1.2; }
+        .org-subtitle { top: 21pt; left: 35pt; width: 195pt; font-size: 6px; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.6px; }
+        .photo { top: 46pt; left: 9pt; width: 42pt; height: 50pt; border: 1px solid #d9dde3; border-radius: 3pt; overflow: hidden; background: #f1f4f8; text-align: center; }
+        .photo img { width: 42pt; height: 50pt; }
+        .initials { display: block; font-size: 15px; font-weight: bold; color: #94a3b8; line-height: 50pt; }
+        .name { top: 46pt; left: 58pt; width: 176pt; font-size: 11px; font-weight: bold; color: #16213e; line-height: 1.2; }
+        .role { top: 58pt; left: 58pt; width: 176pt; font-size: 7.5px; color: {{ $accentColor }}; font-weight: bold; }
+        .contact { left: 58pt; width: 176pt; font-size: 7px; color: #333333; line-height: 1.3; }
+        .barcode-panel { top: 114pt; left: 9pt; width: 66pt; text-align: left; }
+        .barcode-panel img { width: 62pt; height: 22pt; }
+        .barcode-id-label { font-size: 6px; color: #888888; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 1pt; }
+        .barcode-id-value { font-size: 8px; font-weight: bold; color: #16213e; }
+        .footer-right { top: 118pt; left: 150pt; width: 84pt; text-align: right; }
+        .valid-label { font-size: 6px; color: #888888; text-transform: uppercase; letter-spacing: 0.3px; }
+        .valid-value { font-size: 7.5px; font-weight: bold; color: #16213e; }
+        .watermark { top: 138pt; left: 214pt; width: 20pt; height: 20pt; border-radius: 50%; overflow: hidden; opacity: 0.9; text-align: center; }
+        .watermark img { width: 20pt; height: 20pt; }
     </style>
 </head>
 <body>
     <div class="card">
-        <div class="abs brand">{{ $schoolName }}</div>
-        <div class="abs name">{{ $staff->full_name }}</div>
-        <div class="abs meta-role">{{ $staff->designation?->name ?? '—' }}</div>
-        <div class="abs meta-phone">{{ $staff->phone ?? '—' }}</div>
+        <div class="abs header"></div>
+        <div class="abs logo-badge">
+            @if($logo)
+                <img src="{{ $logo }}" alt="">
+            @else
+                <span class="monogram">{{ strtoupper(substr($schoolName, 0, 1)) }}</span>
+            @endif
+        </div>
+        <div class="abs org-name">{{ $schoolName }}</div>
+        <div class="abs org-subtitle">Official Staff Identification</div>
+
         <div class="abs photo">
             @if($photo)
                 <img src="{{ $photo }}" alt="">
@@ -68,13 +77,29 @@
                 <span class="initials">{{ strtoupper(substr($staff->first_name, 0, 1).substr($staff->last_name, 0, 1)) }}</span>
             @endif
         </div>
-        <img class="abs qr" src="{{ $qrCode }}" alt="">
-        <div class="abs id-label">Employee ID</div>
-        <div class="abs id-value">{{ $staff->employee_id ?? '—' }}</div>
-        <div class="abs issued">Issued: {{ $staff->hire_date?->toDateString() ?? now()->toDateString() }}</div>
-        <div class="abs side">
-            <div class="abs side-text">@foreach(str_split('STAFF') as $letter){{ $letter }}<br>@endforeach</div>
+
+        <div class="abs name">{{ $staff->full_name }}</div>
+        <div class="abs role">{{ $staff->designation?->name ?? '—' }}</div>
+
+        <div class="abs contact" style="top: 72pt;">&#9993;&nbsp; {{ $staff->email }}</div>
+        <div class="abs contact" style="top: 82pt;">&#9742;&nbsp; {{ $staff->phone ?? '—' }}</div>
+        @if($website)
+            <div class="abs contact" style="top: 92pt;">&#8853;&nbsp; {{ $website }}</div>
+        @endif
+
+        <div class="abs barcode-panel">
+            <img src="{{ $barcode }}" alt="">
+            <div class="barcode-id-label">Employee ID</div>
+            <div class="barcode-id-value">{{ $staff->employee_id ?? '—' }}</div>
         </div>
+
+        <div class="abs footer-right">
+            <div class="valid-label">Issued</div>
+            <div class="valid-value">{{ $staff->hire_date?->toDateString() ?? now()->toDateString() }}</div>
+        </div>
+        @if($logo)
+            <div class="abs watermark"><img src="{{ $logo }}" alt=""></div>
+        @endif
     </div>
 </body>
 </html>
