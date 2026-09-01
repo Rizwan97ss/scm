@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "缺席",
     "activeStudents": "在校學生",
+    "activeTrialing": "活躍 / 試用中",
     "assignedSections": "負責班級",
     "attendanceThisMonth": "本月出席",
     "attendanceToday": "今日已記錄出席",
     "attendanceTrend": "出席趨勢（14天）",
     "createInvoice": "建立帳單",
+    "currentlyTrialing": "目前試用中",
     "daysMarked": "已記錄天數",
     "enrollmentTrend": "入學趨勢",
     "feeCollectionTrend": "收費趨勢",
@@ -415,6 +417,7 @@
     "staffMembers": "教職員人數",
     "subtitle": "這是今天的情況概覽。",
     "takeAttendance": "點名",
+    "totalSchools": "學校總數",
     "upcomingExams": "即將舉行的考試",
     "viewAll": "查看全部",
     "welcomeBack": "歡迎回來，{{name}}"

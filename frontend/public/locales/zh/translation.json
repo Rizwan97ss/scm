@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "缺勤",
     "activeStudents": "在校学生",
+    "activeTrialing": "活跃 / 试用中",
     "assignedSections": "负责班级",
     "attendanceThisMonth": "本月出勤",
     "attendanceToday": "今日已记录出勤",
     "attendanceTrend": "出勤趋势（14天）",
     "createInvoice": "创建账单",
+    "currentlyTrialing": "当前试用中",
     "daysMarked": "已记录天数",
     "enrollmentTrend": "入学趋势",
     "feeCollectionTrend": "收费趋势",
@@ -415,6 +417,7 @@
     "staffMembers": "教职工人数",
     "subtitle": "这是今天的情况概览。",
     "takeAttendance": "考勤登记",
+    "totalSchools": "学校总数",
     "upcomingExams": "即将举行的考试",
     "viewAll": "查看全部",
     "welcomeBack": "欢迎回来，{{name}}"

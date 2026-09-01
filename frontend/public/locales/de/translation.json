@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "Abwesenheiten",
     "activeStudents": "Aktive Schüler",
+    "activeTrialing": "Aktiv / Testphase",
     "assignedSections": "Zugewiesene Klassen",
     "attendanceThisMonth": "Anwesenheit diesen Monat",
     "attendanceToday": "Heute erfasste Anwesenheit",
     "attendanceTrend": "Anwesenheitstrend (14 Tage)",
     "createInvoice": "Rechnung erstellen",
+    "currentlyTrialing": "Derzeit in der Testphase",
     "daysMarked": "Erfasste Tage",
     "enrollmentTrend": "Einschreibungstrend",
     "feeCollectionTrend": "Gebühreneinzugstrend",
@@ -415,6 +417,7 @@
     "staffMembers": "Mitarbeiter",
     "subtitle": "Das ist heute los.",
     "takeAttendance": "Anwesenheit erfassen",
+    "totalSchools": "Schulen insgesamt",
     "upcomingExams": "Anstehende Prüfungen",
     "viewAll": "Alle anzeigen",
     "welcomeBack": "Willkommen zurück, {{name}}"

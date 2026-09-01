@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "Ausencias",
     "activeStudents": "Estudiantes activos",
+    "activeTrialing": "Activas / En prueba",
     "assignedSections": "Secciones asignadas",
     "attendanceThisMonth": "Asistencia este mes",
     "attendanceToday": "Asistencia registrada hoy",
     "attendanceTrend": "Tendencia de asistencia (14 días)",
     "createInvoice": "Crear factura",
+    "currentlyTrialing": "Actualmente en prueba",
     "daysMarked": "Días registrados",
     "enrollmentTrend": "Tendencia de matrícula",
     "feeCollectionTrend": "Tendencia de recaudación de cuotas",
@@ -415,6 +417,7 @@
     "staffMembers": "Miembros del personal",
     "subtitle": "Esto es lo que ocurre hoy.",
     "takeAttendance": "Tomar asistencia",
+    "totalSchools": "Total de escuelas",
     "upcomingExams": "Próximos exámenes",
     "viewAll": "Ver todo",
     "welcomeBack": "Bienvenido de nuevo, {{name}}"

@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "결석",
     "activeStudents": "재학생 수",
+    "activeTrialing": "활성 / 체험 중",
     "assignedSections": "담당 학급",
     "attendanceThisMonth": "이번 달 출석",
     "attendanceToday": "오늘 출석 체크 완료",
     "attendanceTrend": "출석 추이 (14일)",
     "createInvoice": "청구서 생성",
+    "currentlyTrialing": "현재 체험 중",
     "daysMarked": "기록된 일수",
     "enrollmentTrend": "입학 추이",
     "feeCollectionTrend": "등록금 수납 추이",
@@ -415,6 +417,7 @@
     "staffMembers": "교직원 수",
     "subtitle": "오늘의 현황입니다.",
     "takeAttendance": "출석 체크",
+    "totalSchools": "전체 학교",
     "upcomingExams": "예정된 시험",
     "viewAll": "전체 보기",
     "welcomeBack": "다시 오신 것을 환영합니다, {{name}}님"

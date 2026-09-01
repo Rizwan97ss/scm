@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "Ketidakhadiran",
     "activeStudents": "Siswa Aktif",
+    "activeTrialing": "Aktif / Percobaan",
     "assignedSections": "Kelas yang Ditugaskan",
     "attendanceThisMonth": "Kehadiran Bulan Ini",
     "attendanceToday": "Kehadiran Tercatat Hari Ini",
     "attendanceTrend": "Tren Kehadiran (14 Hari)",
     "createInvoice": "Buat Faktur",
+    "currentlyTrialing": "Sedang Dalam Percobaan",
     "daysMarked": "Hari Tercatat",
     "enrollmentTrend": "Tren Pendaftaran",
     "feeCollectionTrend": "Tren Pengumpulan Biaya",
@@ -415,6 +417,7 @@
     "staffMembers": "Anggota Staf",
     "subtitle": "Berikut yang terjadi hari ini.",
     "takeAttendance": "Ambil Kehadiran",
+    "totalSchools": "Total Sekolah",
     "upcomingExams": "Ujian Mendatang",
     "viewAll": "Lihat semua",
     "welcomeBack": "Selamat datang kembali, {{name}}"

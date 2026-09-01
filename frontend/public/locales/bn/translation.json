@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "অনুপস্থিতি",
     "activeStudents": "সক্রিয় শিক্ষার্থী",
+    "activeTrialing": "সক্রিয় / ট্রায়াল",
     "assignedSections": "বরাদ্দকৃত সেকশন",
     "attendanceThisMonth": "এই মাসের উপস্থিতি",
     "attendanceToday": "আজকের হাজিরা রেকর্ড",
     "attendanceTrend": "হাজিরার প্রবণতা (১৪ দিন)",
     "createInvoice": "চালান তৈরি করুন",
+    "currentlyTrialing": "বর্তমানে ট্রায়ালে",
     "daysMarked": "রেকর্ডকৃত দিন",
     "enrollmentTrend": "ভর্তির প্রবণতা",
     "feeCollectionTrend": "ফি আদায়ের প্রবণতা",
@@ -415,6 +417,7 @@
     "staffMembers": "স্টাফ সদস্য",
     "subtitle": "আজকের কার্যক্রম দেখুন।",
     "takeAttendance": "হাজিরা নিন",
+    "totalSchools": "মোট স্কুল",
     "upcomingExams": "আসন্ন পরীক্ষা",
     "viewAll": "সব দেখুন",
     "welcomeBack": "আবার স্বাগতম, {{name}}"

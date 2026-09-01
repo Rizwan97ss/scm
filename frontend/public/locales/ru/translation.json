@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "Пропуски",
     "activeStudents": "Активные ученики",
+    "activeTrialing": "Активные / Пробные",
     "assignedSections": "Закреплённые классы",
     "attendanceThisMonth": "Посещаемость в этом месяце",
     "attendanceToday": "Посещаемость отмечена сегодня",
     "attendanceTrend": "Динамика посещаемости (14 дней)",
     "createInvoice": "Создать счёт",
+    "currentlyTrialing": "Сейчас на пробном периоде",
     "daysMarked": "Отмеченные дни",
     "enrollmentTrend": "Динамика зачислений",
     "feeCollectionTrend": "Динамика сбора платежей",
@@ -415,6 +417,7 @@
     "staffMembers": "Сотрудники",
     "subtitle": "Вот что происходит сегодня.",
     "takeAttendance": "Отметить посещаемость",
+    "totalSchools": "Всего школ",
     "upcomingExams": "Предстоящие экзамены",
     "viewAll": "Смотреть все",
     "welcomeBack": "С возвращением, {{name}}"

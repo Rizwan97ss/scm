@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "Ora Mlebu",
     "activeStudents": "Siswa Aktif",
+    "activeTrialing": "Aktif / Uji coba",
     "assignedSections": "Bagean Ditugasake",
     "attendanceThisMonth": "Presensi Wulan Iki",
     "attendanceToday": "Presensi Dicathet Dina Iki",
     "attendanceTrend": "Trend Presensi (14 Dina)",
     "createInvoice": "Gawe Invoice",
+    "currentlyTrialing": "Lagi uji coba",
     "daysMarked": "Dina Kacathet",
     "enrollmentTrend": "Trend Pendaftaran",
     "feeCollectionTrend": "Trend Pengumpulan SPP",
@@ -415,6 +417,7 @@
     "staffMembers": "Anggota Staf",
     "subtitle": "Mangkene kedadeyan dina iki.",
     "takeAttendance": "Cathet Presensi",
+    "totalSchools": "Total Sekolah",
     "upcomingExams": "Ujian Sabanjure",
     "viewAll": "Deleng kabeh",
     "welcomeBack": "Sugeng rawuh malih, {{name}}"

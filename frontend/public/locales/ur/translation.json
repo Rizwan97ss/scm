@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "غیر حاضریاں",
     "activeStudents": "فعال طلبہ",
+    "activeTrialing": "فعال / آزمائشی",
     "assignedSections": "تفویض کردہ سیکشنز",
     "attendanceThisMonth": "اس ماہ کی حاضری",
     "attendanceToday": "آج کی حاضری درج شدہ",
     "attendanceTrend": "حاضری کا رجحان (14 دن)",
     "createInvoice": "انوائس بنائیں",
+    "currentlyTrialing": "فی الحال آزمائشی مرحلے میں",
     "daysMarked": "درج شدہ دن",
     "enrollmentTrend": "داخلوں کا رجحان",
     "feeCollectionTrend": "فیس وصولی کا رجحان",
@@ -415,6 +417,7 @@
     "staffMembers": "عملے کے ارکان",
     "subtitle": "آج کی سرگرمیاں دیکھیں۔",
     "takeAttendance": "حاضری لگائیں",
+    "totalSchools": "کل اسکول",
     "upcomingExams": "آنے والے امتحانات",
     "viewAll": "سب دیکھیں",
     "welcomeBack": "خوش آمدید، {{name}}"

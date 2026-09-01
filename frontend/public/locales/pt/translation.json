@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "Faltas",
     "activeStudents": "Alunos ativos",
+    "activeTrialing": "Ativas / Em teste",
     "assignedSections": "Turmas atribuídas",
     "attendanceThisMonth": "Presença este mês",
     "attendanceToday": "Presença registrada hoje",
     "attendanceTrend": "Tendência de presença (14 dias)",
     "createInvoice": "Criar fatura",
+    "currentlyTrialing": "Atualmente em teste",
     "daysMarked": "Dias registrados",
     "enrollmentTrend": "Tendência de matrículas",
     "feeCollectionTrend": "Tendência de arrecadação de taxas",
@@ -415,6 +417,7 @@
     "staffMembers": "Membros da equipe",
     "subtitle": "Veja o que está acontecendo hoje.",
     "takeAttendance": "Registrar presença",
+    "totalSchools": "Total de escolas",
     "upcomingExams": "Próximas provas",
     "viewAll": "Ver tudo",
     "welcomeBack": "Bem-vindo de volta, {{name}}"

@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "欠席",
     "activeStudents": "在籍生徒数",
+    "activeTrialing": "有効 / 試用中",
     "assignedSections": "担当クラス",
     "attendanceThisMonth": "今月の出席",
     "attendanceToday": "本日の出席記録",
     "attendanceTrend": "出席率の推移（14日間）",
     "createInvoice": "請求書を作成",
+    "currentlyTrialing": "現在試用中",
     "daysMarked": "記録日数",
     "enrollmentTrend": "入学者数の推移",
     "feeCollectionTrend": "入金推移",
@@ -415,6 +417,7 @@
     "staffMembers": "職員数",
     "subtitle": "本日の概要です。",
     "takeAttendance": "出席をとる",
+    "totalSchools": "学校総数",
     "upcomingExams": "今後の試験",
     "viewAll": "すべて表示",
     "welcomeBack": "おかえりなさい、{{name}}さん"

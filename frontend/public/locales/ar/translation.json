@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "الغيابات",
     "activeStudents": "الطلاب النشطون",
+    "activeTrialing": "نشطة / تجريبية",
     "assignedSections": "الشعب المسندة",
     "attendanceThisMonth": "الحضور هذا الشهر",
     "attendanceToday": "الحضور المسجل اليوم",
     "attendanceTrend": "اتجاه الحضور (14 يومًا)",
     "createInvoice": "إنشاء فاتورة",
+    "currentlyTrialing": "قيد التجربة حاليًا",
     "daysMarked": "الأيام المسجلة",
     "enrollmentTrend": "اتجاه القيد",
     "feeCollectionTrend": "اتجاه تحصيل الرسوم",
@@ -415,6 +417,7 @@
     "staffMembers": "أعضاء الطاقم",
     "subtitle": "إليك ما يحدث اليوم.",
     "takeAttendance": "تسجيل الحضور",
+    "totalSchools": "إجمالي المدارس",
     "upcomingExams": "الاختبارات القادمة",
     "viewAll": "عرض الكل",
     "welcomeBack": "مرحبًا بعودتك، {{name}}"

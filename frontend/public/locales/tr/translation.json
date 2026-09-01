@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "Devamsızlıklar",
     "activeStudents": "Aktif Öğrenciler",
+    "activeTrialing": "Aktif / Deneme Sürümü",
     "assignedSections": "Atanan Şubeler",
     "attendanceThisMonth": "Bu Ayki Yoklama",
     "attendanceToday": "Bugün Alınan Yoklama",
     "attendanceTrend": "Yoklama Eğilimi (14 Gün)",
     "createInvoice": "Fatura Oluştur",
+    "currentlyTrialing": "Şu Anda Deneme Sürümünde",
     "daysMarked": "Kaydedilen Günler",
     "enrollmentTrend": "Kayıt Eğilimi",
     "feeCollectionTrend": "Ücret Tahsilat Eğilimi",
@@ -415,6 +417,7 @@
     "staffMembers": "Personel Sayısı",
     "subtitle": "Bugün olanlar burada.",
     "takeAttendance": "Yoklama Al",
+    "totalSchools": "Toplam Okul",
     "upcomingExams": "Yaklaşan Sınavlar",
     "viewAll": "Tümünü gör",
     "welcomeBack": "Tekrar hoş geldiniz, {{name}}"

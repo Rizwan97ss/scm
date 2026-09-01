@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "Absences",
     "activeStudents": "Active Students",
+    "activeTrialing": "Active / Trialing",
     "assignedSections": "Assigned Sections",
     "attendanceThisMonth": "Attendance This Month",
     "attendanceToday": "Attendance Marked Today",
     "attendanceTrend": "Attendance Trend (14 Days)",
     "createInvoice": "Create Invoice",
+    "currentlyTrialing": "Currently Trialing",
     "daysMarked": "Days Marked",
     "enrollmentTrend": "Enrollment Trend",
     "feeCollectionTrend": "Fee Collection Trend",
@@ -415,6 +417,7 @@
     "staffMembers": "Staff Members",
     "subtitle": "Here's what's happening today.",
     "takeAttendance": "Take Attendance",
+    "totalSchools": "Total Schools",
     "upcomingExams": "Upcoming Exams",
     "viewAll": "View all",
     "welcomeBack": "Welcome back, {{name}}"

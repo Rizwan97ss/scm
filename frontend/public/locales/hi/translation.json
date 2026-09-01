@@ -388,11 +388,13 @@
   "dashboard": {
     "absences": "अनुपस्थितियाँ",
     "activeStudents": "सक्रिय छात्र",
+    "activeTrialing": "सक्रिय / ट्रायल पर",
     "assignedSections": "निर्धारित सेक्शन",
     "attendanceThisMonth": "इस माह उपस्थिति",
     "attendanceToday": "आज दर्ज उपस्थिति",
     "attendanceTrend": "उपस्थिति रुझान (14 दिन)",
     "createInvoice": "इनवॉइस बनाएं",
+    "currentlyTrialing": "वर्तमान में ट्रायल पर",
     "daysMarked": "दर्ज दिन",
     "enrollmentTrend": "नामांकन रुझान",
     "feeCollectionTrend": "फीस संग्रहण रुझान",
@@ -415,6 +417,7 @@
     "staffMembers": "स्टाफ सदस्य",
     "subtitle": "आज की गतिविधियाँ देखें।",
     "takeAttendance": "उपस्थिति लें",
+    "totalSchools": "कुल स्कूल",
     "upcomingExams": "आगामी परीक्षाएँ",
     "viewAll": "सभी देखें",
     "welcomeBack": "वापसी पर स्वागत है, {{name}}"
