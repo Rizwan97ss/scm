@@ -39,6 +39,13 @@ class SettingSeeder extends Seeder
         ['key' => 'library.fine_per_day', 'value' => 0, 'type' => SettingType::Integer, 'group' => 'library', 'is_public' => false],
         ['key' => 'certificates.certificate_number_format', 'value' => 'CERT-{YEAR}-{SEQ}', 'type' => SettingType::String, 'group' => 'certificates', 'is_public' => false],
         ['key' => 'certificates.number_padding', 'value' => 4, 'type' => SettingType::Integer, 'group' => 'certificates', 'is_public' => false],
+        ['key' => 'id_cards.staff.show_email', 'value' => true, 'type' => SettingType::Boolean, 'group' => 'id_cards', 'is_public' => false],
+        ['key' => 'id_cards.staff.show_phone', 'value' => true, 'type' => SettingType::Boolean, 'group' => 'id_cards', 'is_public' => false],
+        ['key' => 'id_cards.staff.show_website', 'value' => true, 'type' => SettingType::Boolean, 'group' => 'id_cards', 'is_public' => false],
+        ['key' => 'id_cards.staff.show_barcode', 'value' => true, 'type' => SettingType::Boolean, 'group' => 'id_cards', 'is_public' => false],
+        ['key' => 'id_cards.student.show_dob', 'value' => true, 'type' => SettingType::Boolean, 'group' => 'id_cards', 'is_public' => false],
+        ['key' => 'id_cards.student.show_address', 'value' => true, 'type' => SettingType::Boolean, 'group' => 'id_cards', 'is_public' => false],
+        ['key' => 'id_cards.student.show_barcode', 'value' => true, 'type' => SettingType::Boolean, 'group' => 'id_cards', 'is_public' => false],
     ];
 
     private const DEMO_SCHOOL_OVERRIDES = [

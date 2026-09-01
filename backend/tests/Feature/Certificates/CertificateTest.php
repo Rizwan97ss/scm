@@ -150,6 +150,41 @@ class CertificateTest extends TestCase
         $this->assertSame('application/pdf', $response->headers->get('content-type'));
     }
 
+    /** Settings > ID Cards' field-visibility toggles (see IdCardController's $contactRows/$showBarcode) must not break generation with every optional field turned off. */
+    public function test_staff_id_card_still_renders_with_every_optional_field_turned_off(): void
+    {
+        $school = $this->createSchool();
+        $admin = $this->createUserWithRole($school, 'School Admin');
+        tenancy()->initialize($school);
+        $settings = app(\App\Services\SettingsService::class);
+        foreach (['id_cards.staff.show_email', 'id_cards.staff.show_phone', 'id_cards.staff.show_website', 'id_cards.staff.show_barcode'] as $key) {
+            $settings->set($key, false, $school->id, \App\Enums\SettingType::Boolean, 'id_cards');
+        }
+
+        $response = $this->actingAsInSchool($admin)->get("/api/v1/users/{$admin->id}/id-card/pdf");
+
+        $response->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('content-type'));
+    }
+
+    /** Same as the staff-side test above, for the student card's D.O.B/Address/barcode toggles. */
+    public function test_student_id_card_still_renders_with_every_optional_field_turned_off(): void
+    {
+        $school = $this->createSchool();
+        $admin = $this->createUserWithRole($school, 'School Admin');
+        $student = $this->makeStudent($school);
+        tenancy()->initialize($school);
+        $settings = app(\App\Services\SettingsService::class);
+        foreach (['id_cards.student.show_dob', 'id_cards.student.show_address', 'id_cards.student.show_barcode'] as $key) {
+            $settings->set($key, false, $school->id, \App\Enums\SettingType::Boolean, 'id_cards');
+        }
+
+        $response = $this->actingAsInSchool($admin)->get("/api/v1/students/{$student->id}/id-card/pdf");
+
+        $response->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('content-type'));
+    }
+
     private function makeStudent(School $school): Student
     {
         tenancy()->initialize($school);

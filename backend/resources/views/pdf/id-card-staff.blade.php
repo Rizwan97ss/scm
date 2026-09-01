@@ -81,14 +81,16 @@
         <div class="abs name">{{ $staff->full_name }}</div>
         <div class="abs role">{{ $staff->designation?->name ?? '—' }}</div>
 
-        <div class="abs contact" style="top: 72pt;">&#9993;&nbsp; {{ $staff->email }}</div>
-        <div class="abs contact" style="top: 82pt;">&#9742;&nbsp; {{ $staff->phone ?? '—' }}</div>
-        @if($website)
-            <div class="abs contact" style="top: 92pt;">&#8853;&nbsp; {{ $website }}</div>
-        @endif
+        {{-- School Admin-configurable which contact rows appear (Settings > ID Cards) -- IdCardController
+             only sends the rows that should show, so a hidden one leaves no gap for the rest to shift into. --}}
+        @foreach($contactRows as $index => $row)
+            <div class="abs contact" style="top: {{ 72 + $index * 10 }}pt;">{!! $row['icon'] !!}&nbsp; {{ $row['value'] }}</div>
+        @endforeach
 
         <div class="abs barcode-panel">
-            <img src="{{ $barcode }}" alt="">
+            @if($barcode)
+                <img src="{{ $barcode }}" alt="">
+            @endif
             <div class="barcode-id-label">Employee ID</div>
             <div class="barcode-id-value">{{ $staff->employee_id ?? '—' }}</div>
         </div>

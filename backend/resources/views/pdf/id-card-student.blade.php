@@ -33,7 +33,7 @@
         .barcode-panel img { width: 56pt; height: 24pt; }
         .barcode-value { font-size: 6px; color: #555555; margin-top: 2pt; letter-spacing: 0.3px; }
         .info-panel { top: 34pt; left: 82pt; width: 152pt; height: 112pt; background: rgba(255,255,255,0.94); border-radius: 6pt; }
-        .info-row { left: 92pt; width: 132pt; }
+        .info-row { left: 92pt; width: 132pt; height: 20pt; }
         .info-label { font-size: 6.5px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; }
         .info-value { font-size: 9px; font-weight: bold; color: #16213e; line-height: 1.2; }
     </style>
@@ -64,27 +64,21 @@
         </div>
 
         <div class="abs barcode-panel">
-            <img src="{{ $barcode }}" alt="">
+            @if($barcode)
+                <img src="{{ $barcode }}" alt="">
+            @endif
             <div class="barcode-value">{{ $student->admission_number }}</div>
         </div>
 
         <div class="abs info-panel"></div>
-        <div class="abs info-row" style="top: 42pt;">
-            <div class="info-label">Name</div>
-            <div class="info-value">{{ $student->full_name }}</div>
-        </div>
-        <div class="abs info-row" style="top: 64pt;">
-            <div class="info-label">Student ID</div>
-            <div class="info-value">{{ $student->admission_number }}</div>
-        </div>
-        <div class="abs info-row" style="top: 86pt;">
-            <div class="info-label">D.O.B</div>
-            <div class="info-value">{{ $student->date_of_birth?->toDateString() ?? '—' }}</div>
-        </div>
-        <div class="abs info-row" style="top: 108pt;">
-            <div class="info-label">Address</div>
-            <div class="info-value">{{ $student->address_line1 ? $student->address_line1.($student->city ? ', '.$student->city : '') : '—' }}</div>
-        </div>
+        {{-- School Admin-configurable which of these appear (Settings > ID Cards) -- IdCardController only
+             sends the rows that should show, so a hidden one leaves no gap for the rest to shift into. --}}
+        @foreach($infoRows as $index => $row)
+            <div class="abs info-row" style="top: {{ 42 + $index * 22 }}pt;">
+                <div class="info-label">{{ $row['label'] }}</div>
+                <div class="info-value">{{ $row['value'] }}</div>
+            </div>
+        @endforeach
     </div>
 </body>
 </html>
