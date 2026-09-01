@@ -22,6 +22,29 @@ describe('studentAdmissionSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('rejects a first name containing disallowed special characters', () => {
+    const result = studentAdmissionSchema.safeParse({ ...validBase, first_name: '@@#@' })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts a name with punctuation real names use (apostrophe, hyphen)", () => {
+    const result = studentAdmissionSchema.safeParse({ ...validBase, first_name: "O'Brien", last_name: 'Smith-Jones' })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects a guardian name containing disallowed special characters', () => {
+    const result = studentAdmissionSchema.safeParse({
+      ...validBase,
+      guardians: [{ first_name: '<script>', last_name: 'One', phone: '555', relationship_type: 'mother' }],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects an emergency contact name containing disallowed special characters', () => {
+    const result = studentAdmissionSchema.safeParse({ ...validBase, emergency_contact_name: '###' })
+    expect(result.success).toBe(false)
+  })
+
   it('rejects a missing academic year', () => {
     const { academic_year_id: _omit, ...withoutYear } = validBase
     const result = studentAdmissionSchema.safeParse(withoutYear)

@@ -55,6 +55,44 @@ class GuardianLinkTest extends TestCase
         ]);
     }
 
+    /** Attaching a new guardian by email that already exists must reuse that row, not mint a duplicate — same rule store() and the import paths follow. */
+    public function test_attaching_a_guardian_by_an_existing_email_reuses_that_guardian(): void
+    {
+        $school = $this->createSchool();
+        $admin = $this->createUserWithRole($school, 'School Admin');
+        $student = $this->student($school);
+        tenancy()->initialize($school);
+        $existing = Guardian::factory()->create(['email' => 'shared.parent@example.com']);
+
+        $response = $this->actingAsInSchool($admin)->postJson("/api/v1/students/{$student->id}/guardians", [
+            'first_name' => 'Shared',
+            'last_name' => 'Parent',
+            'email' => 'shared.parent@example.com',
+            'phone' => '+1-555-0100',
+            'relationship_type' => 'father',
+        ]);
+
+        $response->assertCreated();
+        $this->assertDatabaseCount('guardians', 1);
+        $this->assertDatabaseHas('student_guardian', ['student_id' => $student->id, 'guardian_id' => $existing->id]);
+    }
+
+    public function test_a_guardian_name_containing_junk_special_characters_is_rejected(): void
+    {
+        $school = $this->createSchool();
+        $admin = $this->createUserWithRole($school, 'School Admin');
+        $student = $this->student($school);
+
+        $response = $this->actingAsInSchool($admin)->postJson("/api/v1/students/{$student->id}/guardians", [
+            'first_name' => '<script>',
+            'last_name' => 'Parent',
+            'phone' => '+1-555-0100',
+            'relationship_type' => 'father',
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors('first_name');
+    }
+
     public function test_admin_can_detach_a_guardian_from_a_student(): void
     {
         $school = $this->createSchool();

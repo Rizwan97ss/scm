@@ -55,6 +55,76 @@ class StudentAdmissionTest extends TestCase
         $this->assertDatabaseHas('guardians', ['email' => 'gina@example.com']);
     }
 
+    /**
+     * The actual regression this guards against: two siblings admitted
+     * separately (not via the bulk import, which already reuses a guardian
+     * by email) with the same guardian email must produce one Guardian row,
+     * not two duplicates — matching StudentsImport/GuardiansImport's
+     * existing email-reuse rule.
+     */
+    public function test_admitting_two_siblings_separately_reuses_the_same_guardian_by_email(): void
+    {
+        $school = $this->createSchool();
+        $admin = $this->createUserWithRole($school, 'School Admin');
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+
+        $admit = fn (string $firstName) => $this->actingAsInSchool($admin)->postJson('/api/v1/students', [
+            'first_name' => $firstName,
+            'last_name' => 'Sample',
+            'gender' => 'male',
+            'date_of_birth' => '2018-01-15',
+            'academic_year_id' => $year->id,
+            'current_grade_level_id' => $gradeLevel->id,
+            'current_section_id' => $section->id,
+            'admission_date' => now()->toDateString(),
+            'guardians' => [
+                [
+                    'first_name' => 'Shared',
+                    'last_name' => 'Parent',
+                    'phone' => '+1-555-0100',
+                    'email' => 'shared.parent@example.com',
+                    'relationship_type' => 'mother',
+                    'is_primary' => true,
+                ],
+            ],
+        ]);
+
+        $admit('Sibling1')->assertCreated();
+        $admit('Sibling2')->assertCreated();
+
+        $this->assertDatabaseCount('guardians', 1);
+    }
+
+    public function test_a_student_name_containing_junk_special_characters_is_rejected(): void
+    {
+        $school = $this->createSchool();
+        $admin = $this->createUserWithRole($school, 'School Admin');
+        tenancy()->initialize($school);
+        $year = AcademicYear::factory()->create();
+        tenancy()->initialize($school);
+        $gradeLevel = GradeLevel::factory()->create();
+        tenancy()->initialize($school);
+        $section = Section::factory()->create(['academic_year_id' => $year->id, 'grade_level_id' => $gradeLevel->id]);
+
+        $response = $this->actingAsInSchool($admin)->postJson('/api/v1/students', [
+            'first_name' => '@@#@',
+            'last_name' => 'Sample',
+            'gender' => 'male',
+            'date_of_birth' => '2018-01-15',
+            'academic_year_id' => $year->id,
+            'current_grade_level_id' => $gradeLevel->id,
+            'current_section_id' => $section->id,
+            'admission_date' => now()->toDateString(),
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors('first_name');
+    }
+
     public function test_admission_number_is_sequential_and_formatted(): void
     {
         $school = $this->createSchool();

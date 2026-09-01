@@ -69,14 +69,23 @@ class StudentController extends Controller
             ]);
 
             foreach ($request->input('guardians', []) as $guardianInput) {
-                $guardian = isset($guardianInput['guardian_id'])
-                    ? Guardian::query()->findOrFail($guardianInput['guardian_id'])
-                    : Guardian::query()->create([
-                        'first_name' => $guardianInput['first_name'],
-                        'last_name' => $guardianInput['last_name'],
-                        'email' => $guardianInput['email'] ?? null,
-                        'phone' => $guardianInput['phone'],
-                    ]);
+                $guardianAttributes = [
+                    'first_name' => $guardianInput['first_name'],
+                    'last_name' => $guardianInput['last_name'],
+                    'email' => $guardianInput['email'] ?? null,
+                    'phone' => $guardianInput['phone'],
+                ];
+
+                // Same email-reuse rule as StudentsImport/GuardiansImport --
+                // two siblings admitted separately, or a guardian re-entered
+                // by hand on a later admission, get one Guardian row, not a
+                // duplicate. No email means no reliable key, so it's always
+                // a fresh row in that case (matches the import paths too).
+                $guardian = match (true) {
+                    isset($guardianInput['guardian_id']) => Guardian::query()->findOrFail($guardianInput['guardian_id']),
+                    ! empty($guardianInput['email']) => Guardian::query()->firstOrCreate(['email' => $guardianInput['email']], $guardianAttributes),
+                    default => Guardian::query()->create($guardianAttributes),
+                };
 
                 $student->guardians()->attach($guardian->id, [
                     'relationship_type' => $guardianInput['relationship_type'],
@@ -122,9 +131,15 @@ class StudentController extends Controller
     {
         $this->authorize('update', $student);
 
-        $guardian = $request->filled('guardian_id')
-            ? Guardian::query()->findOrFail($request->integer('guardian_id'))
-            : Guardian::query()->create($request->only(['first_name', 'last_name', 'email', 'phone', 'occupation']));
+        $guardianAttributes = $request->only(['first_name', 'last_name', 'email', 'phone', 'occupation']);
+
+        // See store()'s matching comment -- reuse by email instead of
+        // always minting a new Guardian row.
+        $guardian = match (true) {
+            $request->filled('guardian_id') => Guardian::query()->findOrFail($request->integer('guardian_id')),
+            $request->filled('email') => Guardian::query()->firstOrCreate(['email' => $request->string('email')->toString()], $guardianAttributes),
+            default => Guardian::query()->create($guardianAttributes),
+        };
 
         $student->guardians()->syncWithoutDetaching([
             $guardian->id => [

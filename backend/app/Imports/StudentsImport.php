@@ -11,6 +11,7 @@ use App\Models\School;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\User;
+use App\Rules\ValidName;
 use App\Services\StudentEnrollmentService;
 use App\Services\StudentIdGeneratorService;
 use Illuminate\Support\Collection;
@@ -230,8 +231,8 @@ class StudentsImport implements OnEachRow, SkipsEmptyRows, SkipsOnFailure, WithH
     public function rules(): array
     {
         $rules = [
-            'first_name' => ['required', 'string', 'max:100'],
-            'last_name' => ['required', 'string', 'max:100'],
+            'first_name' => ['required', 'string', 'max:100', new ValidName],
+            'last_name' => ['required', 'string', 'max:100', new ValidName],
             'gender' => ['required', 'in:male,female,other,Male,Female,Other'],
             'date_of_birth' => ['required', 'date'],
             'grade_level_code' => ['required', 'string'],
@@ -242,8 +243,8 @@ class StudentsImport implements OnEachRow, SkipsEmptyRows, SkipsOnFailure, WithH
         ];
 
         foreach (self::GUARDIAN_SLOTS as $slot) {
-            $rules["guardian{$slot}_first_name"] = ['nullable', 'string', 'max:100'];
-            $rules["guardian{$slot}_last_name"] = ['nullable', "required_with:guardian{$slot}_first_name", 'string', 'max:100'];
+            $rules["guardian{$slot}_first_name"] = ['nullable', 'string', 'max:100', new ValidName];
+            $rules["guardian{$slot}_last_name"] = ['nullable', "required_with:guardian{$slot}_first_name", 'string', 'max:100', new ValidName];
             $rules["guardian{$slot}_email"] = ['nullable', 'email', 'max:255'];
             $rules["guardian{$slot}_phone"] = ['nullable', "required_with:guardian{$slot}_first_name", 'string', 'max:30'];
             $rules["guardian{$slot}_relationship"] = ['nullable', "required_with:guardian{$slot}_first_name", 'in:father,mother,guardian,other,Father,Mother,Guardian,Other'];

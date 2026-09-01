@@ -26,7 +26,7 @@ class UpdateStudentRequest extends FormRequest
             'previous_school_name' => ['nullable', 'string', 'max:255'],
             'previous_school_details' => ['nullable', 'string'],
             'medical_info' => ['nullable', 'string'],
-            'emergency_contact_name' => ['nullable', 'string', 'max:150'],
+            'emergency_contact_name' => ['nullable', 'string', 'max:150', new ValidName],
             'emergency_contact_phone' => ['nullable', 'string', 'max:30'],
             'address_line1' => ['nullable', 'string', 'max:255'],
             'address_line2' => ['nullable', 'string', 'max:255'],
