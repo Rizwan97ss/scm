@@ -58,12 +58,12 @@ export function StudentsListPage() {
           <>
             {can('students.export') && (
               <Button variant="outline" onClick={() => downloadFile(studentsApi.exportUrl, 'students.xlsx')}>
-                <Download className="h-4 w-4" /> {t('common.export')}
+                <Upload className="h-4 w-4" /> {t('common.export')}
               </Button>
             )}
             {can('students.import') && (
               <LinkButton to={routePaths.studentImport} variant="outline">
-                <Upload className="h-4 w-4" /> {t('common.import')}
+                <Download className="h-4 w-4" /> {t('common.import')}
               </LinkButton>
             )}
             {can('students.create') && (
@@ -86,7 +86,7 @@ export function StudentsListPage() {
             size="sm"
             onClick={() => downloadFile(`${studentsApi.exportUrl}?ids=${selectedIdList.join(',')}`, 'students-selected.xlsx')}
           >
-            <Download className="h-3.5 w-3.5" /> {t('common.exportSelected')}
+            <Upload className="h-3.5 w-3.5" /> {t('common.exportSelected')}
           </Button>
         )}
         {can('enrollment.manage') && (

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { FileSpreadsheet, Save, Upload } from 'lucide-react'
+import { Download, FileSpreadsheet, Save } from 'lucide-react'
 import { examMarksApi, examsApi } from '@/api/endpoints/exams'
 import { studentsApi } from '@/api/endpoints/students'
 import { queryKeys } from '@/api/queryKeys'
@@ -125,7 +125,7 @@ export function MarksEntryPage() {
         actions={
           can('exam-marks.import') && (
             <Button variant="outline" onClick={() => { setImportResult(null); setImportModalOpen(true) }}>
-              <Upload className="h-4 w-4" /> {t('exams.importFromExcel')}
+              <Download className="h-4 w-4" /> {t('exams.importFromExcel')}
             </Button>
           )
         }
@@ -218,7 +218,7 @@ export function MarksEntryPage() {
             }}
           />
           <Button type="button" variant="outline" isLoading={importMutation.isPending} onClick={() => fileInputRef.current?.click()}>
-            <Upload className="h-4 w-4" /> {t('exams.chooseFileToImport')}
+            <Download className="h-4 w-4" /> {t('exams.chooseFileToImport')}
           </Button>
 
           {importResult && (

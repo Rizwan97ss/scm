@@ -88,12 +88,12 @@ export function UsersListPage() {
           <>
             {can('users.export') && (
               <Button variant="outline" onClick={() => downloadFile(usersApi.exportUrl, 'staff.xlsx')}>
-                <Download className="h-4 w-4" /> {t('common.export')}
+                <Upload className="h-4 w-4" /> {t('common.export')}
               </Button>
             )}
             {can('users.import') && (
               <LinkButton to={routePaths.userImport} variant="outline">
-                <Upload className="h-4 w-4" /> {t('common.import')}
+                <Download className="h-4 w-4" /> {t('common.import')}
               </LinkButton>
             )}
             {can('users.create') && (

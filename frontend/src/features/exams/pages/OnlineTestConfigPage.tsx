@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { FileSpreadsheet, Plus, Trash2, Upload } from 'lucide-react'
+import { Download, FileSpreadsheet, Plus, Trash2 } from 'lucide-react'
 import { examsApi, onlineTestsApi, questionsApi } from '@/api/endpoints/exams'
 import { queryKeys } from '@/api/queryKeys'
 import { usePermission } from '@/hooks/usePermission'
@@ -160,7 +160,7 @@ export function OnlineTestConfigPage() {
           <div className="flex flex-wrap gap-2">
             {can('questions.import') && (
               <Button variant="outline" onClick={() => { setImportResult(null); setImportModalOpen(true) }}>
-                <Upload className="h-4 w-4" /> {t('exams.importFromExcel')}
+                <Download className="h-4 w-4" /> {t('exams.importFromExcel')}
               </Button>
             )}
             {can('questions.create') && (
@@ -303,7 +303,7 @@ export function OnlineTestConfigPage() {
             }}
           />
           <Button type="button" variant="outline" isLoading={importMutation.isPending} onClick={() => fileInputRef.current?.click()}>
-            <Upload className="h-4 w-4" /> {t('exams.chooseFileToImport')}
+            <Download className="h-4 w-4" /> {t('exams.chooseFileToImport')}
           </Button>
 
           {importResult && (

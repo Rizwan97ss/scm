@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { Send, Upload } from 'lucide-react'
+import { Download, Send } from 'lucide-react'
 import { guardiansApi } from '@/api/endpoints/guardians'
 import { queryKeys } from '@/api/queryKeys'
 import { usePagination } from '@/hooks/usePagination'
@@ -72,7 +72,7 @@ export function GuardiansListPage() {
         actions={
           can('guardians.import') && (
             <LinkButton to={routePaths.guardianImport} variant="outline">
-              <Upload className="h-4 w-4" /> {t('common.import')}
+              <Download className="h-4 w-4" /> {t('common.import')}
             </LinkButton>
           )
         }

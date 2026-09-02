@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Download, HelpCircle, IdCard, LogOut, Trash2, User as UserIcon } from 'lucide-react'
+import { HelpCircle, IdCard, LogOut, Trash2, Upload, User as UserIcon } from 'lucide-react'
 import { idCardsApi } from '@/api/endpoints/certificates'
 import { deleteAccount } from '@/api/endpoints/auth'
 import { Avatar } from '@/components/ui/Avatar'
@@ -75,7 +75,7 @@ export function UserMenu() {
             : []),
           {
             label: t('common.userMenu.exportMyData'),
-            icon: <Download className="h-4 w-4" />,
+            icon: <Upload className="h-4 w-4" />,
             onSelect: () => navigate(routePaths.myDataExport),
           },
           {
