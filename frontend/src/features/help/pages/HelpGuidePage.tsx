@@ -295,11 +295,11 @@ function RolesTab() {
   )
 }
 
-function FaqTab() {
+function FaqTab({ slug }: { slug: string }) {
   const items = [
     {
       q: '"Network error" or CORS-looking errors right after signing in.',
-      a: "You're very likely on the wrong address — it must be your own {slug}.{domain} subdomain, never a bare central address. Re-check the URL bar.",
+      a: `You're very likely on the wrong address — it must be your own ${slug} subdomain, never a bare central address. Re-check the URL bar.`,
     },
     {
       q: '"Too Many Attempts" when logging in.',
@@ -355,7 +355,7 @@ export function HelpGuidePage() {
           { value: 'modules', label: 'Other Modules', content: <OtherModulesTab /> },
           { value: 'communication', label: 'Communication', content: <CommunicationTab /> },
           { value: 'roles', label: 'Roles & Permissions', content: <RolesTab /> },
-          { value: 'faq', label: 'FAQ', content: <FaqTab /> },
+          { value: 'faq', label: 'FAQ', content: <FaqTab slug={slug} /> },
         ]}
       />
 
