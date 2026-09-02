@@ -6,8 +6,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, Textarea, type DataTableColumn } from '@/components/ui'
+import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, Textarea, type DataTableColumn } from '@/components/ui'
 import type { FeeCategory, FeeCategoryPayload } from '@/types/fees'
 
 const EMPTY_FORM: FeeCategoryPayload = { name: '', description: '', is_active: true }
@@ -15,8 +16,14 @@ const EMPTY_FORM: FeeCategoryPayload = { name: '', description: '', is_active: t
 export function FeeCategoriesPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
-  const { sort, setPage, setSort, queryParams } = usePagination('name', 'name')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(feeCategoriesApi, queryKeys.feeCategories, queryParams, 'Fee category')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('name', 'name')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    feeCategoriesApi,
+    queryKeys.feeCategories,
+    { ...queryParams, 'filter[name]': debouncedSearch || undefined },
+    'Fee category'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<FeeCategory | null>(null)
@@ -81,17 +88,27 @@ export function FeeCategoriesPage() {
         }
       />
 
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('fees.categoriesSearchPlaceholder')} value={search} onChange={setSearch} />
+      </div>
+
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('nav.fee_categories') })}
-        emptyDescription={can('fees.create') ? t('common.createFirstToGetStarted', { item: t('entities.category') }) : undefined}
+        emptyTitle={debouncedSearch ? t('fees.categoriesEmptyTitleSearch', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('nav.fee_categories') })}
+        emptyDescription={
+          debouncedSearch
+            ? t('fees.categoriesEmptyDescriptionSearch')
+            : can('fees.create')
+              ? t('common.createFirstToGetStarted', { item: t('entities.category') })
+              : undefined
+        }
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.category') }) : t('common.newItem', { item: t('entities.category') })}>
