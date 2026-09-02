@@ -7,6 +7,7 @@ import { usersApi } from '@/api/endpoints/users'
 import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
+import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Badge, Button, DataTable, FormField, Input, Modal, Select, type DataTableColumn } from '@/components/ui'
 import { formatCurrency } from '@/utils/formatCurrency'
@@ -23,6 +24,13 @@ export function SalaryStructuresPage() {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState<SalaryStructurePayload>(EMPTY_FORM)
+
+  useUnsavedChangesWarning(modalOpen && JSON.stringify(form) !== JSON.stringify(EMPTY_FORM))
+
+  function handleModalOpenChange(open: boolean) {
+    setModalOpen(open)
+    if (!open) setForm(EMPTY_FORM)
+  }
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -57,13 +65,14 @@ export function SalaryStructuresPage() {
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         emptyTitle={t('common.noItemsYet', { items: t('nav.salary_structures') })}
+        emptyDescription={t('hr.salaryStructuresEmptyDescription')}
       />
 
-      <Modal open={modalOpen} onOpenChange={setModalOpen} title={t('common.newItem', { item: t('entities.salaryStructure') })}>
+      <Modal open={modalOpen} onOpenChange={handleModalOpenChange} title={t('common.newItem', { item: t('entities.salaryStructure') })}>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
           <FormField label={t('library.staffMember')} htmlFor="user_id" required>
             <Select
@@ -74,7 +83,7 @@ export function SalaryStructuresPage() {
               placeholder={t('hr.selectStaffMember')}
             />
           </FormField>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <FormField label={t('hr.basicSalaryLabel')} htmlFor="basic_salary" required>
               <Input id="basic_salary" type="number" min="0.01" step="0.01" required value={form.basic_salary || ''} onChange={(e) => setForm({ ...form, basic_salary: Number(e.target.value) })} />
             </FormField>

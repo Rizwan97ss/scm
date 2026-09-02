@@ -93,10 +93,11 @@ export function PayslipsPage() {
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         emptyTitle={t('common.noItemsYet', { items: t('nav.payslips') })}
+        emptyDescription={t('hr.payslipsEmptyDescription')}
       />
 
       {generateModalOpen && <GeneratePayrollModal open={generateModalOpen} onOpenChange={setGenerateModalOpen} />}

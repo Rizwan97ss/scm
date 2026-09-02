@@ -6,8 +6,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, Checkbox, ConfirmDialog, DataTable, FormField, Input, Modal, Textarea, type DataTableColumn } from '@/components/ui'
+import { Badge, Button, Checkbox, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, Textarea, type DataTableColumn } from '@/components/ui'
 import type { LeaveType, LeaveTypePayload } from '@/types/hr'
 
 const EMPTY_FORM: LeaveTypePayload = { name: '', days_allowed_per_year: null, is_paid: true, description: '', is_active: true }
@@ -15,8 +16,14 @@ const EMPTY_FORM: LeaveTypePayload = { name: '', days_allowed_per_year: null, is
 export function LeaveTypesPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
-  const { sort, setPage, setSort, queryParams } = usePagination('name', 'name')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(leaveTypesApi, queryKeys.leaveTypes, queryParams, 'Leave type')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('name', 'name')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    leaveTypesApi,
+    queryKeys.leaveTypes,
+    { ...queryParams, 'filter[name]': debouncedSearch || undefined },
+    'Leave type'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<LeaveType | null>(null)
@@ -88,16 +95,21 @@ export function LeaveTypesPage() {
         }
       />
 
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('hr.leaveTypesSearchPlaceholder')} value={search} onChange={setSearch} />
+      </div>
+
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('nav.leave_types') })}
+        emptyTitle={debouncedSearch ? t('hr.leaveTypesEmptyTitleSearch', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('nav.leave_types') })}
+        emptyDescription={debouncedSearch ? t('hr.leaveTypesEmptyDescriptionSearch') : undefined}
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.leaveType') }) : t('common.newItem', { item: t('entities.leaveType') })}>

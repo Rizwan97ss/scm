@@ -6,8 +6,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, Textarea, type DataTableColumn } from '@/components/ui'
+import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, Textarea, type DataTableColumn } from '@/components/ui'
 import type { Designation, DesignationPayload } from '@/types/hr'
 
 const EMPTY_FORM: DesignationPayload = { name: '', description: '', is_active: true }
@@ -15,8 +16,14 @@ const EMPTY_FORM: DesignationPayload = { name: '', description: '', is_active: t
 export function DesignationsPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
-  const { sort, setPage, setSort, queryParams } = usePagination('name', 'name')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(designationsApi, queryKeys.designations, queryParams, 'Designation')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('name', 'name')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    designationsApi,
+    queryKeys.designations,
+    { ...queryParams, 'filter[name]': debouncedSearch || undefined },
+    'Designation'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Designation | null>(null)
@@ -81,16 +88,21 @@ export function DesignationsPage() {
         }
       />
 
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('hr.designationsSearchPlaceholder')} value={search} onChange={setSearch} />
+      </div>
+
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('nav.designations') })}
+        emptyTitle={debouncedSearch ? t('hr.designationsEmptyTitleSearch', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('nav.designations') })}
+        emptyDescription={debouncedSearch ? t('hr.designationsEmptyDescriptionSearch') : undefined}
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.designation') }) : t('common.newItem', { item: t('entities.designation') })}>
