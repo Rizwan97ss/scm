@@ -342,7 +342,20 @@
     "required": "Erforderlich",
     "save": "Speichern",
     "saveChanges": "Änderungen speichern",
-    "search": "Suchen",
+    "search": {
+      "placeholder": "Schüler, Personal, Rechnungen suchen...",
+      "ariaLabel": "Globale Suche",
+      "clear": "Suche löschen",
+      "searching": "Suche läuft…",
+      "noResultsFor": "Keine Ergebnisse für \"{{query}}\".",
+      "categories": {
+        "students": "Schüler",
+        "guardians": "Erziehungsberechtigte",
+        "staff": "Personal",
+        "books": "Bücher",
+        "invoices": "Rechnungen"
+      }
+    },
     "searchByName": "Nach Namen suchen…",
     "settings": "Einstellungen",
     "status": "Status",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "Bestätigen",
       "cancel": "Abbrechen"
+    },
+    "mfaBanner": {
+      "required": "Zwei-Faktor-Authentifizierung ist für dieses Konto erforderlich — {{action}}.",
+      "setupNow": "jetzt einrichten",
+      "daysLeft_one": "Sie haben noch {{count}} Tag Zeit zum Einrichten",
+      "daysLeft_other": "Sie haben noch {{count}} Tage Zeit zum Einrichten",
+      "link": "Jetzt einrichten"
+    },
+    "notifications": {
+      "ariaLabel": "Benachrichtigungen",
+      "ariaLabelUnread": "Benachrichtigungen ({{count}} ungelesen)",
+      "title": "Benachrichtigungen",
+      "markAllRead": "Alle als gelesen markieren",
+      "empty": "Noch keine Benachrichtigungen."
+    },
+    "topbar": {
+      "openMenu": "Navigationsmenü öffnen"
+    },
+    "userMenu": {
+      "accountMenu": "Kontomenü",
+      "downloadIdCard": "Meinen Ausweis herunterladen",
+      "exportMyData": "Meine Daten exportieren",
+      "setupGuide": "Einrichtungsanleitung",
+      "deleteAccount": "Mein Konto löschen",
+      "logout": "Abmelden",
+      "deleteConfirmTitle": "Ihr Konto löschen?",
+      "deleteConfirmDescription": "Dies entfernt Ihre persönlichen Daten (Name, Kontaktdaten, medizinische/Notfallinformationen) sofort und kann nicht rückgängig gemacht werden. Akademische und finanzielle Datensätze zu Ihrem Konto werden nach Bedarf aufbewahrt.",
+      "deleteConfirmLabel": "Mein Konto löschen",
+      "confirmPassword": "Bestätigen Sie Ihr Passwort"
     }
   },
   "communication": {

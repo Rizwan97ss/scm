@@ -342,7 +342,20 @@
     "required": "Diperlukan",
     "save": "Simpan",
     "saveChanges": "Simpan perubahan",
-    "search": "Cari",
+    "search": {
+      "placeholder": "Cari pelajar, kakitangan, invois...",
+      "ariaLabel": "Carian global",
+      "clear": "Kosongkan carian",
+      "searching": "Mencari…",
+      "noResultsFor": "Tiada keputusan untuk \"{{query}}\".",
+      "categories": {
+        "students": "Pelajar",
+        "guardians": "Penjaga",
+        "staff": "Kakitangan",
+        "books": "Buku",
+        "invoices": "Invois"
+      }
+    },
     "searchByName": "Cari mengikut nama…",
     "settings": "Tetapan",
     "status": "Status",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "Sahkan",
       "cancel": "Batal"
+    },
+    "mfaBanner": {
+      "required": "Pengesahan dua faktor diperlukan pada akaun ini — {{action}}.",
+      "setupNow": "sediakan sekarang",
+      "daysLeft_one": "Anda mempunyai {{count}} hari lagi untuk menyediakannya",
+      "daysLeft_other": "Anda mempunyai {{count}} hari lagi untuk menyediakannya",
+      "link": "Sediakan sekarang"
+    },
+    "notifications": {
+      "ariaLabel": "Pemberitahuan",
+      "ariaLabelUnread": "Pemberitahuan ({{count}} belum dibaca)",
+      "title": "Pemberitahuan",
+      "markAllRead": "Tandakan semua sudah dibaca",
+      "empty": "Belum ada pemberitahuan."
+    },
+    "topbar": {
+      "openMenu": "Buka menu navigasi"
+    },
+    "userMenu": {
+      "accountMenu": "Menu akaun",
+      "downloadIdCard": "Muat Turun Kad ID Saya",
+      "exportMyData": "Eksport Data Saya",
+      "setupGuide": "Panduan Persediaan",
+      "deleteAccount": "Padam Akaun Saya",
+      "logout": "Log keluar",
+      "deleteConfirmTitle": "Padam akaun anda?",
+      "deleteConfirmDescription": "Ini mengalih keluar data peribadi anda (nama, butiran hubungan, maklumat perubatan/kecemasan) serta-merta dan tidak boleh dibuat asal. Rekod akademik dan kewangan yang berkaitan dengan akaun anda disimpan, seperti yang diperlukan.",
+      "deleteConfirmLabel": "Padam akaun saya",
+      "confirmPassword": "Sahkan kata laluan anda"
     }
   },
   "communication": {

@@ -342,7 +342,20 @@
     "required": "Wajib",
     "save": "Simpan",
     "saveChanges": "Simpan perubahan",
-    "search": "Cari",
+    "search": {
+      "placeholder": "Cari siswa, staf, faktur...",
+      "ariaLabel": "Pencarian global",
+      "clear": "Hapus pencarian",
+      "searching": "Mencari…",
+      "noResultsFor": "Tidak ada hasil untuk \"{{query}}\".",
+      "categories": {
+        "students": "Siswa",
+        "guardians": "Wali",
+        "staff": "Staf",
+        "books": "Buku",
+        "invoices": "Faktur"
+      }
+    },
     "searchByName": "Cari berdasarkan nama…",
     "settings": "Pengaturan",
     "status": "Status",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "Konfirmasi",
       "cancel": "Batal"
+    },
+    "mfaBanner": {
+      "required": "Autentikasi dua faktor diperlukan pada akun ini — {{action}}.",
+      "setupNow": "atur sekarang",
+      "daysLeft_one": "Anda memiliki {{count}} hari tersisa untuk mengaturnya",
+      "daysLeft_other": "Anda memiliki {{count}} hari tersisa untuk mengaturnya",
+      "link": "Atur sekarang"
+    },
+    "notifications": {
+      "ariaLabel": "Notifikasi",
+      "ariaLabelUnread": "Notifikasi ({{count}} belum dibaca)",
+      "title": "Notifikasi",
+      "markAllRead": "Tandai semua sudah dibaca",
+      "empty": "Belum ada notifikasi."
+    },
+    "topbar": {
+      "openMenu": "Buka menu navigasi"
+    },
+    "userMenu": {
+      "accountMenu": "Menu akun",
+      "downloadIdCard": "Unduh Kartu ID Saya",
+      "exportMyData": "Ekspor Data Saya",
+      "setupGuide": "Panduan Pengaturan",
+      "deleteAccount": "Hapus Akun Saya",
+      "logout": "Keluar",
+      "deleteConfirmTitle": "Hapus akun Anda?",
+      "deleteConfirmDescription": "Ini menghapus data pribadi Anda (nama, detail kontak, informasi medis/darurat) segera dan tidak dapat dibatalkan. Catatan akademik dan keuangan yang terkait dengan akun Anda tetap disimpan sesuai kebutuhan.",
+      "deleteConfirmLabel": "Hapus akun saya",
+      "confirmPassword": "Konfirmasi kata sandi Anda"
     }
   },
   "communication": {

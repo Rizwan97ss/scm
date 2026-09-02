@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Download, HelpCircle, IdCard, LogOut, Trash2, User as UserIcon } from 'lucide-react'
 import { idCardsApi } from '@/api/endpoints/certificates'
 import { deleteAccount } from '@/api/endpoints/auth'
@@ -12,6 +13,7 @@ import { routePaths } from '@/routes/routePaths'
 import type { ApiError } from '@/api/client'
 
 export function UserMenu() {
+  const { t } = useTranslation()
   const { user, hasRole, logout } = useAuth()
   const navigate = useNavigate()
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -51,7 +53,7 @@ export function UserMenu() {
           <button
             type="button"
             className="flex items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="Account menu"
+            aria-label={t('common.userMenu.accountMenu')}
           >
             <Avatar name={user.full_name} src={user.avatar_url} size={36} />
           </button>
@@ -65,30 +67,30 @@ export function UserMenu() {
           ...(isStaff
             ? [
                 {
-                  label: 'Download My ID Card',
+                  label: t('common.userMenu.downloadIdCard'),
                   icon: <IdCard className="h-4 w-4" />,
                   onSelect: () => window.open(idCardsApi.staffPdfUrl(user.id), '_blank'),
                 },
               ]
             : []),
           {
-            label: 'Export My Data',
+            label: t('common.userMenu.exportMyData'),
             icon: <Download className="h-4 w-4" />,
             onSelect: () => navigate(routePaths.myDataExport),
           },
           {
-            label: 'Setup Guide',
+            label: t('common.userMenu.setupGuide'),
             icon: <HelpCircle className="h-4 w-4" />,
             onSelect: () => navigate(routePaths.help),
           },
           {
-            label: 'Delete My Account',
+            label: t('common.userMenu.deleteAccount'),
             icon: <Trash2 className="h-4 w-4" />,
             destructive: true,
             onSelect: () => setDeleteOpen(true),
           },
           {
-            label: 'Log out',
+            label: t('common.userMenu.logout'),
             icon: <LogOut className="h-4 w-4" />,
             destructive: true,
             onSelect: async () => {
@@ -102,13 +104,13 @@ export function UserMenu() {
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={closeDeleteDialog}
-        title="Delete your account?"
-        description="This removes your personal data (name, contact details, medical/emergency info) immediately and cannot be undone. Academic and financial records tied to your account are kept, as required."
-        confirmLabel="Delete my account"
+        title={t('common.userMenu.deleteConfirmTitle')}
+        description={t('common.userMenu.deleteConfirmDescription')}
+        confirmLabel={t('common.userMenu.deleteConfirmLabel')}
         isLoading={isDeleting}
         onConfirm={handleDeleteAccount}
       >
-        <FormField label="Confirm your password" htmlFor="delete-account-password" error={deleteError ?? undefined}>
+        <FormField label={t('common.userMenu.confirmPassword')} htmlFor="delete-account-password" error={deleteError ?? undefined}>
           <Input
             id="delete-account-password"
             type="password"

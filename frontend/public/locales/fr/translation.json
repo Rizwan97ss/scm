@@ -342,7 +342,20 @@
     "required": "Obligatoire",
     "save": "Enregistrer",
     "saveChanges": "Enregistrer les modifications",
-    "search": "Rechercher",
+    "search": {
+      "placeholder": "Rechercher élèves, personnel, factures...",
+      "ariaLabel": "Recherche globale",
+      "clear": "Effacer la recherche",
+      "searching": "Recherche en cours…",
+      "noResultsFor": "Aucun résultat pour \"{{query}}\".",
+      "categories": {
+        "students": "Élèves",
+        "guardians": "Tuteurs",
+        "staff": "Personnel",
+        "books": "Livres",
+        "invoices": "Factures"
+      }
+    },
     "searchByName": "Rechercher par nom…",
     "settings": "Paramètres",
     "status": "Statut",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "Confirmer",
       "cancel": "Annuler"
+    },
+    "mfaBanner": {
+      "required": "L'authentification à deux facteurs est requise sur ce compte — {{action}}.",
+      "setupNow": "configurez-la maintenant",
+      "daysLeft_one": "il vous reste {{count}} jour pour la configurer",
+      "daysLeft_other": "il vous reste {{count}} jours pour la configurer",
+      "link": "Configurer maintenant"
+    },
+    "notifications": {
+      "ariaLabel": "Notifications",
+      "ariaLabelUnread": "Notifications ({{count}} non lues)",
+      "title": "Notifications",
+      "markAllRead": "Tout marquer comme lu",
+      "empty": "Aucune notification pour le moment."
+    },
+    "topbar": {
+      "openMenu": "Ouvrir le menu de navigation"
+    },
+    "userMenu": {
+      "accountMenu": "Menu du compte",
+      "downloadIdCard": "Télécharger ma carte d'identité",
+      "exportMyData": "Exporter mes données",
+      "setupGuide": "Guide de configuration",
+      "deleteAccount": "Supprimer mon compte",
+      "logout": "Se déconnecter",
+      "deleteConfirmTitle": "Supprimer votre compte ?",
+      "deleteConfirmDescription": "Cela supprime immédiatement vos données personnelles (nom, coordonnées, informations médicales/d'urgence) et est irréversible. Les dossiers académiques et financiers liés à votre compte sont conservés, si nécessaire.",
+      "deleteConfirmLabel": "Supprimer mon compte",
+      "confirmPassword": "Confirmez votre mot de passe"
     }
   },
   "communication": {

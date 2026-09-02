@@ -342,7 +342,20 @@
     "required": "必填",
     "save": "保存",
     "saveChanges": "保存更改",
-    "search": "搜索",
+    "search": {
+      "placeholder": "搜索学生、员工、发票...",
+      "ariaLabel": "全局搜索",
+      "clear": "清除搜索",
+      "searching": "搜索中…",
+      "noResultsFor": "没有与\"{{query}}\"匹配的结果。",
+      "categories": {
+        "students": "学生",
+        "guardians": "监护人",
+        "staff": "员工",
+        "books": "书籍",
+        "invoices": "发票"
+      }
+    },
     "searchByName": "按姓名搜索…",
     "settings": "设置",
     "status": "状态",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "确认",
       "cancel": "取消"
+    },
+    "mfaBanner": {
+      "required": "此账户需要双重身份验证 — {{action}}。",
+      "setupNow": "立即设置",
+      "daysLeft_one": "您还有 {{count}} 天可以设置",
+      "daysLeft_other": "您还有 {{count}} 天可以设置",
+      "link": "立即设置"
+    },
+    "notifications": {
+      "ariaLabel": "通知",
+      "ariaLabelUnread": "通知（{{count}} 条未读）",
+      "title": "通知",
+      "markAllRead": "全部标为已读",
+      "empty": "暂无通知。"
+    },
+    "topbar": {
+      "openMenu": "打开导航菜单"
+    },
+    "userMenu": {
+      "accountMenu": "账户菜单",
+      "downloadIdCard": "下载我的身份证",
+      "exportMyData": "导出我的数据",
+      "setupGuide": "设置指南",
+      "deleteAccount": "删除我的账户",
+      "logout": "退出登录",
+      "deleteConfirmTitle": "删除您的账户？",
+      "deleteConfirmDescription": "此操作会立即删除您的个人数据（姓名、联系方式、医疗/紧急信息），且无法撤销。与您账户相关的学术和财务记录将按要求保留。",
+      "deleteConfirmLabel": "删除我的账户",
+      "confirmPassword": "确认您的密码"
     }
   },
   "communication": {

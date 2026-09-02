@@ -342,7 +342,20 @@
     "required": "आवश्यक",
     "save": "सहेजें",
     "saveChanges": "परिवर्तन सहेजें",
-    "search": "खोजें",
+    "search": {
+      "placeholder": "छात्र, स्टाफ, इनवॉइस खोजें...",
+      "ariaLabel": "वैश्विक खोज",
+      "clear": "खोज साफ़ करें",
+      "searching": "खोजा जा रहा है…",
+      "noResultsFor": "\"{{query}}\" के लिए कोई परिणाम नहीं।",
+      "categories": {
+        "students": "छात्र",
+        "guardians": "अभिभावक",
+        "staff": "स्टाफ",
+        "books": "किताबें",
+        "invoices": "इनवॉइस"
+      }
+    },
     "searchByName": "नाम से खोजें…",
     "settings": "सेटिंग्स",
     "status": "स्थिति",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "पुष्टि करें",
       "cancel": "रद्द करें"
+    },
+    "mfaBanner": {
+      "required": "इस खाते पर दो-चरणीय प्रमाणीकरण आवश्यक है — {{action}}।",
+      "setupNow": "अभी सेट करें",
+      "daysLeft_one": "इसे सेट करने के लिए आपके पास {{count}} दिन शेष है",
+      "daysLeft_other": "इसे सेट करने के लिए आपके पास {{count}} दिन शेष हैं",
+      "link": "अभी सेट करें"
+    },
+    "notifications": {
+      "ariaLabel": "सूचनाएं",
+      "ariaLabelUnread": "सूचनाएं ({{count}} अपठित)",
+      "title": "सूचनाएं",
+      "markAllRead": "सभी को पढ़ा हुआ चिह्नित करें",
+      "empty": "अभी तक कोई सूचना नहीं।"
+    },
+    "topbar": {
+      "openMenu": "नेविगेशन मेनू खोलें"
+    },
+    "userMenu": {
+      "accountMenu": "खाता मेनू",
+      "downloadIdCard": "मेरा आईडी कार्ड डाउनलोड करें",
+      "exportMyData": "मेरा डेटा निर्यात करें",
+      "setupGuide": "सेटअप गाइड",
+      "deleteAccount": "मेरा खाता हटाएं",
+      "logout": "लॉग आउट",
+      "deleteConfirmTitle": "अपना खाता हटाएं?",
+      "deleteConfirmDescription": "यह आपका व्यक्तिगत डेटा (नाम, संपर्क विवरण, चिकित्सा/आपातकालीन जानकारी) तुरंत हटा देता है और इसे पूर्ववत नहीं किया जा सकता। आपके खाते से जुड़े शैक्षणिक और वित्तीय रिकॉर्ड आवश्यकतानुसार रखे जाते हैं।",
+      "deleteConfirmLabel": "मेरा खाता हटाएं",
+      "confirmPassword": "अपना पासवर्ड की पुष्टि करें"
     }
   },
   "communication": {

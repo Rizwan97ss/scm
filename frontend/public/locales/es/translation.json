@@ -342,7 +342,20 @@
     "required": "Obligatorio",
     "save": "Guardar",
     "saveChanges": "Guardar cambios",
-    "search": "Buscar",
+    "search": {
+      "placeholder": "Buscar estudiantes, personal, facturas...",
+      "ariaLabel": "Búsqueda global",
+      "clear": "Borrar búsqueda",
+      "searching": "Buscando…",
+      "noResultsFor": "Sin resultados para \"{{query}}\".",
+      "categories": {
+        "students": "Estudiantes",
+        "guardians": "Tutores",
+        "staff": "Personal",
+        "books": "Libros",
+        "invoices": "Facturas"
+      }
+    },
     "searchByName": "Buscar por nombre…",
     "settings": "Configuración",
     "status": "Estado",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "Confirmar",
       "cancel": "Cancelar"
+    },
+    "mfaBanner": {
+      "required": "Se requiere autenticación de dos factores en esta cuenta — {{action}}.",
+      "setupNow": "configúrala ahora",
+      "daysLeft_one": "te queda {{count}} día para configurarla",
+      "daysLeft_other": "te quedan {{count}} días para configurarla",
+      "link": "Configurar ahora"
+    },
+    "notifications": {
+      "ariaLabel": "Notificaciones",
+      "ariaLabelUnread": "Notificaciones ({{count}} sin leer)",
+      "title": "Notificaciones",
+      "markAllRead": "Marcar todas como leídas",
+      "empty": "Aún no hay notificaciones."
+    },
+    "topbar": {
+      "openMenu": "Abrir menú de navegación"
+    },
+    "userMenu": {
+      "accountMenu": "Menú de cuenta",
+      "downloadIdCard": "Descargar mi carné",
+      "exportMyData": "Exportar mis datos",
+      "setupGuide": "Guía de configuración",
+      "deleteAccount": "Eliminar mi cuenta",
+      "logout": "Cerrar sesión",
+      "deleteConfirmTitle": "¿Eliminar tu cuenta?",
+      "deleteConfirmDescription": "Esto elimina tus datos personales (nombre, datos de contacto, información médica/de emergencia) de inmediato y no se puede deshacer. Los registros académicos y financieros vinculados a tu cuenta se conservan, según sea necesario.",
+      "deleteConfirmLabel": "Eliminar mi cuenta",
+      "confirmPassword": "Confirma tu contraseña"
     }
   },
   "communication": {

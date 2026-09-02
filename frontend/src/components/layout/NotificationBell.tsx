@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import * as RadixDropdown from '@radix-ui/react-dropdown-menu'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Bell, CheckCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { notificationsApi } from '@/api/endpoints/communication'
@@ -13,6 +14,7 @@ import { cn } from '@/utils/cn'
 import type { AppNotification } from '@/types/notifications'
 
 export function NotificationBell() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const { data } = useQuery({
@@ -65,7 +67,7 @@ export function NotificationBell() {
         <button
           type="button"
           className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : 'Notifications'}
+          aria-label={unreadCount > 0 ? t('common.notifications.ariaLabelUnread', { count: unreadCount }) : t('common.notifications.ariaLabel')}
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
@@ -78,15 +80,15 @@ export function NotificationBell() {
       <RadixDropdown.Portal>
         <RadixDropdown.Content align="end" sideOffset={4} className="z-50 w-80 rounded-md border border-border bg-card text-foreground shadow-lg">
           <div className="flex items-center justify-between border-b border-border px-3 py-2">
-            <span className="text-sm font-semibold">Notifications</span>
+            <span className="text-sm font-semibold">{t('common.notifications.title')}</span>
             {unreadCount > 0 && (
               <Button variant="ghost" size="sm" onClick={() => markAllReadMutation.mutate()} isLoading={markAllReadMutation.isPending}>
-                <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+                <CheckCheck className="h-3.5 w-3.5" /> {t('common.notifications.markAllRead')}
               </Button>
             )}
           </div>
           <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 && <p className="px-3 py-6 text-center text-sm text-muted-foreground">No notifications yet.</p>}
+            {notifications.length === 0 && <p className="px-3 py-6 text-center text-sm text-muted-foreground">{t('common.notifications.empty')}</p>}
             {notifications.map((notification) => (
               <button
                 key={notification.id}

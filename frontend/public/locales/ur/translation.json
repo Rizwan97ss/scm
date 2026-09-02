@@ -342,7 +342,20 @@
     "required": "لازمی",
     "save": "محفوظ کریں",
     "saveChanges": "تبدیلیاں محفوظ کریں",
-    "search": "تلاش کریں",
+    "search": {
+      "placeholder": "طلباء، عملہ، انوائسز تلاش کریں...",
+      "ariaLabel": "عالمی تلاش",
+      "clear": "تلاش صاف کریں",
+      "searching": "تلاش کیا جا رہا ہے…",
+      "noResultsFor": "\"{{query}}\" کے لیے کوئی نتیجہ نہیں۔",
+      "categories": {
+        "students": "طلباء",
+        "guardians": "سرپرست",
+        "staff": "عملہ",
+        "books": "کتابیں",
+        "invoices": "انوائسز"
+      }
+    },
     "searchByName": "نام سے تلاش کریں…",
     "settings": "ترتیبات",
     "status": "حیثیت",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "تصدیق کریں",
       "cancel": "منسوخ کریں"
+    },
+    "mfaBanner": {
+      "required": "اس اکاؤنٹ پر دو مرحلہ توثیق درکار ہے — {{action}}۔",
+      "setupNow": "ابھی سیٹ اپ کریں",
+      "daysLeft_one": "اسے سیٹ اپ کرنے کے لیے آپ کے پاس {{count}} دن باقی ہے",
+      "daysLeft_other": "اسے سیٹ اپ کرنے کے لیے آپ کے پاس {{count}} دن باقی ہیں",
+      "link": "ابھی سیٹ اپ کریں"
+    },
+    "notifications": {
+      "ariaLabel": "اطلاعات",
+      "ariaLabelUnread": "اطلاعات ({{count}} غیر پڑھی گئی)",
+      "title": "اطلاعات",
+      "markAllRead": "سب کو پڑھا ہوا نشان زد کریں",
+      "empty": "ابھی تک کوئی اطلاع نہیں۔"
+    },
+    "topbar": {
+      "openMenu": "نیویگیشن مینو کھولیں"
+    },
+    "userMenu": {
+      "accountMenu": "اکاؤنٹ مینو",
+      "downloadIdCard": "میرا شناختی کارڈ ڈاؤن لوڈ کریں",
+      "exportMyData": "میرا ڈیٹا ایکسپورٹ کریں",
+      "setupGuide": "سیٹ اپ گائیڈ",
+      "deleteAccount": "میرا اکاؤنٹ حذف کریں",
+      "logout": "لاگ آؤٹ",
+      "deleteConfirmTitle": "اپنا اکاؤنٹ حذف کریں؟",
+      "deleteConfirmDescription": "یہ آپ کا ذاتی ڈیٹا (نام، رابطہ کی تفصیلات، طبی/ہنگامی معلومات) فوری طور پر ہٹا دیتا ہے اور اسے واپس نہیں کیا جا سکتا۔ آپ کے اکاؤنٹ سے منسلک تعلیمی اور مالی ریکارڈ ضرورت کے مطابق رکھے جاتے ہیں۔",
+      "deleteConfirmLabel": "میرا اکاؤنٹ حذف کریں",
+      "confirmPassword": "اپنے پاس ورڈ کی تصدیق کریں"
     }
   },
   "communication": {

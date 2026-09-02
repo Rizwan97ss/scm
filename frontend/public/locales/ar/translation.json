@@ -342,7 +342,20 @@
     "required": "مطلوب",
     "save": "حفظ",
     "saveChanges": "حفظ التغييرات",
-    "search": "بحث",
+    "search": {
+      "placeholder": "البحث عن الطلاب والموظفين والفواتير...",
+      "ariaLabel": "بحث شامل",
+      "clear": "مسح البحث",
+      "searching": "جارٍ البحث…",
+      "noResultsFor": "لا توجد نتائج لـ \"{{query}}\".",
+      "categories": {
+        "students": "الطلاب",
+        "guardians": "أولياء الأمور",
+        "staff": "الموظفون",
+        "books": "الكتب",
+        "invoices": "الفواتير"
+      }
+    },
     "searchByName": "البحث بالاسم…",
     "settings": "الإعدادات",
     "status": "الحالة",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "تأكيد",
       "cancel": "إلغاء"
+    },
+    "mfaBanner": {
+      "required": "المصادقة الثنائية مطلوبة لهذا الحساب — {{action}}.",
+      "setupNow": "قم بإعدادها الآن",
+      "daysLeft_one": "لديك يوم واحد متبقٍ لإعدادها",
+      "daysLeft_other": "لديك {{count}} أيام متبقية لإعدادها",
+      "link": "الإعداد الآن"
+    },
+    "notifications": {
+      "ariaLabel": "الإشعارات",
+      "ariaLabelUnread": "الإشعارات ({{count}} غير مقروءة)",
+      "title": "الإشعارات",
+      "markAllRead": "تعليم الكل كمقروء",
+      "empty": "لا توجد إشعارات بعد."
+    },
+    "topbar": {
+      "openMenu": "فتح قائمة التنقل"
+    },
+    "userMenu": {
+      "accountMenu": "قائمة الحساب",
+      "downloadIdCard": "تنزيل بطاقة الهوية الخاصة بي",
+      "exportMyData": "تصدير بياناتي",
+      "setupGuide": "دليل الإعداد",
+      "deleteAccount": "حذف حسابي",
+      "logout": "تسجيل الخروج",
+      "deleteConfirmTitle": "حذف حسابك؟",
+      "deleteConfirmDescription": "هذا يزيل بياناتك الشخصية (الاسم، تفاصيل الاتصال، معلومات طبية/طوارئ) فورًا ولا يمكن التراجع عنه. تُحفظ السجلات الأكاديمية والمالية المرتبطة بحسابك، حسب الحاجة.",
+      "deleteConfirmLabel": "حذف حسابي",
+      "confirmPassword": "أكّد كلمة المرور الخاصة بك"
     }
   },
   "communication": {

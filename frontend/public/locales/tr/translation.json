@@ -342,7 +342,20 @@
     "required": "Zorunlu",
     "save": "Kaydet",
     "saveChanges": "Değişiklikleri kaydet",
-    "search": "Ara",
+    "search": {
+      "placeholder": "Öğrenci, personel, fatura ara...",
+      "ariaLabel": "Genel arama",
+      "clear": "Aramayı temizle",
+      "searching": "Aranıyor…",
+      "noResultsFor": "\"{{query}}\" için sonuç yok.",
+      "categories": {
+        "students": "Öğrenciler",
+        "guardians": "Veliler",
+        "staff": "Personel",
+        "books": "Kitaplar",
+        "invoices": "Faturalar"
+      }
+    },
     "searchByName": "İsme göre ara…",
     "settings": "Ayarlar",
     "status": "Durum",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "Onayla",
       "cancel": "İptal"
+    },
+    "mfaBanner": {
+      "required": "Bu hesapta iki faktörlü kimlik doğrulama gereklidir — {{action}}.",
+      "setupNow": "şimdi kurun",
+      "daysLeft_one": "kurmak için {{count}} gününüz kaldı",
+      "daysLeft_other": "kurmak için {{count}} gününüz kaldı",
+      "link": "Şimdi kur"
+    },
+    "notifications": {
+      "ariaLabel": "Bildirimler",
+      "ariaLabelUnread": "Bildirimler ({{count}} okunmadı)",
+      "title": "Bildirimler",
+      "markAllRead": "Tümünü okundu işaretle",
+      "empty": "Henüz bildirim yok."
+    },
+    "topbar": {
+      "openMenu": "Gezinme menüsünü aç"
+    },
+    "userMenu": {
+      "accountMenu": "Hesap menüsü",
+      "downloadIdCard": "Kimlik Kartımı İndir",
+      "exportMyData": "Verilerimi Dışa Aktar",
+      "setupGuide": "Kurulum Kılavuzu",
+      "deleteAccount": "Hesabımı Sil",
+      "logout": "Çıkış yap",
+      "deleteConfirmTitle": "Hesabınızı silmek istiyor musunuz?",
+      "deleteConfirmDescription": "Bu işlem kişisel verilerinizi (ad, iletişim bilgileri, tıbbi/acil durum bilgileri) hemen kaldırır ve geri alınamaz. Hesabınızla ilişkili akademik ve mali kayıtlar gerektiği şekilde saklanır.",
+      "deleteConfirmLabel": "Hesabımı sil",
+      "confirmPassword": "Şifrenizi onaylayın"
     }
   },
   "communication": {

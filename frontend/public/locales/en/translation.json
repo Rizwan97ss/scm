@@ -342,7 +342,20 @@
     "required": "Required",
     "save": "Save",
     "saveChanges": "Save changes",
-    "search": "Search",
+    "search": {
+      "placeholder": "Search students, staff, invoices...",
+      "ariaLabel": "Global search",
+      "clear": "Clear search",
+      "searching": "Searching…",
+      "noResultsFor": "No results for \"{{query}}\".",
+      "categories": {
+        "students": "Students",
+        "guardians": "Guardians",
+        "staff": "Staff",
+        "books": "Books",
+        "invoices": "Invoices"
+      }
+    },
     "searchByName": "Search by name…",
     "settings": "Settings",
     "status": "Status",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "Confirm",
       "cancel": "Cancel"
+    },
+    "mfaBanner": {
+      "required": "Two-factor authentication is required on this account — {{action}}.",
+      "setupNow": "set it up now",
+      "daysLeft_one": "you have {{count}} day left to set it up",
+      "daysLeft_other": "you have {{count}} days left to set it up",
+      "link": "Set up now"
+    },
+    "notifications": {
+      "ariaLabel": "Notifications",
+      "ariaLabelUnread": "Notifications ({{count}} unread)",
+      "title": "Notifications",
+      "markAllRead": "Mark all read",
+      "empty": "No notifications yet."
+    },
+    "topbar": {
+      "openMenu": "Open navigation menu"
+    },
+    "userMenu": {
+      "accountMenu": "Account menu",
+      "downloadIdCard": "Download My ID Card",
+      "exportMyData": "Export My Data",
+      "setupGuide": "Setup Guide",
+      "deleteAccount": "Delete My Account",
+      "logout": "Log out",
+      "deleteConfirmTitle": "Delete your account?",
+      "deleteConfirmDescription": "This removes your personal data (name, contact details, medical/emergency info) immediately and cannot be undone. Academic and financial records tied to your account are kept, as required.",
+      "deleteConfirmLabel": "Delete my account",
+      "confirmPassword": "Confirm your password"
     }
   },
   "communication": {

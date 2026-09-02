@@ -342,7 +342,20 @@
     "required": "필수",
     "save": "저장",
     "saveChanges": "변경사항 저장",
-    "search": "검색",
+    "search": {
+      "placeholder": "학생, 직원, 청구서 검색...",
+      "ariaLabel": "전체 검색",
+      "clear": "검색 지우기",
+      "searching": "검색 중…",
+      "noResultsFor": "\"{{query}}\"에 대한 결과가 없습니다.",
+      "categories": {
+        "students": "학생",
+        "guardians": "보호자",
+        "staff": "직원",
+        "books": "도서",
+        "invoices": "청구서"
+      }
+    },
     "searchByName": "이름으로 검색…",
     "settings": "설정",
     "status": "상태",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "확인",
       "cancel": "취소"
+    },
+    "mfaBanner": {
+      "required": "이 계정에는 2단계 인증이 필요합니다 — {{action}}.",
+      "setupNow": "지금 설정하기",
+      "daysLeft_one": "설정까지 {{count}}일 남았습니다",
+      "daysLeft_other": "설정까지 {{count}}일 남았습니다",
+      "link": "지금 설정"
+    },
+    "notifications": {
+      "ariaLabel": "알림",
+      "ariaLabelUnread": "알림 (읽지 않음 {{count}}개)",
+      "title": "알림",
+      "markAllRead": "모두 읽음으로 표시",
+      "empty": "아직 알림이 없습니다."
+    },
+    "topbar": {
+      "openMenu": "탐색 메뉴 열기"
+    },
+    "userMenu": {
+      "accountMenu": "계정 메뉴",
+      "downloadIdCard": "내 ID 카드 다운로드",
+      "exportMyData": "내 데이터 내보내기",
+      "setupGuide": "설정 가이드",
+      "deleteAccount": "내 계정 삭제",
+      "logout": "로그아웃",
+      "deleteConfirmTitle": "계정을 삭제하시겠습니까?",
+      "deleteConfirmDescription": "이 작업은 개인 데이터(이름, 연락처, 의료/비상 정보)를 즉시 삭제하며 되돌릴 수 없습니다. 계정과 관련된 학업 및 재무 기록은 필요에 따라 보관됩니다.",
+      "deleteConfirmLabel": "내 계정 삭제",
+      "confirmPassword": "비밀번호를 확인하세요"
     }
   },
   "communication": {

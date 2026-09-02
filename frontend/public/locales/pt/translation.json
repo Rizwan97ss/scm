@@ -342,7 +342,20 @@
     "required": "Obrigatório",
     "save": "Salvar",
     "saveChanges": "Salvar alterações",
-    "search": "Pesquisar",
+    "search": {
+      "placeholder": "Buscar alunos, funcionários, faturas...",
+      "ariaLabel": "Busca global",
+      "clear": "Limpar busca",
+      "searching": "Buscando…",
+      "noResultsFor": "Nenhum resultado para \"{{query}}\".",
+      "categories": {
+        "students": "Alunos",
+        "guardians": "Responsáveis",
+        "staff": "Funcionários",
+        "books": "Livros",
+        "invoices": "Faturas"
+      }
+    },
     "searchByName": "Buscar por nome…",
     "settings": "Configurações",
     "status": "Status",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "Confirmar",
       "cancel": "Cancelar"
+    },
+    "mfaBanner": {
+      "required": "A autenticação de dois fatores é obrigatória nesta conta — {{action}}.",
+      "setupNow": "configure agora",
+      "daysLeft_one": "você tem {{count}} dia restante para configurá-la",
+      "daysLeft_other": "você tem {{count}} dias restantes para configurá-la",
+      "link": "Configurar agora"
+    },
+    "notifications": {
+      "ariaLabel": "Notificações",
+      "ariaLabelUnread": "Notificações ({{count}} não lidas)",
+      "title": "Notificações",
+      "markAllRead": "Marcar todas como lidas",
+      "empty": "Nenhuma notificação ainda."
+    },
+    "topbar": {
+      "openMenu": "Abrir menu de navegação"
+    },
+    "userMenu": {
+      "accountMenu": "Menu da conta",
+      "downloadIdCard": "Baixar minha carteira",
+      "exportMyData": "Exportar meus dados",
+      "setupGuide": "Guia de configuração",
+      "deleteAccount": "Excluir minha conta",
+      "logout": "Sair",
+      "deleteConfirmTitle": "Excluir sua conta?",
+      "deleteConfirmDescription": "Isso remove seus dados pessoais (nome, dados de contato, informações médicas/de emergência) imediatamente e não pode ser desfeito. Registros acadêmicos e financeiros vinculados à sua conta são mantidos, conforme necessário.",
+      "deleteConfirmLabel": "Excluir minha conta",
+      "confirmPassword": "Confirme sua senha"
     }
   },
   "communication": {

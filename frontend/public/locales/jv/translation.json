@@ -342,7 +342,20 @@
     "required": "Kudu diisi",
     "save": "Simpen",
     "saveChanges": "Simpen owahan",
-    "search": "Golek",
+    "search": {
+      "placeholder": "Golek siswa, staf, faktur...",
+      "ariaLabel": "Panelusuran global",
+      "clear": "Busak panelusuran",
+      "searching": "Nggoleki…",
+      "noResultsFor": "Ora ana asil kanggo \"{{query}}\".",
+      "categories": {
+        "students": "Siswa",
+        "guardians": "Wali",
+        "staff": "Staf",
+        "books": "Buku",
+        "invoices": "Faktur"
+      }
+    },
     "searchByName": "Golek miturut jeneng…",
     "settings": "Setelan",
     "status": "Status",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "Konfirmasi",
       "cancel": "Batal"
+    },
+    "mfaBanner": {
+      "required": "Otentikasi rong faktor dibutuhake ing akun iki — {{action}}.",
+      "setupNow": "atur saiki",
+      "daysLeft_one": "Sampeyan duwe {{count}} dina kanggo ngatur",
+      "daysLeft_other": "Sampeyan duwe {{count}} dina kanggo ngatur",
+      "link": "Atur saiki"
+    },
+    "notifications": {
+      "ariaLabel": "Pemberitahuan",
+      "ariaLabelUnread": "Pemberitahuan ({{count}} durung diwaca)",
+      "title": "Pemberitahuan",
+      "markAllRead": "Tandhani kabeh wis diwaca",
+      "empty": "Durung ana pemberitahuan."
+    },
+    "topbar": {
+      "openMenu": "Bukak menu navigasi"
+    },
+    "userMenu": {
+      "accountMenu": "Menu akun",
+      "downloadIdCard": "Undhuh Kertu ID Saya",
+      "exportMyData": "Ekspor Data Saya",
+      "setupGuide": "Pandhuan Setelan",
+      "deleteAccount": "Busak Akun Saya",
+      "logout": "Metu",
+      "deleteConfirmTitle": "Busak akun sampeyan?",
+      "deleteConfirmDescription": "Iki mbusak data pribadi sampeyan (jeneng, rincian kontak, informasi medis/darurat) langsung lan ora bisa dibalekake. Cathetan akademik lan finansial sing gegandhengan karo akun sampeyan disimpen, manut kabutuhan.",
+      "deleteConfirmLabel": "Busak akun saya",
+      "confirmPassword": "Konfirmasi sandhi sampeyan"
     }
   },
   "communication": {

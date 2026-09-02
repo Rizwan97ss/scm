@@ -342,7 +342,20 @@
     "required": "必須",
     "save": "保存",
     "saveChanges": "変更を保存",
-    "search": "検索",
+    "search": {
+      "placeholder": "生徒、スタッフ、請求書を検索...",
+      "ariaLabel": "全体検索",
+      "clear": "検索をクリア",
+      "searching": "検索中…",
+      "noResultsFor": "\"{{query}}\" の結果はありません。",
+      "categories": {
+        "students": "生徒",
+        "guardians": "保護者",
+        "staff": "スタッフ",
+        "books": "書籍",
+        "invoices": "請求書"
+      }
+    },
     "searchByName": "名前で検索…",
     "settings": "設定",
     "status": "ステータス",
@@ -388,6 +401,35 @@
     "confirmDialog": {
       "confirm": "確認",
       "cancel": "キャンセル"
+    },
+    "mfaBanner": {
+      "required": "このアカウントには二要素認証が必要です — {{action}}。",
+      "setupNow": "今すぐ設定する",
+      "daysLeft_one": "設定まであと{{count}}日です",
+      "daysLeft_other": "設定まであと{{count}}日です",
+      "link": "今すぐ設定"
+    },
+    "notifications": {
+      "ariaLabel": "通知",
+      "ariaLabelUnread": "通知（未読{{count}}件）",
+      "title": "通知",
+      "markAllRead": "すべて既読にする",
+      "empty": "通知はまだありません。"
+    },
+    "topbar": {
+      "openMenu": "ナビゲーションメニューを開く"
+    },
+    "userMenu": {
+      "accountMenu": "アカウントメニュー",
+      "downloadIdCard": "IDカードをダウンロード",
+      "exportMyData": "自分のデータをエクスポート",
+      "setupGuide": "セットアップガイド",
+      "deleteAccount": "アカウントを削除",
+      "logout": "ログアウト",
+      "deleteConfirmTitle": "アカウントを削除しますか？",
+      "deleteConfirmDescription": "これにより、個人データ（氏名、連絡先、医療/緊急情報）が直ちに削除され、元に戻すことはできません。アカウントに関連する学業および財務記録は、必要に応じて保持されます。",
+      "deleteConfirmLabel": "アカウントを削除",
+      "confirmPassword": "パスワードを確認してください"
     }
   },
   "communication": {
