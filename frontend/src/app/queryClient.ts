@@ -44,7 +44,10 @@ function handleSessionExpiry() {
 export function handleApiError(error: unknown, meta?: Readonly<Record<string, unknown>>) {
   if (!isApiError(error)) return
 
-  if (isUnauthenticatedError(error) && !meta?.silentError && !meta?.silent401) {
+  const unauthenticated: boolean = isUnauthenticatedError(error)
+
+  if (unauthenticated && (meta?.silentError || meta?.silent401)) return
+  if (unauthenticated) {
     handleSessionExpiry()
     return
   }

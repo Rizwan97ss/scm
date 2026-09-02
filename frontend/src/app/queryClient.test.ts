@@ -44,6 +44,24 @@ describe('queryClient error handling', () => {
     expect(window.location.href).toBe('')
   })
 
+  it('does not toast or redirect for a silent 401 probe (meta.silent401)', async () => {
+    const { handleApiError } = await freshQueryClientModule()
+
+    handleApiError({ message: 'Unauthenticated.', status: 401 }, { silent401: true })
+
+    expect(toast.error).not.toHaveBeenCalled()
+    expect(window.location.href).toBe('')
+  })
+
+  it('still shows a plain toast for a non-401 error from a silent401 query', async () => {
+    const { handleApiError } = await freshQueryClientModule()
+
+    handleApiError({ message: 'Something went wrong.', status: 500 }, { silent401: true })
+
+    expect(toast.error).toHaveBeenCalledWith('Something went wrong.')
+    expect(window.location.href).toBe('')
+  })
+
   it('does not redirect twice for two 401s on the same page (module-level guard)', async () => {
     const { handleApiError } = await freshQueryClientModule()
 
