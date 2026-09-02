@@ -21,10 +21,10 @@ export interface BookPayload {
 
 export const BOOK_ISSUE_STATUSES = ['issued', 'returned', 'overdue'] as const
 export type BookIssueStatus = (typeof BOOK_ISSUE_STATUSES)[number]
-export const BOOK_ISSUE_STATUS_LABELS: Record<BookIssueStatus, string> = {
-  issued: 'Issued',
-  returned: 'Returned',
-  overdue: 'Overdue',
+export const BOOK_ISSUE_STATUS_LABEL_KEYS: Record<BookIssueStatus, string> = {
+  issued: 'enums.bookIssueStatusIssued',
+  returned: 'enums.bookIssueStatusReturned',
+  overdue: 'enums.bookIssueStatusOverdue',
 }
 
 export interface BookIssue {

@@ -79,7 +79,7 @@ export function TakeAttendancePage() {
       }),
     onSuccess: (records) => {
       toast.success(t('attendance.attendanceSavedToast', { count: records.length }))
-      queryClient.invalidateQueries({ queryKey: queryKeys.studentAttendance() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.studentAttendance().slice(0, 1) })
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary })
     },
     onError: (error) => toast.error((error as ApiError).message),

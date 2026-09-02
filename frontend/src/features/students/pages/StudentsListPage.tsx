@@ -108,8 +108,14 @@ export function StudentsListPage() {
         sort={sort}
         onSortChange={setSort}
         onRowClick={(row) => navigate(routePaths.studentProfile(row.id))}
-        emptyTitle={t('students.noStudentsFound')}
-        emptyDescription={can('students.create') ? t('students.admitFirstStudent') : undefined}
+        emptyTitle={debouncedSearch ? t('students.noStudentsFoundSearch', { query: debouncedSearch }) : t('students.noStudentsFound')}
+        emptyDescription={
+          debouncedSearch
+            ? t('students.tryDifferentSearch')
+            : can('students.create')
+              ? t('students.admitFirstStudent')
+              : undefined
+        }
         selectedKeys={selectedIds}
         onSelectionChange={setSelectedIds}
       />

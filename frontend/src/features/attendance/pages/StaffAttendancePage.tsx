@@ -25,7 +25,7 @@ export function StaffAttendancePage() {
   const queryClient = useQueryClient()
   const { sort, setPage, setSort, queryParams } = usePagination('-date')
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.staffAttendance(queryParams),
     queryFn: () => staffAttendanceApi.list(queryParams),
   })
@@ -46,7 +46,7 @@ export function StaffAttendancePage() {
     mutationFn: staffAttendanceApi.checkIn,
     onSuccess: () => {
       toast.success(t('attendance.checkedInToast'))
-      queryClient.invalidateQueries({ queryKey: queryKeys.staffAttendance() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.staffAttendance().slice(0, 1) })
     },
     onError: (error) => toast.error((error as ApiError).message),
   })
@@ -54,7 +54,7 @@ export function StaffAttendancePage() {
     mutationFn: staffAttendanceApi.checkOut,
     onSuccess: () => {
       toast.success(t('attendance.checkedOutToast'))
-      queryClient.invalidateQueries({ queryKey: queryKeys.staffAttendance() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.staffAttendance().slice(0, 1) })
     },
     onError: (error) => toast.error((error as ApiError).message),
   })
@@ -128,12 +128,13 @@ export function StaffAttendancePage() {
         columns={columns}
         data={data?.data}
         rowKey={(row) => row.id}
-        isLoading={isLoading}
+        isLoading={isLoading} isError={isError} onRetry={refetch}
         meta={data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
         emptyTitle={t('attendance.noAttendanceRecordsYet')}
+        emptyDescription={t('attendance.noAttendanceRecordsYetDescription')}
       />
 
       <MarkStaffAttendanceModal open={markModalOpen} onOpenChange={setMarkModalOpen} />
@@ -155,7 +156,7 @@ function MarkStaffAttendanceModal({ open, onOpenChange }: { open: boolean; onOpe
     mutationFn: () => staffAttendanceApi.mark({ date, entries: [{ user_id: userId!, status, remarks: remarks || null }] }),
     onSuccess: () => {
       toast.success(t('attendance.attendanceSavedSingleToast'))
-      queryClient.invalidateQueries({ queryKey: queryKeys.staffAttendance() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.staffAttendance().slice(0, 1) })
       onOpenChange(false)
       setUserId(null)
       setRemarks('')
@@ -209,7 +210,7 @@ function CorrectStaffAttendanceModal({ record, onOpenChange }: { record: StaffAt
     mutationFn: () => staffAttendanceApi.correct(record!.id, { status, remarks: remarks || null }),
     onSuccess: () => {
       toast.success(t('attendance.attendanceCorrectedToast'))
-      queryClient.invalidateQueries({ queryKey: queryKeys.staffAttendance() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.staffAttendance().slice(0, 1) })
       onOpenChange(false)
     },
     onError: (error) => toast.error((error as ApiError).message),

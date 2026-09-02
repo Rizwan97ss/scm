@@ -51,10 +51,11 @@ export function AnnouncementsPage() {
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         emptyTitle={t('communication.noAnnouncementsYet')}
+        emptyDescription={t('communication.noAnnouncementsYetDescription')}
       />
 
       {composeOpen && <ComposeModal open={composeOpen} onOpenChange={setComposeOpen} />}

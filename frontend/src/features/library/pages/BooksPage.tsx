@@ -10,8 +10,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, Checkbox, ConfirmDialog, DataTable, FormField, Input, Modal, Select, type DataTableColumn } from '@/components/ui'
+import { Badge, Button, Checkbox, ConfirmDialog, DataTable, FormField, Input, Modal, Select, SearchInput, type DataTableColumn } from '@/components/ui'
 import type { Book, BookPayload } from '@/types/library'
 import type { ApiError } from '@/api/client'
 
@@ -21,8 +22,14 @@ export function BooksPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
   const canManage = can('library.manage')
-  const { sort, setPage, setSort, queryParams } = usePagination('title', 'title')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(booksApi, queryKeys.books, queryParams, 'Book')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('title', 'title')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    booksApi,
+    queryKeys.books,
+    { ...queryParams, 'filter[title]': debouncedSearch || undefined },
+    'Book'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Book | null>(null)
@@ -95,16 +102,21 @@ export function BooksPage() {
         }
       />
 
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('library.booksSearchPlaceholder')} value={search} onChange={setSearch} />
+      </div>
+
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('nav.books') })}
+        emptyTitle={debouncedSearch ? t('library.booksEmptyTitleSearch', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('nav.books') })}
+        emptyDescription={debouncedSearch ? t('library.booksEmptyDescriptionSearch') : undefined}
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.book') }) : t('common.newItem', { item: t('entities.book') })}>
@@ -112,7 +124,7 @@ export function BooksPage() {
           <FormField label={t('common.name')} htmlFor="title" required>
             <Input id="title" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           </FormField>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label={t('library.author')} htmlFor="author">
               <Input id="author" value={form.author ?? ''} onChange={(e) => setForm({ ...form, author: e.target.value })} />
             </FormField>
@@ -120,7 +132,7 @@ export function BooksPage() {
               <Input id="category" value={form.category ?? ''} onChange={(e) => setForm({ ...form, category: e.target.value })} />
             </FormField>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label={t('library.isbn')} htmlFor="isbn">
               <Input id="isbn" value={form.isbn ?? ''} onChange={(e) => setForm({ ...form, isbn: e.target.value })} />
             </FormField>

@@ -10,6 +10,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Badge, Button, DataTable, type DataTableColumn } from '@/components/ui'
 import { formatDate } from '@/utils/formatDate'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { BOOK_ISSUE_STATUS_LABEL_KEYS } from '@/types/library'
 import type { BookIssue } from '@/types/library'
 import type { ApiError } from '@/api/client'
 
@@ -44,7 +45,7 @@ export function BookIssuesPage() {
     { key: 'due_date', header: t('fees.dueDate'), render: (row) => formatDate(row.due_date) },
     { key: 'return_date', header: t('library.returned'), render: (row) => (row.return_date ? formatDate(row.return_date) : '—') },
     { key: 'fine', header: t('library.fine'), align: 'right', render: (row) => (row.fine_amount > 0 ? formatCurrency(row.fine_amount) : '—') },
-    { key: 'status', header: t('common.status'), render: (row) => <Badge variant={STATUS_VARIANT[row.status] ?? 'default'}>{row.status_label}</Badge> },
+    { key: 'status', header: t('common.status'), render: (row) => <Badge variant={STATUS_VARIANT[row.status] ?? 'default'}>{t(BOOK_ISSUE_STATUS_LABEL_KEYS[row.status])}</Badge> },
     {
       key: 'actions',
       header: '',
@@ -71,10 +72,11 @@ export function BookIssuesPage() {
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         emptyTitle={t('common.noItemsYet', { items: t('nav.book_issues') })}
+        emptyDescription={t('library.bookIssuesEmptyDescription')}
       />
     </div>
   )

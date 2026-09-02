@@ -50,10 +50,11 @@ export function StudentTransportAssignmentsPage() {
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         emptyTitle={t('common.noItemsYet', { items: t('transport.assignmentsTitle') })}
+        emptyDescription={t('transport.assignmentsEmptyDescription')}
       />
 
       {assignModalOpen && <AssignModal open={assignModalOpen} onOpenChange={setAssignModalOpen} />}

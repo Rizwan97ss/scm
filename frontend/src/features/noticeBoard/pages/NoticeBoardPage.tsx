@@ -186,7 +186,7 @@ function CreateNoticeModal({ open, onOpenChange }: { open: boolean; onOpenChange
         <FormField label={t('communication.bodyLabel')} htmlFor="body" required>
           <Textarea id="body" rows={4} required value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
         </FormField>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label={t('communication.typeLabel')} htmlFor="type" required>
             <Select
               id="type"
@@ -205,7 +205,7 @@ function CreateNoticeModal({ open, onOpenChange }: { open: boolean; onOpenChange
           </FormField>
         </div>
         {isEvent && (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <FormField label={t('communication.eventDateLabel')} htmlFor="event_date" required>
               <Input id="event_date" type="date" required={isEvent} value={form.event_date ?? ''} onChange={(e) => setForm({ ...form, event_date: e.target.value })} />
             </FormField>

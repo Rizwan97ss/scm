@@ -93,7 +93,8 @@ export function GuardiansListPage() {
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('students.noGuardiansFound')}
+        emptyTitle={debouncedSearch ? t('students.noGuardiansFoundSearch', { query: debouncedSearch }) : t('students.noGuardiansFound')}
+        emptyDescription={debouncedSearch ? t('students.tryDifferentSearch') : undefined}
       />
     </div>
   )

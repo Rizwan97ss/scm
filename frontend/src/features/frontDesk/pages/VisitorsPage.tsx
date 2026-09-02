@@ -83,10 +83,11 @@ export function VisitorsPage() {
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         emptyTitle={t('frontDesk.noVisitorsYet')}
+        emptyDescription={t('frontDesk.noVisitorsYetDescription')}
       />
 
       {checkInModalOpen && <CheckInModal open={checkInModalOpen} onOpenChange={setCheckInModalOpen} />}
@@ -123,7 +124,7 @@ function CheckInModal({ open, onOpenChange }: { open: boolean; onOpenChange: (op
         <FormField label={t('common.name')} htmlFor="name" required>
           <Input id="name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         </FormField>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label={t('common.phone')} htmlFor="phone">
             <Input id="phone" value={form.phone ?? ''} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           </FormField>
