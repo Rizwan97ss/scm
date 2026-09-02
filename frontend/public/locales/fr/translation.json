@@ -358,7 +358,37 @@
     "warning": "Avertissement",
     "welcome": "Bienvenue",
     "yes": "Oui",
-    "exportSelected": "Exporter la sélection"
+    "exportSelected": "Exporter la sélection",
+    "breadcrumbs": {
+      "ariaLabel": "Fil d'Ariane"
+    },
+    "drawer": {
+      "closePanel": "Fermer le panneau"
+    },
+    "fileUpload": {
+      "removeFile": "Supprimer le fichier",
+      "clickToUpload": "Cliquez pour téléverser",
+      "orDragAndDrop": "ou glissez-déposez",
+      "tooLarge": "Le fichier est trop volumineux. La taille maximale est de {{maxSizeMb}} Mo."
+    },
+    "modal": {
+      "closeDialog": "Fermer la boîte de dialogue"
+    },
+    "pagination": {
+      "showing": "Affichage de {{from}}–{{to}} sur {{total}}",
+      "previousPage": "Page précédente",
+      "nextPage": "Page suivante",
+      "pageOf": "Page {{current}} sur {{last}}"
+    },
+    "select": {
+      "placeholder": "Sélectionner…",
+      "searchPlaceholder": "Rechercher…",
+      "noResults": "Aucun résultat."
+    },
+    "confirmDialog": {
+      "confirm": "Confirmer",
+      "cancel": "Annuler"
+    }
   },
   "communication": {
     "announcementSentToast_one": "Annonce envoyée à {{count}} destinataire.",

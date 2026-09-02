@@ -358,7 +358,37 @@
     "warning": "تحذير",
     "welcome": "مرحبًا",
     "yes": "نعم",
-    "exportSelected": "تصدير المحدد"
+    "exportSelected": "تصدير المحدد",
+    "breadcrumbs": {
+      "ariaLabel": "مسار التنقل"
+    },
+    "drawer": {
+      "closePanel": "إغلاق اللوحة"
+    },
+    "fileUpload": {
+      "removeFile": "إزالة الملف",
+      "clickToUpload": "انقر للتحميل",
+      "orDragAndDrop": "أو اسحب وأفلت",
+      "tooLarge": "الملف كبير جدًا. الحجم الأقصى هو {{maxSizeMb}} ميجابايت."
+    },
+    "modal": {
+      "closeDialog": "إغلاق الحوار"
+    },
+    "pagination": {
+      "showing": "عرض {{from}}–{{to}} من {{total}}",
+      "previousPage": "الصفحة السابقة",
+      "nextPage": "الصفحة التالية",
+      "pageOf": "الصفحة {{current}} من {{last}}"
+    },
+    "select": {
+      "placeholder": "اختر…",
+      "searchPlaceholder": "بحث…",
+      "noResults": "لا توجد نتائج."
+    },
+    "confirmDialog": {
+      "confirm": "تأكيد",
+      "cancel": "إلغاء"
+    }
   },
   "communication": {
     "announcementSentToast_one": "تم إرسال الإعلان إلى مستلم واحد.",

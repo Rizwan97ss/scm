@@ -358,7 +358,37 @@
     "warning": "Uyarı",
     "welcome": "Hoş geldiniz",
     "yes": "Evet",
-    "exportSelected": "Seçilenleri dışa aktar"
+    "exportSelected": "Seçilenleri dışa aktar",
+    "breadcrumbs": {
+      "ariaLabel": "İçerik yolu"
+    },
+    "drawer": {
+      "closePanel": "Paneli kapat"
+    },
+    "fileUpload": {
+      "removeFile": "Dosyayı kaldır",
+      "clickToUpload": "Yüklemek için tıklayın",
+      "orDragAndDrop": "veya sürükleyip bırakın",
+      "tooLarge": "Dosya çok büyük. Maksimum boyut {{maxSizeMb}}MB'dır."
+    },
+    "modal": {
+      "closeDialog": "İletişim kutusunu kapat"
+    },
+    "pagination": {
+      "showing": "{{total}} içinden {{from}}–{{to}} gösteriliyor",
+      "previousPage": "Önceki sayfa",
+      "nextPage": "Sonraki sayfa",
+      "pageOf": "Sayfa {{current}} / {{last}}"
+    },
+    "select": {
+      "placeholder": "Seçin…",
+      "searchPlaceholder": "Ara…",
+      "noResults": "Sonuç yok."
+    },
+    "confirmDialog": {
+      "confirm": "Onayla",
+      "cancel": "İptal"
+    }
   },
   "communication": {
     "announcementSentToast_one": "Duyuru {{count}} alıcıya gönderildi.",

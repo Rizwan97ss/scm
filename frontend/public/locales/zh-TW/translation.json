@@ -358,7 +358,37 @@
     "warning": "警告",
     "welcome": "歡迎",
     "yes": "是",
-    "exportSelected": "匯出所選項目"
+    "exportSelected": "匯出所選項目",
+    "breadcrumbs": {
+      "ariaLabel": "麵包屑導覽"
+    },
+    "drawer": {
+      "closePanel": "關閉面板"
+    },
+    "fileUpload": {
+      "removeFile": "移除檔案",
+      "clickToUpload": "點擊上傳",
+      "orDragAndDrop": "或拖放檔案",
+      "tooLarge": "檔案過大。最大大小為 {{maxSizeMb}}MB。"
+    },
+    "modal": {
+      "closeDialog": "關閉對話框"
+    },
+    "pagination": {
+      "showing": "顯示第 {{from}}–{{to}} 筆，共 {{total}} 筆",
+      "previousPage": "上一頁",
+      "nextPage": "下一頁",
+      "pageOf": "第 {{current}} / {{last}} 頁"
+    },
+    "select": {
+      "placeholder": "請選擇…",
+      "searchPlaceholder": "搜尋…",
+      "noResults": "無結果。"
+    },
+    "confirmDialog": {
+      "confirm": "確認",
+      "cancel": "取消"
+    }
   },
   "communication": {
     "announcementSentToast_one": "公告已發送給 {{count}} 位接收人。",

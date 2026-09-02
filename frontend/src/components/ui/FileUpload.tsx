@@ -1,5 +1,6 @@
 import { useRef, useState, type DragEvent } from 'react'
 import { UploadCloud, FileText, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 
 export interface FileUploadProps {
@@ -12,6 +13,7 @@ export interface FileUploadProps {
 }
 
 export function FileUpload({ onFileSelect, accept, maxSizeMb = 10, selectedFileName, onClear, disabled }: FileUploadProps) {
+  const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -19,7 +21,7 @@ export function FileUpload({ onFileSelect, accept, maxSizeMb = 10, selectedFileN
   function handleFile(file: File | undefined) {
     if (!file) return
     if (file.size > maxSizeMb * 1024 * 1024) {
-      setError(`File is too large. Maximum size is ${maxSizeMb}MB.`)
+      setError(t('common.fileUpload.tooLarge', { maxSizeMb }))
       return
     }
     setError(null)
@@ -41,7 +43,7 @@ export function FileUpload({ onFileSelect, accept, maxSizeMb = 10, selectedFileN
           <span className="truncate">{selectedFileName}</span>
         </span>
         {onClear && (
-          <button type="button" onClick={onClear} className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Remove file">
+          <button type="button" onClick={onClear} className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={t('common.fileUpload.removeFile')}>
             <X className="h-4 w-4" />
           </button>
         )}
@@ -67,7 +69,7 @@ export function FileUpload({ onFileSelect, accept, maxSizeMb = 10, selectedFileN
       >
         <UploadCloud className="h-6 w-6 text-muted-foreground" />
         <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-primary">Click to upload</span> or drag and drop
+          <span className="font-medium text-primary">{t('common.fileUpload.clickToUpload')}</span> {t('common.fileUpload.orDragAndDrop')}
         </p>
         <input
           ref={inputRef}

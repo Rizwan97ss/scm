@@ -358,7 +358,37 @@
     "warning": "경고",
     "welcome": "환영합니다",
     "yes": "예",
-    "exportSelected": "선택 항목 내보내기"
+    "exportSelected": "선택 항목 내보내기",
+    "breadcrumbs": {
+      "ariaLabel": "이동 경로"
+    },
+    "drawer": {
+      "closePanel": "패널 닫기"
+    },
+    "fileUpload": {
+      "removeFile": "파일 제거",
+      "clickToUpload": "클릭하여 업로드",
+      "orDragAndDrop": "또는 끌어다 놓기",
+      "tooLarge": "파일이 너무 큽니다. 최대 크기는 {{maxSizeMb}}MB입니다."
+    },
+    "modal": {
+      "closeDialog": "대화상자 닫기"
+    },
+    "pagination": {
+      "showing": "{{total}}개 중 {{from}}–{{to}} 표시 중",
+      "previousPage": "이전 페이지",
+      "nextPage": "다음 페이지",
+      "pageOf": "{{current}} / {{last}} 페이지"
+    },
+    "select": {
+      "placeholder": "선택…",
+      "searchPlaceholder": "검색…",
+      "noResults": "결과가 없습니다."
+    },
+    "confirmDialog": {
+      "confirm": "확인",
+      "cancel": "취소"
+    }
   },
   "communication": {
     "announcementSentToast_one": "{{count}}명의 수신자에게 전송되었습니다.",

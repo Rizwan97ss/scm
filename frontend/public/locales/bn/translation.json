@@ -358,7 +358,37 @@
     "warning": "সতর্কতা",
     "welcome": "স্বাগতম",
     "yes": "হ্যাঁ",
-    "exportSelected": "নির্বাচিতগুলো রপ্তানি করুন"
+    "exportSelected": "নির্বাচিতগুলো রপ্তানি করুন",
+    "breadcrumbs": {
+      "ariaLabel": "ব্রেডক্রাম্ব"
+    },
+    "drawer": {
+      "closePanel": "প্যানেল বন্ধ করুন"
+    },
+    "fileUpload": {
+      "removeFile": "ফাইল সরান",
+      "clickToUpload": "আপলোড করতে ক্লিক করুন",
+      "orDragAndDrop": "অথবা টেনে এনে ছাড়ুন",
+      "tooLarge": "ফাইলটি খুব বড়। সর্বোচ্চ আকার {{maxSizeMb}}MB।"
+    },
+    "modal": {
+      "closeDialog": "ডায়ালগ বন্ধ করুন"
+    },
+    "pagination": {
+      "showing": "{{total}} এর মধ্যে {{from}}–{{to}} দেখানো হচ্ছে",
+      "previousPage": "পূর্ববর্তী পৃষ্ঠা",
+      "nextPage": "পরবর্তী পৃষ্ঠা",
+      "pageOf": "পৃষ্ঠা {{current}} এর {{last}}"
+    },
+    "select": {
+      "placeholder": "নির্বাচন করুন…",
+      "searchPlaceholder": "অনুসন্ধান করুন…",
+      "noResults": "কোনো ফলাফল নেই।"
+    },
+    "confirmDialog": {
+      "confirm": "নিশ্চিত করুন",
+      "cancel": "বাতিল করুন"
+    }
   },
   "communication": {
     "announcementSentToast_one": "ঘোষণা {{count}} জন প্রাপকের কাছে পাঠানো হয়েছে।",

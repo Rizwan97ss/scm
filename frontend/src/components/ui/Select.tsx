@@ -1,6 +1,7 @@
 import * as RadixSelect from '@radix-ui/react-select'
 import { Check, ChevronDown, Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 
 // Below this, a search box is just visual noise (gender, yes/no, status
@@ -34,7 +35,8 @@ export interface SelectProps {
   'aria-label'?: string
 }
 
-export function Select({ value, onValueChange, options, placeholder = 'Select…', disabled, invalid, className, id, ...rest }: SelectProps) {
+export function Select({ value, onValueChange, options, placeholder, disabled, invalid, className, id, ...rest }: SelectProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -75,7 +77,7 @@ export function Select({ value, onValueChange, options, placeholder = 'Select…
           className
         )}
       >
-        <RadixSelect.Value placeholder={placeholder} />
+        <RadixSelect.Value placeholder={placeholder ?? t('common.select.placeholder')} />
         <RadixSelect.Icon>
           <ChevronDown className="h-4 w-4 opacity-60" />
         </RadixSelect.Icon>
@@ -94,7 +96,7 @@ export function Select({ value, onValueChange, options, placeholder = 'Select…
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => { if (!NAV_KEYS.has(e.key)) e.stopPropagation() }}
-                placeholder="Search…"
+                placeholder={t('common.select.searchPlaceholder')}
                 className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               />
             </div>
@@ -117,7 +119,7 @@ export function Select({ value, onValueChange, options, placeholder = 'Select…
               </RadixSelect.Item>
             ))}
             {showSearch && filtered.length === 0 && (
-              <p className="px-2 py-4 text-center text-sm text-muted-foreground">No results.</p>
+              <p className="px-2 py-4 text-center text-sm text-muted-foreground">{t('common.select.noResults')}</p>
             )}
           </RadixSelect.Viewport>
         </RadixSelect.Content>

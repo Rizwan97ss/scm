@@ -358,7 +358,37 @@
     "warning": "Warnung",
     "welcome": "Willkommen",
     "yes": "Ja",
-    "exportSelected": "Auswahl exportieren"
+    "exportSelected": "Auswahl exportieren",
+    "breadcrumbs": {
+      "ariaLabel": "Breadcrumb-Navigation"
+    },
+    "drawer": {
+      "closePanel": "Panel schließen"
+    },
+    "fileUpload": {
+      "removeFile": "Datei entfernen",
+      "clickToUpload": "Zum Hochladen klicken",
+      "orDragAndDrop": "oder per Drag & Drop",
+      "tooLarge": "Die Datei ist zu groß. Maximale Größe ist {{maxSizeMb}}MB."
+    },
+    "modal": {
+      "closeDialog": "Dialog schließen"
+    },
+    "pagination": {
+      "showing": "{{from}}–{{to}} von {{total}} werden angezeigt",
+      "previousPage": "Vorherige Seite",
+      "nextPage": "Nächste Seite",
+      "pageOf": "Seite {{current}} von {{last}}"
+    },
+    "select": {
+      "placeholder": "Auswählen…",
+      "searchPlaceholder": "Suchen…",
+      "noResults": "Keine Ergebnisse."
+    },
+    "confirmDialog": {
+      "confirm": "Bestätigen",
+      "cancel": "Abbrechen"
+    }
   },
   "communication": {
     "announcementSentToast_one": "Ankündigung an {{count}} Empfänger gesendet.",

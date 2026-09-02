@@ -358,7 +358,37 @@
     "warning": "Предупреждение",
     "welcome": "Добро пожаловать",
     "yes": "Да",
-    "exportSelected": "Экспортировать выбранных"
+    "exportSelected": "Экспортировать выбранных",
+    "breadcrumbs": {
+      "ariaLabel": "Хлебные крошки"
+    },
+    "drawer": {
+      "closePanel": "Закрыть панель"
+    },
+    "fileUpload": {
+      "removeFile": "Удалить файл",
+      "clickToUpload": "Нажмите, чтобы загрузить",
+      "orDragAndDrop": "или перетащите сюда",
+      "tooLarge": "Файл слишком большой. Максимальный размер {{maxSizeMb}}МБ."
+    },
+    "modal": {
+      "closeDialog": "Закрыть диалог"
+    },
+    "pagination": {
+      "showing": "Показано {{from}}–{{to}} из {{total}}",
+      "previousPage": "Предыдущая страница",
+      "nextPage": "Следующая страница",
+      "pageOf": "Страница {{current}} из {{last}}"
+    },
+    "select": {
+      "placeholder": "Выбрать…",
+      "searchPlaceholder": "Поиск…",
+      "noResults": "Нет результатов."
+    },
+    "confirmDialog": {
+      "confirm": "Подтвердить",
+      "cancel": "Отмена"
+    }
   },
   "communication": {
     "announcementSentToast_one": "Рассылка отправлена {{count}} получателю.",

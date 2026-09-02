@@ -358,7 +358,37 @@
     "warning": "Pengeling-eling",
     "welcome": "Sugeng rawuh",
     "yes": "Iya",
-    "exportSelected": "Ekspor sing dipilih"
+    "exportSelected": "Ekspor sing dipilih",
+    "breadcrumbs": {
+      "ariaLabel": "Breadcrumb"
+    },
+    "drawer": {
+      "closePanel": "Tutup panel"
+    },
+    "fileUpload": {
+      "removeFile": "Busak berkas",
+      "clickToUpload": "Klik kanggo ngunggah",
+      "orDragAndDrop": "utawa seret lan lepas",
+      "tooLarge": "Berkas kegedhen. Ukuran maksimal {{maxSizeMb}}MB."
+    },
+    "modal": {
+      "closeDialog": "Tutup dialog"
+    },
+    "pagination": {
+      "showing": "Nampilake {{from}}–{{to}} saka {{total}}",
+      "previousPage": "Kaca sadurunge",
+      "nextPage": "Kaca sabanjure",
+      "pageOf": "Kaca {{current}} saka {{last}}"
+    },
+    "select": {
+      "placeholder": "Pilih…",
+      "searchPlaceholder": "Golek…",
+      "noResults": "Ora ana asil."
+    },
+    "confirmDialog": {
+      "confirm": "Konfirmasi",
+      "cancel": "Batal"
+    }
   },
   "communication": {
     "announcementSentToast_one": "Pengumuman dikirim menyang {{count}} penerima.",

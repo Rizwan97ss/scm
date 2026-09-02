@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Modal } from './Modal'
 import { Button, type ButtonVariant } from './Button'
 
@@ -22,13 +23,17 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   confirmVariant = 'destructive',
   isLoading,
   onConfirm,
   children,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation()
+  const resolvedConfirmLabel = confirmLabel ?? t('common.confirmDialog.confirm')
+  const resolvedCancelLabel = cancelLabel ?? t('common.confirmDialog.cancel')
+
   return (
     <Modal
       open={open}
@@ -39,10 +44,10 @@ export function ConfirmDialog({
       footer={
         <>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            {cancelLabel}
+            {resolvedCancelLabel}
           </Button>
           <Button variant={confirmVariant} onClick={onConfirm} isLoading={isLoading}>
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </Button>
         </>
       }

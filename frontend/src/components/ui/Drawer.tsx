@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 
 export interface DrawerProps {
@@ -13,6 +14,7 @@ export interface DrawerProps {
 }
 
 export function Drawer({ open, onOpenChange, title, children, footer, side = 'right' }: DrawerProps) {
+  const { t } = useTranslation()
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -32,7 +34,7 @@ export function Drawer({ open, onOpenChange, title, children, footer, side = 'ri
             <Dialog.Title className="text-lg font-semibold">{title}</Dialog.Title>
             <Dialog.Close
               className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Close panel"
+              aria-label={t('common.drawer.closePanel')}
             >
               <X className="h-4 w-4" />
             </Dialog.Close>

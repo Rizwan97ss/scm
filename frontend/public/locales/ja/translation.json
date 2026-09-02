@@ -358,7 +358,37 @@
     "warning": "警告",
     "welcome": "ようこそ",
     "yes": "はい",
-    "exportSelected": "選択項目をエクスポート"
+    "exportSelected": "選択項目をエクスポート",
+    "breadcrumbs": {
+      "ariaLabel": "パンくずリスト"
+    },
+    "drawer": {
+      "closePanel": "パネルを閉じる"
+    },
+    "fileUpload": {
+      "removeFile": "ファイルを削除",
+      "clickToUpload": "クリックしてアップロード",
+      "orDragAndDrop": "またはドラッグ＆ドロップ",
+      "tooLarge": "ファイルが大きすぎます。最大サイズは{{maxSizeMb}}MBです。"
+    },
+    "modal": {
+      "closeDialog": "ダイアログを閉じる"
+    },
+    "pagination": {
+      "showing": "{{total}} 件中 {{from}}–{{to}} 件を表示",
+      "previousPage": "前のページ",
+      "nextPage": "次のページ",
+      "pageOf": "{{current}} / {{last}} ページ"
+    },
+    "select": {
+      "placeholder": "選択…",
+      "searchPlaceholder": "検索…",
+      "noResults": "結果がありません。"
+    },
+    "confirmDialog": {
+      "confirm": "確認",
+      "cancel": "キャンセル"
+    }
   },
   "communication": {
     "announcementSentToast_one": "{{count}}人の受信者に送信しました。",

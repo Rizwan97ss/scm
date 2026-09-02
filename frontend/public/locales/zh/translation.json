@@ -358,7 +358,37 @@
     "warning": "警告",
     "welcome": "欢迎",
     "yes": "是",
-    "exportSelected": "导出所选"
+    "exportSelected": "导出所选",
+    "breadcrumbs": {
+      "ariaLabel": "面包屑导航"
+    },
+    "drawer": {
+      "closePanel": "关闭面板"
+    },
+    "fileUpload": {
+      "removeFile": "移除文件",
+      "clickToUpload": "点击上传",
+      "orDragAndDrop": "或拖放文件",
+      "tooLarge": "文件过大。最大大小为 {{maxSizeMb}}MB。"
+    },
+    "modal": {
+      "closeDialog": "关闭对话框"
+    },
+    "pagination": {
+      "showing": "显示第 {{from}}–{{to}} 条，共 {{total}} 条",
+      "previousPage": "上一页",
+      "nextPage": "下一页",
+      "pageOf": "第 {{current}} / {{last}} 页"
+    },
+    "select": {
+      "placeholder": "请选择…",
+      "searchPlaceholder": "搜索…",
+      "noResults": "无结果。"
+    },
+    "confirmDialog": {
+      "confirm": "确认",
+      "cancel": "取消"
+    }
   },
   "communication": {
     "announcementSentToast_one": "公告已发送给 {{count}} 位接收人。",

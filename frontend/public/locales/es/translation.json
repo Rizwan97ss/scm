@@ -358,7 +358,37 @@
     "warning": "Advertencia",
     "welcome": "Bienvenido",
     "yes": "Sí",
-    "exportSelected": "Exportar seleccionados"
+    "exportSelected": "Exportar seleccionados",
+    "breadcrumbs": {
+      "ariaLabel": "Ruta de navegación"
+    },
+    "drawer": {
+      "closePanel": "Cerrar panel"
+    },
+    "fileUpload": {
+      "removeFile": "Eliminar archivo",
+      "clickToUpload": "Haz clic para subir",
+      "orDragAndDrop": "o arrastra y suelta",
+      "tooLarge": "El archivo es demasiado grande. El tamaño máximo es {{maxSizeMb}}MB."
+    },
+    "modal": {
+      "closeDialog": "Cerrar diálogo"
+    },
+    "pagination": {
+      "showing": "Mostrando {{from}}–{{to}} de {{total}}",
+      "previousPage": "Página anterior",
+      "nextPage": "Página siguiente",
+      "pageOf": "Página {{current}} de {{last}}"
+    },
+    "select": {
+      "placeholder": "Seleccionar…",
+      "searchPlaceholder": "Buscar…",
+      "noResults": "Sin resultados."
+    },
+    "confirmDialog": {
+      "confirm": "Confirmar",
+      "cancel": "Cancelar"
+    }
   },
   "communication": {
     "announcementSentToast_one": "Anuncio enviado a {{count}} destinatario.",

@@ -358,7 +358,37 @@
     "warning": "Peringatan",
     "welcome": "Selamat datang",
     "yes": "Ya",
-    "exportSelected": "Ekspor yang dipilih"
+    "exportSelected": "Ekspor yang dipilih",
+    "breadcrumbs": {
+      "ariaLabel": "Remah roti"
+    },
+    "drawer": {
+      "closePanel": "Tutup panel"
+    },
+    "fileUpload": {
+      "removeFile": "Hapus file",
+      "clickToUpload": "Klik untuk mengunggah",
+      "orDragAndDrop": "atau seret dan lepas",
+      "tooLarge": "File terlalu besar. Ukuran maksimum adalah {{maxSizeMb}}MB."
+    },
+    "modal": {
+      "closeDialog": "Tutup dialog"
+    },
+    "pagination": {
+      "showing": "Menampilkan {{from}}–{{to}} dari {{total}}",
+      "previousPage": "Halaman sebelumnya",
+      "nextPage": "Halaman berikutnya",
+      "pageOf": "Halaman {{current}} dari {{last}}"
+    },
+    "select": {
+      "placeholder": "Pilih…",
+      "searchPlaceholder": "Cari…",
+      "noResults": "Tidak ada hasil."
+    },
+    "confirmDialog": {
+      "confirm": "Konfirmasi",
+      "cancel": "Batal"
+    }
   },
   "communication": {
     "announcementSentToast_one": "Pemberitahuan dikirim ke {{count}} penerima.",

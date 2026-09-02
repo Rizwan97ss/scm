@@ -358,7 +358,37 @@
     "warning": "Amaran",
     "welcome": "Selamat datang",
     "yes": "Ya",
-    "exportSelected": "Eksport yang dipilih"
+    "exportSelected": "Eksport yang dipilih",
+    "breadcrumbs": {
+      "ariaLabel": "Breadcrumb"
+    },
+    "drawer": {
+      "closePanel": "Tutup panel"
+    },
+    "fileUpload": {
+      "removeFile": "Alih keluar fail",
+      "clickToUpload": "Klik untuk muat naik",
+      "orDragAndDrop": "atau seret dan lepas",
+      "tooLarge": "Fail terlalu besar. Saiz maksimum ialah {{maxSizeMb}}MB."
+    },
+    "modal": {
+      "closeDialog": "Tutup dialog"
+    },
+    "pagination": {
+      "showing": "Menunjukkan {{from}}–{{to}} daripada {{total}}",
+      "previousPage": "Halaman sebelumnya",
+      "nextPage": "Halaman seterusnya",
+      "pageOf": "Halaman {{current}} daripada {{last}}"
+    },
+    "select": {
+      "placeholder": "Pilih…",
+      "searchPlaceholder": "Cari…",
+      "noResults": "Tiada keputusan."
+    },
+    "confirmDialog": {
+      "confirm": "Sahkan",
+      "cancel": "Batal"
+    }
   },
   "communication": {
     "announcementSentToast_one": "Pengumuman dihantar kepada {{count}} penerima.",

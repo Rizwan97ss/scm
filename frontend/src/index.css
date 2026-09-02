@@ -57,6 +57,20 @@
 
     --color-primary-foreground: #ffffff;
 
+    /* --color-destructive/success/warning/info deliberately keep their
+       light-mode values here: they're used both as solid Button/badge-dot
+       fills with white text (needs a dark-enough color for contrast) and as
+       small-text Badge colors (needs a light-enough color for contrast) —
+       the current values are a reasonable middle ground for both, verified
+       by contrast ratio (destructive: ~4.9:1 white-on-fill, ~3.85:1
+       text-on-dark-card, both above the relevant WCAG AA threshold for
+       their use). A dedicated brighter "-emphasis" token for badge-only
+       contexts would be a cleaner fix but is out of scope here.
+       --color-secondary inherits --brand-secondary as-is — overriding it
+       here would silently diverge from what the school picked in
+       Settings > Branding, which is worse than the current low-contrast
+       default some schools may see with a dark custom secondary color. */
+
     color-scheme: dark;
   }
 }
@@ -173,12 +187,12 @@ body {
 }
 
 /*
- * Login/Signup sit their form panel inside .marketing-scope too, but forms
+ * AuthLayout sits its form panel inside .marketing-scope too, but forms
  * read best on a plain light surface, not the hero's ink background. Rather
  * than override every Input/Button/FormField instance, this repaints the
  * SAME --color-* tokens those shared components already read from --
- * everything just works, unchanged, with the marketing palette instead of
- * the tenant-brand one.
+ * everything just works, unchanged, with this palette instead of the
+ * runtime brand one.
  */
 .marketing-form-panel {
   --color-background: var(--mk-card);
@@ -233,8 +247,12 @@ body {
     opacity: 1;
     animation: none;
   }
-  .marketing-scope * {
+  /* Covers the whole app, not just the marketing site (superset of the old
+     .marketing-scope-only rule) — modal fade/zoom, skeleton pulse, and
+     spinners all collapse to a single frame instead of looping/animating. */
+  * {
     animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
 }

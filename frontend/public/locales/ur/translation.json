@@ -358,7 +358,37 @@
     "warning": "انتباہ",
     "welcome": "خوش آمدید",
     "yes": "ہاں",
-    "exportSelected": "منتخب کردہ ایکسپورٹ کریں"
+    "exportSelected": "منتخب کردہ ایکسپورٹ کریں",
+    "breadcrumbs": {
+      "ariaLabel": "بریڈکرمب"
+    },
+    "drawer": {
+      "closePanel": "پینل بند کریں"
+    },
+    "fileUpload": {
+      "removeFile": "فائل ہٹائیں",
+      "clickToUpload": "اپ لوڈ کرنے کے لیے کلک کریں",
+      "orDragAndDrop": "یا گھسیٹ کر چھوڑیں",
+      "tooLarge": "فائل بہت بڑی ہے۔ زیادہ سے زیادہ سائز {{maxSizeMb}}MB ہے۔"
+    },
+    "modal": {
+      "closeDialog": "ڈائیلاگ بند کریں"
+    },
+    "pagination": {
+      "showing": "{{total}} میں سے {{from}}–{{to}} دکھایا جا رہا ہے",
+      "previousPage": "پچھلا صفحہ",
+      "nextPage": "اگلا صفحہ",
+      "pageOf": "صفحہ {{current}} از {{last}}"
+    },
+    "select": {
+      "placeholder": "منتخب کریں…",
+      "searchPlaceholder": "تلاش کریں…",
+      "noResults": "کوئی نتیجہ نہیں۔"
+    },
+    "confirmDialog": {
+      "confirm": "تصدیق کریں",
+      "cancel": "منسوخ کریں"
+    }
   },
   "communication": {
     "announcementSentToast_one": "اعلان {{count}} وصول کنندہ کو بھیج دیا گیا۔",
