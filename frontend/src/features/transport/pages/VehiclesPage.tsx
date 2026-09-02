@@ -6,8 +6,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, type DataTableColumn } from '@/components/ui'
+import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, type DataTableColumn } from '@/components/ui'
 import type { Vehicle, VehiclePayload } from '@/types/transport'
 
 const EMPTY_FORM: VehiclePayload = { registration_number: '', capacity: 1, driver_name: '', driver_phone: '', is_active: true }
@@ -16,8 +17,14 @@ export function VehiclesPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
   const canManage = can('transport.manage')
-  const { sort, setPage, setSort, queryParams } = usePagination('registration_number', 'registration_number')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(vehiclesApi, queryKeys.vehicles, queryParams, 'Vehicle')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('registration_number', 'registration_number')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    vehiclesApi,
+    queryKeys.vehicles,
+    { ...queryParams, 'filter[registration_number]': debouncedSearch || undefined },
+    'Vehicle'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Vehicle | null>(null)
@@ -90,16 +97,21 @@ export function VehiclesPage() {
         }
       />
 
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('transport.vehiclesSearchPlaceholder')} value={search} onChange={setSearch} />
+      </div>
+
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('nav.vehicles') })}
+        emptyTitle={debouncedSearch ? t('transport.vehiclesEmptyTitleSearch', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('nav.vehicles') })}
+        emptyDescription={debouncedSearch ? t('transport.vehiclesEmptyDescriptionSearch') : undefined}
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.vehicle') }) : t('common.newItem', { item: t('entities.vehicle') })}>

@@ -17,6 +17,7 @@ import {
   FormField,
   Input,
   Modal,
+  QueryErrorState,
   Select,
   Skeleton,
   StatCard,
@@ -50,7 +51,7 @@ export function InvoiceDetailPage() {
   const { can } = usePermission()
   const queryClient = useQueryClient()
 
-  const { data: invoice, isLoading } = useQuery({ queryKey: queryKeys.invoice(invoiceId), queryFn: () => invoicesApi.get(invoiceId) })
+  const { data: invoice, isLoading, isError, refetch } = useQuery({ queryKey: queryKeys.invoice(invoiceId), queryFn: () => invoicesApi.get(invoiceId) })
 
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [creditNoteModalOpen, setCreditNoteModalOpen] = useState(false)
@@ -66,13 +67,17 @@ export function InvoiceDetailPage() {
     onError: (error) => toast.error((error as ApiError).message),
   })
 
-  if (isLoading || !invoice) {
+  if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-48 w-full" />
       </div>
     )
+  }
+
+  if (isError || !invoice) {
+    return <QueryErrorState onRetry={refetch} />
   }
 
   const canRecordPayment = can('invoices.record-payment') && invoice.status !== 'void' && invoice.balance > 0
@@ -241,7 +246,9 @@ export function InvoiceDetailPage() {
         description={t('fees.voidConfirmDescription')}
         confirmLabel={t('fees.voidInvoiceButton')}
         isLoading={voidMutation.isPending}
-        onConfirm={() => voidMutation.mutate()}
+        onConfirm={() => {
+          if (!voidMutation.isPending) voidMutation.mutate()
+        }}
       />
     </div>
   )
@@ -268,6 +275,7 @@ function RecordPaymentModal({ invoiceId, balance, open, onOpenChange }: { invoic
       <form
         onSubmit={(e) => {
           e.preventDefault()
+          if (mutation.isPending) return
           mutation.mutate()
         }}
         className="flex flex-col gap-4"
@@ -321,6 +329,7 @@ function IssueCreditNoteModal({ invoiceId, balance, open, onOpenChange }: { invo
       <form
         onSubmit={(e) => {
           e.preventDefault()
+          if (mutation.isPending) return
           mutation.mutate()
         }}
         className="flex flex-col gap-4"

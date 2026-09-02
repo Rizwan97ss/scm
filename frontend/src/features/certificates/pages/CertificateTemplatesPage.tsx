@@ -9,8 +9,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, Select, Textarea, type DataTableColumn } from '@/components/ui'
+import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, Select, Textarea, type DataTableColumn } from '@/components/ui'
 import type { CertificateTemplate, CertificateTemplatePayload } from '@/types/certificates'
 import type { ApiError } from '@/api/client'
 
@@ -20,8 +21,14 @@ export function CertificateTemplatesPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
   const canManage = can('certificates.edit') || can('certificates.create')
-  const { sort, setPage, setSort, queryParams } = usePagination('name', 'name')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(certificateTemplatesApi, queryKeys.certificateTemplates, queryParams, 'Certificate template')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('name', 'name')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    certificateTemplatesApi,
+    queryKeys.certificateTemplates,
+    { ...queryParams, 'filter[name]': debouncedSearch || undefined },
+    'Certificate template'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<CertificateTemplate | null>(null)
@@ -92,21 +99,28 @@ export function CertificateTemplatesPage() {
         }
       />
 
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('common.searchByName')} value={search} onChange={setSearch} />
+      </div>
+
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
         isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('nav.certificate_templates') })}
+        emptyTitle={debouncedSearch ? t('certificates.templatesNoMatchTitle', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('nav.certificate_templates') })}
+        emptyDescription={debouncedSearch ? t('certificates.templatesNoMatchDescription') : undefined}
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.certificateTemplate') }) : t('common.newItem', { item: t('entities.certificateTemplate') })}>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label={t('common.name')} htmlFor="name" required>
               <Input id="name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </FormField>

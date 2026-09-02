@@ -81,7 +81,18 @@ export function GradingScalesPage() {
         description={t('exams.gradingScalesDescription')}
         actions={can('grading.manage') && <Button onClick={openCreate}><Plus className="h-4 w-4" /> {t('common.newItem', { item: t('entities.gradingScale') })}</Button>}
       />
-      <DataTable columns={columns} data={listQuery.data?.data} rowKey={(r) => r.id} isLoading={listQuery.isLoading} meta={listQuery.data?.meta} onPageChange={setPage} emptyTitle={t('common.noItemsYet', { items: t('nav.grading_scales') })} />
+      <DataTable
+        columns={columns}
+        data={listQuery.data?.data}
+        rowKey={(r) => r.id}
+        isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
+        meta={listQuery.data?.meta}
+        onPageChange={setPage}
+        emptyTitle={t('common.noItemsYet', { items: t('nav.grading_scales') })}
+        emptyDescription={t('exams.gradingScalesEmptyDescription')}
+      />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.gradingScale') }) : t('common.newItem', { item: t('entities.gradingScale') })} size="lg">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
@@ -101,28 +112,23 @@ export function GradingScalesPage() {
               </Button>
             </div>
             {fields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-12 items-end gap-2 rounded-md border border-border p-2">
-                <div className="col-span-2">
-                  <label className="text-xs text-muted-foreground">{t('exams.minPercentage')}</label>
-                  <Input type="number" step="0.01" {...register(`grade_bands.${index}.min_percentage`, { valueAsNumber: true, required: true })} />
-                </div>
-                <div className="col-span-2">
-                  <label className="text-xs text-muted-foreground">{t('exams.maxPercentage')}</label>
-                  <Input type="number" step="0.01" {...register(`grade_bands.${index}.max_percentage`, { valueAsNumber: true, required: true })} />
-                </div>
-                <div className="col-span-2">
-                  <label className="text-xs text-muted-foreground">{t('exams.gradeLabel')}</label>
-                  <Input placeholder="A+" {...register(`grade_bands.${index}.grade_label`, { required: true })} />
-                </div>
-                <div className="col-span-2">
-                  <label className="text-xs text-muted-foreground">{t('exams.gpa')}</label>
-                  <Input type="number" step="0.01" {...register(`grade_bands.${index}.grade_point`, { valueAsNumber: true })} />
-                </div>
-                <div className="col-span-3">
-                  <label className="text-xs text-muted-foreground">{t('exams.remark')}</label>
-                  <Input placeholder={t('common.optional')} {...register(`grade_bands.${index}.remark`)} />
-                </div>
-                <div className="col-span-1">
+              <div key={field.id} className="grid grid-cols-1 items-end gap-2 rounded-md border border-border p-2 sm:grid-cols-12">
+                <FormField label={t('exams.minPercentage')} htmlFor={`grade_bands.${index}.min_percentage`} className="sm:col-span-2">
+                  <Input id={`grade_bands.${index}.min_percentage`} type="number" step="0.01" {...register(`grade_bands.${index}.min_percentage`, { valueAsNumber: true, required: true })} />
+                </FormField>
+                <FormField label={t('exams.maxPercentage')} htmlFor={`grade_bands.${index}.max_percentage`} className="sm:col-span-2">
+                  <Input id={`grade_bands.${index}.max_percentage`} type="number" step="0.01" {...register(`grade_bands.${index}.max_percentage`, { valueAsNumber: true, required: true })} />
+                </FormField>
+                <FormField label={t('exams.gradeLabel')} htmlFor={`grade_bands.${index}.grade_label`} className="sm:col-span-2">
+                  <Input id={`grade_bands.${index}.grade_label`} placeholder="A+" {...register(`grade_bands.${index}.grade_label`, { required: true })} />
+                </FormField>
+                <FormField label={t('exams.gpa')} htmlFor={`grade_bands.${index}.grade_point`} className="sm:col-span-2">
+                  <Input id={`grade_bands.${index}.grade_point`} type="number" step="0.01" {...register(`grade_bands.${index}.grade_point`, { valueAsNumber: true })} />
+                </FormField>
+                <FormField label={t('exams.remark')} htmlFor={`grade_bands.${index}.remark`} className="sm:col-span-3">
+                  <Input id={`grade_bands.${index}.remark`} placeholder={t('common.optional')} {...register(`grade_bands.${index}.remark`)} />
+                </FormField>
+                <div className="sm:col-span-1">
                   <Button type="button" variant="outline" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1} aria-label={t('exams.removeBand')}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>

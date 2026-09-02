@@ -125,7 +125,8 @@ export function UsersListPage() {
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('users.noUsersFound')}
+        emptyTitle={debouncedSearch ? t('users.noUsersMatchSearchTitle', { query: debouncedSearch }) : t('users.noUsersFound')}
+        emptyDescription={debouncedSearch ? t('users.noUsersMatchSearchDescription') : undefined}
       />
 
       <UserFormModal open={modalOpen} onOpenChange={setModalOpen} editing={editing} roles={roles ?? []} />

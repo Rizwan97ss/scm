@@ -6,7 +6,8 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
-import { Badge, Button, Checkbox, ConfirmDialog, DataTable, FormField, Input, Modal, type DataTableColumn } from '@/components/ui'
+import { useDebounce } from '@/hooks/useDebounce'
+import { Badge, Button, Checkbox, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, type DataTableColumn } from '@/components/ui'
 import type { AssessmentComponentType, AssessmentComponentTypePayload } from '@/types/exam'
 
 const EMPTY_FORM: AssessmentComponentTypePayload = { name: '', code: '', is_auto_graded: false, sequence: 0, is_active: true }
@@ -15,8 +16,14 @@ const EMPTY_FORM: AssessmentComponentTypePayload = { name: '', code: '', is_auto
 export function AssessmentComponentTypesPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
-  const { sort, setPage, setSort, queryParams } = usePagination('sequence', 'sequence')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(assessmentComponentTypesApi, queryKeys.assessmentComponentTypes, queryParams, 'Component type')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('sequence', 'name')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    assessmentComponentTypesApi,
+    queryKeys.assessmentComponentTypes,
+    { ...queryParams, 'filter[name]': debouncedSearch || undefined },
+    'Component type'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<AssessmentComponentType | null>(null)
@@ -66,7 +73,10 @@ export function AssessmentComponentTypesPage() {
 
   return (
     <div>
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div className="max-w-sm flex-1">
+          <SearchInput placeholder={t('common.searchByName')} value={search} onChange={setSearch} />
+        </div>
         {can('grading.manage') && <Button onClick={openCreate}><Plus className="h-4 w-4" /> {t('common.newItem', { item: t('entities.componentType') })}</Button>}
       </div>
 
@@ -75,11 +85,14 @@ export function AssessmentComponentTypesPage() {
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
         isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('exams.componentTypes') })}
+        emptyTitle={debouncedSearch ? t('exams.componentTypesNoMatchTitle', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('exams.componentTypes') })}
+        emptyDescription={debouncedSearch ? t('exams.componentTypesNoMatchDescription') : undefined}
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.componentType') }) : t('common.newItem', { item: t('entities.componentType') })}>

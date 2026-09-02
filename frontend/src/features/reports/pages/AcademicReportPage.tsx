@@ -4,14 +4,14 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 import { reportsApi } from '@/api/endpoints/reports'
 import { queryKeys } from '@/api/queryKeys'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Card, CardContent, DataTable, Skeleton, type DataTableColumn } from '@/components/ui'
+import { Card, CardContent, DataTable, QueryErrorState, Skeleton, type DataTableColumn } from '@/components/ui'
 import { CHART_LTR_STYLE, useChartDirection } from '@/hooks/useChartDirection'
 import type { ExamPerformance } from '@/types/reports'
 
 export function AcademicReportPage() {
   const { t } = useTranslation()
   const chartDir = useChartDirection()
-  const { data, isLoading } = useQuery({ queryKey: queryKeys.reportsAcademicPerformance, queryFn: reportsApi.academicPerformance })
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: queryKeys.reportsAcademicPerformance, queryFn: reportsApi.academicPerformance })
 
   const exams = data?.exams ?? []
 
@@ -28,9 +28,11 @@ export function AcademicReportPage() {
 
       {isLoading && <Skeleton className="h-64 w-full" />}
 
-      {!isLoading && exams.length === 0 && <p className="text-sm text-muted-foreground">{t('reports.noPublishedExamsYet')}</p>}
+      {!isLoading && isError && <QueryErrorState onRetry={refetch} />}
 
-      {exams.length > 0 && (
+      {!isLoading && !isError && exams.length === 0 && <p className="text-sm text-muted-foreground">{t('reports.noPublishedExamsYet')}</p>}
+
+      {!isError && exams.length > 0 && (
         <>
           <Card className="mb-6">
             <CardContent className="pt-6">

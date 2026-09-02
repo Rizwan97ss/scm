@@ -7,8 +7,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, Checkbox, ConfirmDialog, DataTable, FormField, Input, Modal, Select, type DataTableColumn } from '@/components/ui'
+import { Badge, Button, Checkbox, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, Select, type DataTableColumn } from '@/components/ui'
 import type { Subject, SubjectPayload } from '@/types/academic'
 
 const emptyForm: SubjectPayload = { name: '', code: '', department_id: null, is_elective: false }
@@ -16,8 +17,14 @@ const emptyForm: SubjectPayload = { name: '', code: '', department_id: null, is_
 export function SubjectsPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
-  const { sort, setPage, setSort, queryParams } = usePagination('name', 'name')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(subjectsApi, queryKeys.subjects, queryParams, 'Subject')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('name', 'name')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    subjectsApi,
+    queryKeys.subjects,
+    { ...queryParams, 'filter[name]': debouncedSearch || undefined },
+    'Subject'
+  )
   const { data: departments } = useQuery({ queryKey: queryKeys.departments({ per_page: 100 }), queryFn: () => departmentsApi.list({ per_page: 100 }) })
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -81,16 +88,22 @@ export function SubjectsPage() {
           )
         }
       />
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('common.searchByName')} value={search} onChange={setSearch} />
+      </div>
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
         isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('nav.subjects') })}
+        emptyTitle={debouncedSearch ? t('academics.subjectsEmptyTitleSearch', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('nav.subjects') })}
+        emptyDescription={debouncedSearch ? t('academics.subjectsEmptyDescriptionSearch') : undefined}
       />
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.subject') }) : t('common.newItem', { item: t('entities.subject') })}>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>

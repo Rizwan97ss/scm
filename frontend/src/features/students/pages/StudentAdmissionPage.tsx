@@ -9,6 +9,7 @@ import { studentAdmissionSchema, type StudentAdmissionFormValues } from '../sche
 import { studentsApi } from '@/api/endpoints/students'
 import { academicYearsApi, departmentsApi, gradeLevelsApi, sectionsApi } from '@/api/endpoints/academics'
 import { queryKeys } from '@/api/queryKeys'
+import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button, DatePicker, FormField, Input, Select } from '@/components/ui'
 import { GENDERS, GENDER_LABEL_KEYS, GUARDIAN_RELATIONSHIPS, GUARDIAN_RELATIONSHIP_LABEL_KEYS } from '@/types/enums'
@@ -29,7 +30,7 @@ export function StudentAdmissionPage() {
     watch,
     setValue,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<StudentAdmissionFormValues>({
     resolver: zodResolver(studentAdmissionSchema),
     defaultValues: {
@@ -57,7 +58,10 @@ export function StudentAdmissionPage() {
     onError: (error) => toast.error((error as ApiError).message),
   })
 
+  useUnsavedChangesWarning(isDirty && !createMutation.isSuccess)
+
   function onSubmit(values: StudentAdmissionFormValues) {
+    if (createMutation.isPending) return
     createMutation.mutate({
       ...values,
       guardians: values.guardians.map((guardian) => ({ ...guardian, email: guardian.email || null })),

@@ -8,8 +8,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, type DataTableColumn } from '@/components/ui'
+import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, type DataTableColumn } from '@/components/ui'
 import type { RoutePayload, RouteStopPayload, TransportRoute } from '@/types/transport'
 import type { ApiError } from '@/api/client'
 
@@ -20,8 +21,14 @@ export function RoutesPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
   const canManage = can('transport.manage')
-  const { sort, setPage, setSort, queryParams } = usePagination('name', 'name')
-  const { listQuery, createMutation, removeMutation } = useCrudResource(routesApi, queryKeys.routes, queryParams, 'Route')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('name', 'name')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, removeMutation } = useCrudResource(
+    routesApi,
+    queryKeys.routes,
+    { ...queryParams, 'filter[name]': debouncedSearch || undefined },
+    'Route'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState<RoutePayload>(EMPTY_FORM)
@@ -79,16 +86,21 @@ export function RoutesPage() {
         }
       />
 
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('transport.routesSearchPlaceholder')} value={search} onChange={setSearch} />
+      </div>
+
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('nav.routes') })}
+        emptyTitle={debouncedSearch ? t('transport.routesEmptyTitleSearch', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('nav.routes') })}
+        emptyDescription={debouncedSearch ? t('transport.routesEmptyDescriptionSearch') : undefined}
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={t('common.newItem', { item: t('entities.route') })} size="lg">
@@ -109,14 +121,14 @@ export function RoutesPage() {
             </div>
             {(form.stops ?? []).map((stop, index) => (
               <div key={index} className="flex items-end gap-2">
-                <div className="flex-1">
-                  <label className="text-xs text-muted-foreground">{t('transport.stopName')}</label>
+                <FormField label={t('transport.stopName')} htmlFor={`stop-${index}-name`} className="flex-1">
                   <Input
+                    id={`stop-${index}-name`}
                     required
                     value={stop.name}
                     onChange={(e) => setForm((prev) => ({ ...prev, stops: (prev.stops ?? []).map((s, i) => (i === index ? { ...s, name: e.target.value } : s)) }))}
                   />
-                </div>
+                </FormField>
                 <Button
                   type="button"
                   variant="outline"
@@ -158,6 +170,7 @@ function ManageStopsModal({ route, open, onOpenChange }: { route: TransportRoute
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [newStopName, setNewStopName] = useState('')
+  const [pendingRemoval, setPendingRemoval] = useState<{ id: number; name: string } | null>(null)
 
   function invalidate() {
     queryClient.invalidateQueries({ queryKey: queryKeys.routes().slice(0, 1) })
@@ -177,6 +190,7 @@ function ManageStopsModal({ route, open, onOpenChange }: { route: TransportRoute
     mutationFn: (stopId: number) => routesApi.removeStop(route.id, stopId),
     onSuccess: () => {
       toast.success(t('transport.stopRemovedToast'))
+      setPendingRemoval(null)
       invalidate()
     },
     onError: (error) => toast.error((error as ApiError).message),
@@ -195,7 +209,7 @@ function ManageStopsModal({ route, open, onOpenChange }: { route: TransportRoute
                 variant="outline"
                 size="icon"
                 isLoading={removeMutation.isPending && removeMutation.variables === stop.id}
-                onClick={() => removeMutation.mutate(stop.id)}
+                onClick={() => setPendingRemoval({ id: stop.id, name: stop.name })}
                 aria-label={t('transport.removeStopNamed', { name: stop.name })}
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -220,6 +234,16 @@ function ManageStopsModal({ route, open, onOpenChange }: { route: TransportRoute
           </Button>
         </form>
       </div>
+
+      <ConfirmDialog
+        open={pendingRemoval !== null}
+        onOpenChange={(nextOpen) => !nextOpen && setPendingRemoval(null)}
+        title={t('transport.removeStopConfirmTitle')}
+        description={pendingRemoval ? t('transport.removeStopConfirmDescription', { name: pendingRemoval.name }) : undefined}
+        confirmLabel={t('transport.removeStopConfirmLabel')}
+        isLoading={removeMutation.isPending}
+        onConfirm={() => pendingRemoval && removeMutation.mutate(pendingRemoval.id)}
+      />
     </Modal>
   )
 }

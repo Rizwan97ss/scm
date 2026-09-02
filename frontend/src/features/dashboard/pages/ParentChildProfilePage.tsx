@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { parentPortalApi } from '@/api/endpoints/dashboard'
 import { queryKeys } from '@/api/queryKeys'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Avatar, Badge, Skeleton, Tabs } from '@/components/ui'
+import { Avatar, Badge, QueryErrorState, Skeleton, Tabs } from '@/components/ui'
 import { GENDER_LABEL_KEYS, STUDENT_STATUS_LABEL_KEYS } from '@/types/enums'
 import { formatDate } from '@/utils/formatDate'
 import { routePaths } from '@/routes/routePaths'
@@ -18,18 +18,22 @@ export function ParentChildProfilePage() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const studentId = Number(id)
-  const { data: student, isLoading } = useQuery({
+  const { data: student, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.parentChildProfile(studentId),
     queryFn: () => parentPortalApi.childProfile(studentId),
   })
 
-  if (isLoading || !student) {
+  if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-32 w-full" />
       </div>
     )
+  }
+
+  if (isError || !student) {
+    return <QueryErrorState onRetry={refetch} />
   }
 
   return (

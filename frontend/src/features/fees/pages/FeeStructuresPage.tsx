@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -9,6 +9,7 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Badge, Button, Checkbox, ConfirmDialog, DataTable, FormField, Input, Modal, Select, type DataTableColumn } from '@/components/ui'
 import { formatCurrency } from '@/utils/formatCurrency'
@@ -34,16 +35,20 @@ export function FeeStructuresPage() {
   const [form, setForm] = useState<FeeStructurePayload>(EMPTY_FORM)
   const [deleting, setDeleting] = useState<FeeStructure | null>(null)
   const [generateTarget, setGenerateTarget] = useState<FeeStructure | null>(null)
+  const baselineRef = useRef<FeeStructurePayload>(EMPTY_FORM)
+
+  useUnsavedChangesWarning(modalOpen && JSON.stringify(form) !== JSON.stringify(baselineRef.current))
 
   function openCreate() {
     setEditing(null)
     setForm(EMPTY_FORM)
+    baselineRef.current = EMPTY_FORM
     setModalOpen(true)
   }
 
   function openEdit(structure: FeeStructure) {
     setEditing(structure)
-    setForm({
+    const initial: FeeStructurePayload = {
       academic_year_id: structure.academic_year_id,
       grade_level_id: structure.grade_level?.id ?? null,
       fee_category_id: structure.fee_category.id,
@@ -52,7 +57,9 @@ export function FeeStructuresPage() {
       frequency: structure.frequency,
       due_day_of_month: structure.due_day_of_month,
       is_active: structure.is_active,
-    })
+    }
+    setForm(initial)
+    baselineRef.current = initial
     setModalOpen(true)
   }
 
@@ -114,7 +121,7 @@ export function FeeStructuresPage() {
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         emptyTitle={t('common.noItemsYet', { items: t('nav.fee_structures') })}
@@ -152,7 +159,7 @@ export function FeeStructuresPage() {
               placeholder={t('fees.selectFeeCategory')}
             />
           </FormField>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label={t('common.amount')} htmlFor="amount" required>
               <Input id="amount" type="number" min="0.01" step="0.01" required value={form.amount || ''} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} />
             </FormField>
@@ -256,7 +263,7 @@ function GenerateInvoicesModal({
             ]}
           />
         </FormField>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label={t('fees.issueDate')} htmlFor="issue_date" required>
             <Input id="issue_date" type="date" required value={form.issue_date} onChange={(e) => setForm({ ...form, issue_date: e.target.value })} />
           </FormField>

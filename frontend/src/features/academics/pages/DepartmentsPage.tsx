@@ -6,8 +6,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Button, ConfirmDialog, DataTable, FormField, Input, Modal, Textarea, type DataTableColumn } from '@/components/ui'
+import { Button, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, Textarea, type DataTableColumn } from '@/components/ui'
 import type { Department, DepartmentPayload } from '@/types/academic'
 
 const emptyForm: DepartmentPayload = { name: '', code: '', description: '' }
@@ -15,8 +16,14 @@ const emptyForm: DepartmentPayload = { name: '', code: '', description: '' }
 export function DepartmentsPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
-  const { sort, setPage, setSort, queryParams } = usePagination('name', 'name')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(departmentsApi, queryKeys.departments, queryParams, 'Department')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('name', 'name')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    departmentsApi,
+    queryKeys.departments,
+    { ...queryParams, 'filter[name]': debouncedSearch || undefined },
+    'Department'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Department | null>(null)
@@ -84,16 +91,23 @@ export function DepartmentsPage() {
         }
       />
 
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('common.searchByName')} value={search} onChange={setSearch} />
+      </div>
+
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
         isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('nav.departments') })}
+        emptyTitle={debouncedSearch ? t('academics.departmentsEmptyTitleSearch', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('nav.departments') })}
+        emptyDescription={debouncedSearch ? t('academics.departmentsEmptyDescriptionSearch') : undefined}
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.department') }) : t('common.newItem', { item: t('entities.department') })}>

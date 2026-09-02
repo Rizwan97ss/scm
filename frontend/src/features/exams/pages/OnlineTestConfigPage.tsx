@@ -224,7 +224,7 @@ export function OnlineTestConfigPage() {
           <FormField label={t('exams.questionText')} htmlFor="text" required error={errors.text?.message}>
             <Textarea id="text" required {...register('text', { required: t('common.required') })} />
           </FormField>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label={t('exams.defaultMarks')} htmlFor="default_marks" required>
               <Input id="default_marks" type="number" step="0.01" min="0.01" {...register('default_marks', { valueAsNumber: true, required: true, min: 0.01 })} />
             </FormField>

@@ -95,18 +95,21 @@ export function HolidaysPage() {
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
         isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
         emptyTitle={t('common.noItemsYet', { items: t('nav.holidays') })}
+        emptyDescription={t('academics.holidaysEmptyDescription')}
       />
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.holiday') }) : t('common.newItem', { item: t('entities.holiday') })}>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
           <FormField label={t('common.name')} htmlFor="name" required>
             <Input id="name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </FormField>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label={t('academics.startDate')} htmlFor="start_date" required>
               <Input id="start_date" type="date" required value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
             </FormField>

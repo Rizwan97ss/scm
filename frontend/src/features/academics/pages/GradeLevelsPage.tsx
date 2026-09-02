@@ -83,11 +83,14 @@ export function GradeLevelsPage() {
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
         isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
         emptyTitle={t('common.noItemsYet', { items: t('nav.grade_levels') })}
+        emptyDescription={t('academics.gradeLevelsEmptyDescription')}
       />
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.gradeLevel') }) : t('common.newItem', { item: t('entities.gradeLevel') })}>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>

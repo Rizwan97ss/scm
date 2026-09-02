@@ -9,7 +9,7 @@ import { studentsApi } from '@/api/endpoints/students'
 import { queryKeys } from '@/api/queryKeys'
 import { usePermission } from '@/hooks/usePermission'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Avatar, Badge, Dropdown, Skeleton, Tabs } from '@/components/ui'
+import { Avatar, Badge, Dropdown, QueryErrorState, Skeleton, Tabs } from '@/components/ui'
 import { STUDENT_STATUS_LABEL_KEYS, GENDER_LABEL_KEYS } from '@/types/enums'
 import { formatDate } from '@/utils/formatDate'
 import { routePaths } from '@/routes/routePaths'
@@ -30,7 +30,7 @@ export function StudentProfilePage() {
   const { can } = usePermission()
   const [action, setAction] = useState<EnrollmentActionType | null>(null)
 
-  const { data: student, isLoading } = useQuery({ queryKey: queryKeys.student(studentId), queryFn: () => studentsApi.get(studentId) })
+  const { data: student, isLoading, isError, refetch } = useQuery({ queryKey: queryKeys.student(studentId), queryFn: () => studentsApi.get(studentId) })
 
   const inviteMutation = useMutation({
     mutationFn: () => studentsApi.invitePortalUser(studentId),
@@ -40,13 +40,17 @@ export function StudentProfilePage() {
     onError: (error) => toast.error((error as ApiError).message),
   })
 
-  if (isLoading || !student) {
+  if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-48 w-full" />
       </div>
     )
+  }
+
+  if (isError || !student) {
+    return <QueryErrorState onRetry={refetch} />
   }
 
   const canManageEnrollment = can('enrollment.manage')
@@ -107,7 +111,7 @@ export function StudentProfilePage() {
 
       <div className="mb-6 flex flex-col gap-4 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center sm:gap-6">
         <Avatar name={student.full_name} src={student.photo_url} size={64} />
-        <div className="grid flex-1 grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
+        <div className="grid flex-1 grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-5">
           <div>
             <p className="text-muted-foreground">{t('students.admissionNumber')}</p>
             <p className="font-medium">{student.admission_number}</p>
@@ -121,6 +125,10 @@ export function StudentProfilePage() {
             <p className="font-medium">
               {student.grade_level?.name ?? '—'} {student.section ? `- ${student.section.name}` : ''}
             </p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">{t('entities.department')}</p>
+            <p className="font-medium">{student.department?.name ?? '—'}</p>
           </div>
           <div>
             <p className="text-muted-foreground">{t('students.dateOfBirthLabel')}</p>
@@ -138,7 +146,6 @@ export function StudentProfilePage() {
             label: t('students.overviewTab'),
             content: (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <InfoBlock label={t('entities.department')} value={student.department?.name} />
                 <InfoBlock label={t('students.nationalityLabel')} value={student.nationality} />
                 <InfoBlock label={t('students.bloodGroupLabel')} value={student.blood_group} />
                 <InfoBlock label={t('students.rollNumberLabel')} value={student.roll_number} />

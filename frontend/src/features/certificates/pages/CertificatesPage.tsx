@@ -49,9 +49,12 @@ export function CertificatesPage() {
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
         isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         emptyTitle={t('common.noItemsYet', { items: t('nav.issued_certificates') })}
+        emptyDescription={t('certificates.issuedEmptyDescription')}
       />
     </div>
   )

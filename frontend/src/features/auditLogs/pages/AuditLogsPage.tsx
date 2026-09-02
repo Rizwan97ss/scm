@@ -10,7 +10,7 @@ import { formatDateTime } from '@/utils/formatDate'
 export function AuditLogsPage() {
   const { t } = useTranslation()
   const { setPage, queryParams } = usePagination('-created_at')
-  const { data, isLoading } = useQuery({ queryKey: queryKeys.auditLogs(queryParams), queryFn: () => auditLogsApi.list(queryParams) })
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: queryKeys.auditLogs(queryParams), queryFn: () => auditLogsApi.list(queryParams) })
 
   const columns: DataTableColumn<AuditLogEntry>[] = [
     { key: 'created_at', header: t('auditLogs.whenColumn'), render: (row) => formatDateTime(row.created_at) },
@@ -28,9 +28,12 @@ export function AuditLogsPage() {
         data={data?.data}
         rowKey={(row) => row.id}
         isLoading={isLoading}
+        isError={isError}
+        onRetry={refetch}
         meta={data?.meta}
         onPageChange={setPage}
         emptyTitle={t('auditLogs.noActivityYet')}
+        emptyDescription={t('auditLogs.emptyDescription')}
       />
     </div>
   )

@@ -36,7 +36,7 @@ export function AcademicYearsPage() {
     mutationFn: academicYearsApi.activate,
     onSuccess: () => {
       toast.success(t('academics.yearActivatedToast'))
-      queryClient.invalidateQueries({ queryKey: queryKeys.academicYears() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.academicYears().slice(0, 1) })
     },
   })
 
@@ -125,6 +125,8 @@ export function AcademicYearsPage() {
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
         isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
@@ -138,7 +140,7 @@ export function AcademicYearsPage() {
           <FormField label={t('common.name')} htmlFor="name" required hint={t('academics.academicYearNameHint')}>
             <Input id="name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </FormField>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label={t('academics.startDate')} htmlFor="start_date" required>
               <Input id="start_date" type="date" required value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
             </FormField>

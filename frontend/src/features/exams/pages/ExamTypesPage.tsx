@@ -6,7 +6,8 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
-import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, type DataTableColumn } from '@/components/ui'
+import { useDebounce } from '@/hooks/useDebounce'
+import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, type DataTableColumn } from '@/components/ui'
 import type { ExamType, ExamTypePayload } from '@/types/exam'
 
 const EMPTY_FORM: ExamTypePayload = { name: '', code: '', sequence: 0, is_active: true }
@@ -15,8 +16,14 @@ const EMPTY_FORM: ExamTypePayload = { name: '', code: '', sequence: 0, is_active
 export function ExamTypesPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
-  const { sort, setPage, setSort, queryParams } = usePagination('sequence', 'sequence')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(examTypesApi, queryKeys.examTypes, queryParams, 'Exam type')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('sequence', 'name')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    examTypesApi,
+    queryKeys.examTypes,
+    { ...queryParams, 'filter[name]': debouncedSearch || undefined },
+    'Exam type'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<ExamType | null>(null)
@@ -65,7 +72,10 @@ export function ExamTypesPage() {
 
   return (
     <div>
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div className="max-w-sm flex-1">
+          <SearchInput placeholder={t('common.searchByName')} value={search} onChange={setSearch} />
+        </div>
         {can('grading.manage') && <Button onClick={openCreate}><Plus className="h-4 w-4" /> {t('common.newItem', { item: t('entities.examType') })}</Button>}
       </div>
 
@@ -74,11 +84,14 @@ export function ExamTypesPage() {
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
         isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('exams.examTypes') })}
+        emptyTitle={debouncedSearch ? t('exams.examTypesNoMatchTitle', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('exams.examTypes') })}
+        emptyDescription={debouncedSearch ? t('exams.examTypesNoMatchDescription') : undefined}
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.examType') }) : t('common.newItem', { item: t('entities.examType') })}>

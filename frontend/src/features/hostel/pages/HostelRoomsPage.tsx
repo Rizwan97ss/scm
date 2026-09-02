@@ -7,8 +7,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, Select, type DataTableColumn } from '@/components/ui'
+import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, Select, type DataTableColumn } from '@/components/ui'
 import type { HostelRoom, HostelRoomPayload } from '@/types/hostel'
 
 const EMPTY_FORM: HostelRoomPayload = { hostel_id: 0, room_number: '', capacity: 1, is_active: true }
@@ -17,8 +18,14 @@ export function HostelRoomsPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
   const canManage = can('hostel.manage')
-  const { sort, setPage, setSort, queryParams } = usePagination('room_number', 'room_number')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(hostelRoomsApi, queryKeys.hostelRooms, queryParams, 'Room')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('room_number', 'room_number')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    hostelRoomsApi,
+    queryKeys.hostelRooms,
+    { ...queryParams, 'filter[room_number]': debouncedSearch || undefined },
+    'Room'
+  )
   const { data: hostels } = useQuery({ queryKey: queryKeys.hostels({ per_page: 100 }), queryFn: () => hostelsApi.list({ per_page: 100 }) })
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -85,16 +92,21 @@ export function HostelRoomsPage() {
         }
       />
 
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('hostel.roomsSearchPlaceholder')} value={search} onChange={setSearch} />
+      </div>
+
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('hostel.roomsTitle') })}
+        emptyTitle={debouncedSearch ? t('hostel.roomsEmptyTitleSearch', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('hostel.roomsTitle') })}
+        emptyDescription={debouncedSearch ? t('hostel.roomsEmptyDescriptionSearch') : undefined}
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.hostelRoom') }) : t('common.newItem', { item: t('entities.hostelRoom') })}>

@@ -6,8 +6,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, Select, type DataTableColumn } from '@/components/ui'
+import { Badge, Button, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, Select, type DataTableColumn } from '@/components/ui'
 import { HOSTEL_TYPE_LABEL_KEYS, HOSTEL_TYPES } from '@/types/hostel'
 import type { Hostel, HostelPayload } from '@/types/hostel'
 
@@ -17,8 +18,14 @@ export function HostelsPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
   const canManage = can('hostel.manage')
-  const { sort, setPage, setSort, queryParams } = usePagination('name', 'name')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(hostelsApi, queryKeys.hostels, queryParams, 'Hostel')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('name', 'name')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    hostelsApi,
+    queryKeys.hostels,
+    { ...queryParams, 'filter[name]': debouncedSearch || undefined },
+    'Hostel'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Hostel | null>(null)
@@ -91,16 +98,21 @@ export function HostelsPage() {
         }
       />
 
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('hostel.hostelsSearchPlaceholder')} value={search} onChange={setSearch} />
+      </div>
+
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('nav.hostels') })}
+        emptyTitle={debouncedSearch ? t('hostel.hostelsEmptyTitleSearch', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('nav.hostels') })}
+        emptyDescription={debouncedSearch ? t('hostel.hostelsEmptyDescriptionSearch') : undefined}
       />
 
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.hostel') }) : t('common.newItem', { item: t('entities.hostel') })}>
@@ -119,7 +131,7 @@ export function HostelsPage() {
           <FormField label={t('common.address')} htmlFor="address">
             <Input id="address" value={form.address ?? ''} onChange={(e) => setForm({ ...form, address: e.target.value })} />
           </FormField>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label={t('hostel.wardenNameLabel')} htmlFor="warden_name">
               <Input id="warden_name" value={form.warden_name ?? ''} onChange={(e) => setForm({ ...form, warden_name: e.target.value })} />
             </FormField>

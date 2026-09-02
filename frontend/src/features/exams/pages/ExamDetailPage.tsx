@@ -9,7 +9,7 @@ import { sectionsApi, subjectsApi } from '@/api/endpoints/academics'
 import { queryKeys } from '@/api/queryKeys'
 import { usePermission } from '@/hooks/usePermission'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Badge, Button, Checkbox, FormField, Input, Modal, Select, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { Badge, Button, Checkbox, FormField, Input, Modal, QueryErrorState, Select, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { routePaths } from '@/routes/routePaths'
 import { fromDatetimeLocalInput, toDatetimeLocalInput } from '@/utils/formatDate'
 import type { ExamSubject, ExamSubjectComponentInput, ExamSubjectGroup, ExamSubjectGroupInput } from '@/types/exam'
@@ -51,7 +51,7 @@ export function ExamDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const { data: exam, isLoading } = useQuery({ queryKey: queryKeys.exam(id), queryFn: () => examsApi.get(id) })
+  const { data: exam, isLoading, isError, refetch } = useQuery({ queryKey: queryKeys.exam(id), queryFn: () => examsApi.get(id) })
   const { data: subjects } = useQuery({ queryKey: queryKeys.subjects({ per_page: 100 }), queryFn: () => subjectsApi.list({ per_page: 100 }) })
   const { data: sections } = useQuery({ queryKey: queryKeys.sections({ per_page: 100 }), queryFn: () => sectionsApi.list({ per_page: 100 }) })
   // Only the exams.edit-gated "Add Subject"/"Add Component" modals consume this — a
@@ -140,13 +140,17 @@ export function ExamDetailPage() {
     setComponentModalOpen(true)
   }
 
-  if (isLoading || !exam) {
+  if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-48 w-full" />
       </div>
     )
+  }
+
+  if (isError || !exam) {
+    return <QueryErrorState onRetry={refetch} />
   }
 
   return (
@@ -246,7 +250,7 @@ export function ExamDetailPage() {
 
       <Modal open={groupModalOpen} onOpenChange={setGroupModalOpen} title={t('exams.addSubjectToExam')} size="lg">
         <form onSubmit={(e) => { e.preventDefault(); addGroupMutation.mutate() }} className="flex flex-col gap-4" noValidate>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label={t('entities.subject')} htmlFor="subject_id" required>
               <Select id="subject_id" value={groupForm.subject_id ? String(groupForm.subject_id) : undefined} onValueChange={(v) => setGroupForm({ ...groupForm, subject_id: Number(v) })} options={(subjects?.data ?? []).map((s) => ({ value: String(s.id), label: s.name }))} />
             </FormField>
@@ -301,7 +305,7 @@ function ComponentFields({
   const { t } = useTranslation()
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormField label={t('entities.componentType')} htmlFor="assessment_component_type_id" required>
           <Select
             id="assessment_component_type_id"
@@ -326,7 +330,7 @@ function ComponentFields({
       )}
 
       {isAutoGraded && value.is_online && (
-        <div className="grid grid-cols-2 gap-4 rounded-md border border-border p-3">
+        <div className="grid grid-cols-1 gap-4 rounded-md border border-border p-3 sm:grid-cols-2">
           <FormField label={t('exams.durationMinutes')} htmlFor="duration_minutes">
             <Input id="duration_minutes" type="number" min="1" value={value.duration_minutes ?? ''} onChange={(e) => onChange({ ...value, duration_minutes: e.target.value ? Number(e.target.value) : null })} />
           </FormField>

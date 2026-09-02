@@ -39,9 +39,9 @@ export function InvoicesListPage() {
   const columns: DataTableColumn<Invoice>[] = [
     { key: 'invoice_number', header: t('fees.invoiceNumber'), render: (row) => <span className="font-medium">{row.invoice_number}</span> },
     { key: 'student', header: t('entities.student'), render: (row) => row.student?.full_name ?? '—' },
-    { key: 'issue_date', header: t('fees.issued'), render: (row) => formatDate(row.issue_date) },
+    { key: 'issue_date', header: t('fees.issued'), hideBelow: 'md', render: (row) => formatDate(row.issue_date) },
     { key: 'due_date', header: t('fees.dueDate'), render: (row) => formatDate(row.due_date) },
-    { key: 'total', header: t('fees.total'), align: 'right', render: (row) => formatCurrency(row.total) },
+    { key: 'total', header: t('fees.total'), align: 'right', hideBelow: 'md', render: (row) => formatCurrency(row.total) },
     { key: 'balance', header: t('fees.balanceStat'), align: 'right', render: (row) => formatCurrency(row.balance) },
     {
       key: 'status',
@@ -73,7 +73,7 @@ export function InvoicesListPage() {
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
-        isLoading={listQuery.isLoading}
+        isLoading={listQuery.isLoading} isError={listQuery.isError} onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         onRowClick={(row) => navigate(routePaths.invoiceDetail(row.id))}
@@ -124,7 +124,7 @@ function CreateInvoiceModal({ open, onOpenChange }: { open: boolean; onOpenChang
   return (
     <Modal open={open} onOpenChange={onOpenChange} title={t('common.newItem', { item: t('entities.invoice') })} size="lg">
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label={t('entities.student')} htmlFor="student_id" required>
             <Select
               id="student_id"
@@ -144,7 +144,7 @@ function CreateInvoiceModal({ open, onOpenChange }: { open: boolean; onOpenChang
             />
           </FormField>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label={t('fees.issueDate')} htmlFor="issue_date" required>
             <Input id="issue_date" type="date" required value={form.issue_date} onChange={(e) => setForm({ ...form, issue_date: e.target.value })} />
           </FormField>
@@ -161,29 +161,34 @@ function CreateInvoiceModal({ open, onOpenChange }: { open: boolean; onOpenChang
             </Button>
           </div>
           {form.items.map((item, index) => (
-            <div key={index} className="grid grid-cols-12 items-end gap-2 rounded-md border border-border p-2">
-              <div className="col-span-3">
-                <label className="text-xs text-muted-foreground">{t('entities.category')}</label>
+            <div key={index} className="grid grid-cols-1 items-end gap-2 rounded-md border border-border p-2 sm:grid-cols-12">
+              <FormField label={t('entities.category')} htmlFor={`item-${index}-category`} className="sm:col-span-3">
                 <Select
+                  id={`item-${index}-category`}
                   value={item.fee_category_id ? String(item.fee_category_id) : undefined}
                   onValueChange={(value) => updateItem(index, { fee_category_id: Number(value) })}
                   options={(categories?.data ?? []).map((c) => ({ value: String(c.id), label: c.name }))}
                   placeholder={t('entities.category')}
                 />
-              </div>
-              <div className="col-span-4">
-                <label className="text-xs text-muted-foreground">{t('common.description')}</label>
-                <Input required value={item.description} onChange={(e) => updateItem(index, { description: e.target.value })} />
-              </div>
-              <div className="col-span-2">
-                <label className="text-xs text-muted-foreground">{t('common.quantity')}</label>
-                <Input type="number" min="1" value={item.quantity ?? 1} onChange={(e) => updateItem(index, { quantity: Number(e.target.value) })} />
-              </div>
-              <div className="col-span-2">
-                <label className="text-xs text-muted-foreground">{t('fees.unitAmount')}</label>
-                <Input type="number" min="0.01" step="0.01" required value={item.unit_amount || ''} onChange={(e) => updateItem(index, { unit_amount: Number(e.target.value) })} />
-              </div>
-              <div className="col-span-1">
+              </FormField>
+              <FormField label={t('common.description')} htmlFor={`item-${index}-description`} className="sm:col-span-4">
+                <Input id={`item-${index}-description`} required value={item.description} onChange={(e) => updateItem(index, { description: e.target.value })} />
+              </FormField>
+              <FormField label={t('common.quantity')} htmlFor={`item-${index}-quantity`} className="sm:col-span-2">
+                <Input id={`item-${index}-quantity`} type="number" min="1" value={item.quantity ?? 1} onChange={(e) => updateItem(index, { quantity: Number(e.target.value) })} />
+              </FormField>
+              <FormField label={t('fees.unitAmount')} htmlFor={`item-${index}-unit-amount`} className="sm:col-span-2">
+                <Input
+                  id={`item-${index}-unit-amount`}
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  required
+                  value={item.unit_amount || ''}
+                  onChange={(e) => updateItem(index, { unit_amount: Number(e.target.value) })}
+                />
+              </FormField>
+              <div className="sm:col-span-1">
                 <Button
                   type="button"
                   variant="outline"

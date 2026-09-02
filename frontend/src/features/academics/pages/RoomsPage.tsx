@@ -6,8 +6,9 @@ import { queryKeys } from '@/api/queryKeys'
 import { useCrudResource } from '@/hooks/useCrudResource'
 import { usePagination } from '@/hooks/usePagination'
 import { usePermission } from '@/hooks/usePermission'
+import { useDebounce } from '@/hooks/useDebounce'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Button, ConfirmDialog, DataTable, FormField, Input, Modal, Select, type DataTableColumn } from '@/components/ui'
+import { Button, ConfirmDialog, DataTable, FormField, Input, Modal, SearchInput, Select, type DataTableColumn } from '@/components/ui'
 import { ROOM_TYPES } from '@/types/enums'
 import { ROOM_TYPE_TRANSLATION_KEY } from '../enumLabels'
 import type { Room, RoomPayload } from '@/types/academic'
@@ -17,8 +18,14 @@ const emptyForm: RoomPayload = { name: '', code: '', capacity: null, type: 'clas
 export function RoomsPage() {
   const { t } = useTranslation()
   const { can } = usePermission()
-  const { sort, setPage, setSort, queryParams } = usePagination('name', 'name')
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(roomsApi, queryKeys.rooms, queryParams, 'Room')
+  const { sort, search, setPage, setSort, setSearch, queryParams } = usePagination('name', 'name')
+  const debouncedSearch = useDebounce(search)
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource(
+    roomsApi,
+    queryKeys.rooms,
+    { ...queryParams, 'filter[name]': debouncedSearch || undefined },
+    'Room'
+  )
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Room | null>(null)
@@ -81,16 +88,22 @@ export function RoomsPage() {
           )
         }
       />
+      <div className="mb-4 max-w-sm">
+        <SearchInput placeholder={t('common.searchByName')} value={search} onChange={setSearch} />
+      </div>
       <DataTable
         columns={columns}
         data={listQuery.data?.data}
         rowKey={(row) => row.id}
         isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         sort={sort}
         onSortChange={setSort}
-        emptyTitle={t('common.noItemsYet', { items: t('nav.rooms') })}
+        emptyTitle={debouncedSearch ? t('academics.roomsEmptyTitleSearch', { query: debouncedSearch }) : t('common.noItemsYet', { items: t('nav.rooms') })}
+        emptyDescription={debouncedSearch ? t('academics.roomsEmptyDescriptionSearch') : undefined}
       />
       <Modal open={modalOpen} onOpenChange={setModalOpen} title={editing ? t('common.editItem', { item: t('entities.room') }) : t('common.newItem', { item: t('entities.room') })}>
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>

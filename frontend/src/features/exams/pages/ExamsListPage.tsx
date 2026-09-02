@@ -67,6 +67,8 @@ export function ExamsListPage() {
         data={listQuery.data?.data}
         rowKey={(r) => r.id}
         isLoading={listQuery.isLoading}
+        isError={listQuery.isError}
+        onRetry={listQuery.refetch}
         meta={listQuery.data?.meta}
         onPageChange={setPage}
         onRowClick={(row) => navigate(routePaths.examDetail(row.id))}

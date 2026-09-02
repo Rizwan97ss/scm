@@ -8,6 +8,7 @@ import { examMarksApi, examsApi } from '@/api/endpoints/exams'
 import { studentsApi } from '@/api/endpoints/students'
 import { queryKeys } from '@/api/queryKeys'
 import { usePermission } from '@/hooks/usePermission'
+import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button, Checkbox, Input, Modal, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 import { routePaths } from '@/routes/routePaths'
@@ -46,6 +47,7 @@ export function MarksEntryPage() {
   })
 
   const [entries, setEntries] = useState<Record<number, EntryState>>({})
+  const [isDirty, setIsDirty] = useState(false)
 
   useEffect(() => {
     if (!roster) return
@@ -60,7 +62,15 @@ export function MarksEntryPage() {
       }
     }
     setEntries(next)
+    setIsDirty(false)
   }, [roster, existingMarks])
+
+  useUnsavedChangesWarning(isDirty)
+
+  function updateEntry(studentId: number, entry: EntryState) {
+    setEntries((prev) => ({ ...prev, [studentId]: entry }))
+    setIsDirty(true)
+  }
 
   const saveMutation = useMutation({
     mutationFn: () =>
@@ -75,6 +85,7 @@ export function MarksEntryPage() {
       ),
     onSuccess: (records) => {
       toast.success(t('exams.marksSavedToast', { count: records.length }))
+      setIsDirty(false)
       queryClient.invalidateQueries({ queryKey: queryKeys.examMarks(examSubjectIdNum) })
     },
     onError: (error) => toast.error(formatApiError(error as ApiError)),
@@ -154,13 +165,13 @@ export function MarksEntryPage() {
                         className="h-8 w-24"
                         disabled={entry.is_absent}
                         value={entry.marks_obtained}
-                        onChange={(e) => setEntries((prev) => ({ ...prev, [student.id]: { ...entry, marks_obtained: e.target.value } }))}
+                        onChange={(e) => updateEntry(student.id, { ...entry, marks_obtained: e.target.value })}
                       />
                     </TableCell>
                     <TableCell>
                       <Checkbox
                         checked={entry.is_absent}
-                        onCheckedChange={(checked) => setEntries((prev) => ({ ...prev, [student.id]: { ...entry, is_absent: checked, marks_obtained: checked ? '' : entry.marks_obtained } }))}
+                        onCheckedChange={(checked) => updateEntry(student.id, { ...entry, is_absent: checked, marks_obtained: checked ? '' : entry.marks_obtained })}
                         aria-label={t('exams.markAbsentAriaLabel', { name: student.full_name })}
                       />
                     </TableCell>
@@ -169,7 +180,7 @@ export function MarksEntryPage() {
                         className="h-8 w-48"
                         placeholder={t('common.optionalRemarks')}
                         value={entry.remarks}
-                        onChange={(e) => setEntries((prev) => ({ ...prev, [student.id]: { ...entry, remarks: e.target.value } }))}
+                        onChange={(e) => updateEntry(student.id, { ...entry, remarks: e.target.value })}
                       />
                     </TableCell>
                   </TableRow>
