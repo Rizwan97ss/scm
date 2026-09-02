@@ -150,9 +150,3 @@ export interface Guardian {
     is_primary: boolean
   }[]
 }
-
-export interface StudentImportResult {
-  imported_count: number
-  failed_count: number
-  failures: { row: number; attribute: string; errors: string[] }[]
-}

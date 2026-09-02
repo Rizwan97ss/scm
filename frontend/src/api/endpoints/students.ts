@@ -8,9 +8,9 @@ import type {
   StudentDocument,
   StudentEnrollmentHistoryEntry,
   StudentGuardianInput,
-  StudentImportResult,
   StudentPayload,
 } from '@/types/student'
+import type { ImportResult } from '@/types/import'
 
 export const studentsApi = {
   list: async (params?: ListQueryParams): Promise<PaginatedResponse<Student>> => {
@@ -102,10 +102,11 @@ export const studentsApi = {
   },
 
   importTemplateUrl: '/students/import/template',
-  import: async (file: File): Promise<StudentImportResult> => {
+  import: async (file: File, dryRun = false): Promise<ImportResult> => {
     const formData = new FormData()
     formData.append('file', file)
-    const { data } = await httpClient.post<ApiResponse<StudentImportResult>>('/students/import', formData, {
+    if (dryRun) formData.append('dry_run', '1')
+    const { data } = await httpClient.post<ApiResponse<ImportResult>>('/students/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     return data.data
