@@ -1,35 +1,35 @@
+import { Check, Monitor, Moon, Sun } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Moon, Sun, SunMoon } from 'lucide-react'
 import { Dropdown, type DropdownItem } from '@/components/ui/Dropdown'
-import { Button } from '@/components/ui/Button'
 import { useTheme } from '@/context/ThemeContext'
 
-/**
- * The light/dark/system theming itself (CSS tokens, `data-theme` attribute,
- * localStorage persistence) already existed in ThemeContext — this was the
- * missing piece: nothing anywhere called `setPreference`, so a viewer could
- * only ever get dark mode by matching OS-level `prefers-color-scheme`, never
- * by choosing it. Mirrors LanguageSwitcher's placement/shape (see Topbar.tsx,
- * PlatformShell.tsx) so the two sit together consistently across shells.
- */
+const OPTIONS = [
+  { value: 'light', labelKey: 'common.themeLight', icon: Sun },
+  { value: 'dark', labelKey: 'common.themeDark', icon: Moon },
+  { value: 'system', labelKey: 'common.themeSystem', icon: Monitor },
+] as const
+
 export function ThemeSwitcher() {
   const { t } = useTranslation()
   const { preference, setPreference } = useTheme()
+  const ActiveIcon = OPTIONS.find((o) => o.value === preference)?.icon ?? Monitor
 
-  const items: DropdownItem[] = [
-    { label: t('common.themeLight'), icon: <Sun className="h-4 w-4" />, onSelect: () => setPreference('light') },
-    { label: t('common.themeDark'), icon: <Moon className="h-4 w-4" />, onSelect: () => setPreference('dark') },
-    { label: t('common.themeSystem'), icon: <SunMoon className="h-4 w-4" />, onSelect: () => setPreference('system') },
-  ]
-
-  const Icon = preference === 'light' ? Sun : preference === 'dark' ? Moon : SunMoon
+  const items: DropdownItem[] = OPTIONS.map((option) => ({
+    label: t(option.labelKey),
+    icon: option.value === preference ? <Check className="h-4 w-4" /> : <option.icon className="h-4 w-4" />,
+    onSelect: () => setPreference(option.value),
+  }))
 
   return (
     <Dropdown
       trigger={
-        <Button variant="ghost" size="icon" aria-label={t('common.theme')}>
-          <Icon className="h-5 w-5" />
-        </Button>
+        <button
+          type="button"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={t('common.theme')}
+        >
+          <ActiveIcon className="h-4 w-4" />
+        </button>
       }
       items={items}
     />

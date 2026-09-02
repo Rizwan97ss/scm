@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { Globe } from 'lucide-react'
+import { Check, Languages } from 'lucide-react'
 import { Dropdown, type DropdownItem } from '@/components/ui/Dropdown'
-import { Button } from '@/components/ui/Button'
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n'
 
 /**
@@ -17,15 +16,20 @@ export function LanguageSwitcher() {
 
   const items: DropdownItem[] = SUPPORTED_LANGUAGES.map((lang) => ({
     label: lang.nativeLabel,
+    icon: lang.code === i18n.language ? <Check className="h-4 w-4" /> : <span className="h-4 w-4" />,
     onSelect: () => i18n.changeLanguage(lang.code),
   }))
 
   return (
     <Dropdown
       trigger={
-        <Button variant="ghost" size="icon" aria-label={t('common.language')}>
-          <Globe className="h-5 w-5" />
-        </Button>
+        <button
+          type="button"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={t('common.language')}
+        >
+          <Languages className="h-4 w-4" />
+        </button>
       }
       items={items}
     />
