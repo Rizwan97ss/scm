@@ -68,6 +68,9 @@ use App\Models\Vehicle;
 use App\Models\Visitor;
 use App\Services\AnnouncementService;
 use App\Services\AttendanceService;
+use App\Services\CertificateService;
+use App\Services\FeeNumberService;
+use App\Services\PayrollService;
 use App\Services\StudentEnrollmentService;
 use App\Services\StudentIdGeneratorService;
 use Illuminate\Database\Seeder;
@@ -656,7 +659,7 @@ class TenantDemoDataSeeder extends Seeder
         }
 
         $creator = $this->staff['accountant'];
-        $invoiceSeq = 1;
+        $feeNumbers = app(FeeNumberService::class);
 
         foreach (array_slice($this->students, 0, 30) as $student) {
             if (fake()->boolean(30)) {
@@ -677,7 +680,7 @@ class TenantDemoDataSeeder extends Seeder
             $discountTotal = fake()->boolean(30) ? round($subtotal * 0.1, 2) : 0;
             $total = $subtotal - $discountTotal;
 
-            $invoiceNumber = 'INV-2026-'.str_pad((string) $invoiceSeq++, 5, '0', STR_PAD_LEFT);
+            $invoiceNumber = $feeNumbers->nextInvoiceNumber($this->school);
 
             $invoice = Invoice::query()->create([
                 'student_id' => $student->id,
@@ -716,7 +719,7 @@ class TenantDemoDataSeeder extends Seeder
                 Payment::query()->create([
                     'invoice_id' => $invoice->id,
                     'student_id' => $student->id,
-                    'payment_number' => 'PAY-2026-'.str_pad((string) $invoiceSeq, 5, '0', STR_PAD_LEFT),
+                    'payment_number' => $feeNumbers->nextPaymentNumber($this->school),
                     'amount' => $amountPaid,
                     'method' => fake()->randomElement(PaymentMethod::cases())->value,
                     'gateway' => 'manual',
@@ -738,7 +741,7 @@ class TenantDemoDataSeeder extends Seeder
                 $creditAmount = round($total * 0.05, 2);
                 CreditNote::query()->create([
                     'invoice_id' => $invoice->id,
-                    'credit_note_number' => 'CN-2026-'.str_pad((string) $invoiceSeq, 5, '0', STR_PAD_LEFT),
+                    'credit_note_number' => $feeNumbers->nextCreditNoteNumber($this->school),
                     'amount' => $creditAmount,
                     'reason' => 'Goodwill adjustment',
                     'issued_by' => $creator->id,
@@ -923,6 +926,7 @@ class TenantDemoDataSeeder extends Seeder
         }
 
         $generator = $this->staff['hr'];
+        $payroll = app(PayrollService::class);
         foreach ([now()->subMonth(), now()] as $monthDate) {
             foreach ($structures as $handle => $structure) {
                 $net = $structure->basic_salary + $structure->allowances - $structure->deductions;
@@ -930,7 +934,7 @@ class TenantDemoDataSeeder extends Seeder
                 Payslip::query()->create([
                     'user_id' => $this->staff[$handle]->id,
                     'salary_structure_id' => $structure->id,
-                    'payslip_number' => 'PS-'.$monthDate->format('Ym').'-'.str_pad((string) (array_search($handle, array_keys($structures), true) + 1), 4, '0', STR_PAD_LEFT),
+                    'payslip_number' => $payroll->nextPayslipNumber($this->school),
                     'month' => (int) $monthDate->format('m'),
                     'year' => (int) $monthDate->format('Y'),
                     'basic_salary' => $structure->basic_salary,
@@ -998,7 +1002,7 @@ class TenantDemoDataSeeder extends Seeder
         }
 
         $issuer = $this->staff['admin'];
-        $certSeq = 1;
+        $certificates = app(CertificateService::class);
         foreach (array_slice($this->students, 0, 6) as $student) {
             $template = $templateModels[array_rand($templateModels)];
             $gradeLevel = $this->findGradeLevel($student->current_grade_level_id);
@@ -1013,7 +1017,7 @@ class TenantDemoDataSeeder extends Seeder
             Certificate::query()->create([
                 'student_id' => $student->id,
                 'certificate_template_id' => $template->id,
-                'certificate_number' => 'CERT-2026-'.str_pad((string) $certSeq++, 4, '0', STR_PAD_LEFT),
+                'certificate_number' => $certificates->nextCertificateNumber($this->school),
                 'issued_date' => now()->subDays(fake()->numberBetween(1, 60))->toDateString(),
                 'issued_by' => $issuer->id,
                 'content' => $content,

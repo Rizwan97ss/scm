@@ -31,7 +31,8 @@ class PayrollService
      * service would be a confusing cross-module dependency for what's
      * really just IdSequenceService used a second time.
      */
-    private function nextPayslipNumber(School $school): string
+    /** Public so TenantDemoDataSeeder can reuse it — same reasoning as CertificateService::nextCertificateNumber(). */
+    public function nextPayslipNumber(School $school): string
     {
         $year = Carbon::now()->year;
         $format = (string) $this->settings->get('payroll.payslip_number_format', 'PS-{YEAR}-{SEQ}', $school->id);
