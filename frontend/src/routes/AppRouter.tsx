@@ -21,6 +21,7 @@ const SignupPage = lazy(() => import('@/features/signup/pages/SignupPage').then(
 const SignupCompletePage = lazy(() => import('@/features/signup/pages/SignupCompletePage').then((m) => ({ default: m.SignupCompletePage })))
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })))
 const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })))
+const VerifyCertificatePage = lazy(() => import('@/features/certificates/pages/VerifyCertificatePage').then((m) => ({ default: m.VerifyCertificatePage })))
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })))
 const HelpGuidePage = lazy(() => import('@/features/help/pages/HelpGuidePage').then((m) => ({ default: m.HelpGuidePage })))
 const MfaSetupPage = lazy(() => import('@/features/auth/pages/MfaSetupPage').then((m) => ({ default: m.MfaSetupPage })))
@@ -129,6 +130,8 @@ export function AppRouter() {
         <Route path={routePaths.signupComplete} element={<SignupCompletePage />} />
         <Route path={routePaths.forgotPassword} element={<ForgotPasswordPage />} />
         <Route path={routePaths.resetPassword} element={<ResetPasswordPage />} />
+        {/* Public, not ProtectedRoute — a scanned certificate QR code has no login of its own. */}
+        <Route path={routePaths.verifyCertificate()} element={<VerifyCertificatePage />} />
 
         <Route element={<ProtectedRoute />}>
           {/* Outside RequireMfaSetup on purpose — the setup page must stay

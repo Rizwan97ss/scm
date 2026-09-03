@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
-#[Fillable(['school_id', 'student_id', 'certificate_template_id', 'certificate_number', 'issued_date', 'issued_by', 'content'])]
+#[Fillable(['school_id', 'student_id', 'certificate_template_id', 'certificate_number', 'verification_token', 'issued_date', 'issued_by', 'content'])]
 class Certificate extends Model
 {
     use HasFactory;
@@ -18,6 +19,20 @@ class Certificate extends Model
         return [
             'issued_date' => 'date',
         ];
+    }
+
+    /**
+     * Every row gets a verification_token, not just ones created through
+     * CertificateService::issue() — same "always set, regardless of call
+     * site" reasoning as User::uuid's own creating hook. A scannable QR
+     * code must never point at a row that happens to have none because it
+     * was seeded or created some other way.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Certificate $certificate) {
+            $certificate->verification_token ??= (string) Str::uuid();
+        });
     }
 
     public function student(): BelongsTo

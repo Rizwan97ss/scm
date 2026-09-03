@@ -185,6 +185,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         // ---- Public within this tenant (no auth, but tenant-resolved) -----
         Route::get('settings/public', [SettingController::class, 'public'])->name('settings.public');
+        // Scannable-QR verification — throttled since the token is a UUID
+        // (unguessable) but this is still an unauthenticated endpoint.
+        Route::get('certificates/verify/{token}', [CertificateController::class, 'verify'])
+            ->name('certificates.verify')->middleware('throttle:30,1');
 
         // ---- Everything below requires an authenticated tenant session ---
         // (EnsureSessionPasswordIsCurrent, invalidating a session once its

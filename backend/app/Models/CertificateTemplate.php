@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['school_id', 'name', 'type', 'body', 'is_active'])]
+#[Fillable(['school_id', 'name', 'type', 'body', 'layout', 'signatories', 'is_active'])]
 class CertificateTemplate extends Model
 {
     use HasFactory;
@@ -16,6 +16,7 @@ class CertificateTemplate extends Model
     {
         return [
             'is_active' => 'boolean',
+            'signatories' => 'array',
         ];
     }
 

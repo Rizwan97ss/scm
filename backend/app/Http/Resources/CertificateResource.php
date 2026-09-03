@@ -16,6 +16,7 @@ class CertificateResource extends JsonResource
             'student' => $this->whenLoaded('student', fn () => ['id' => $this->student->id, 'full_name' => $this->student->full_name]),
             'certificate_template' => $this->whenLoaded('certificateTemplate', fn () => ['id' => $this->certificateTemplate->id, 'name' => $this->certificateTemplate->name, 'type' => $this->certificateTemplate->type]),
             'certificate_number' => $this->certificate_number,
+            'verification_token' => $this->verification_token,
             'issued_date' => $this->issued_date?->toDateString(),
             'issued_by' => $this->whenLoaded('issuedBy', fn () => ['id' => $this->issuedBy->id, 'full_name' => $this->issuedBy->full_name]),
             'content' => $this->content,

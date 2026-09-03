@@ -16,6 +16,8 @@ class CertificateTemplateResource extends JsonResource
             'name' => $this->name,
             'type' => $this->type,
             'body' => $this->body,
+            'layout' => $this->layout,
+            'signatories' => $this->signatories ?? [],
             'is_active' => $this->is_active,
             'created_at' => $this->created_at?->toIso8601String(),
         ];
