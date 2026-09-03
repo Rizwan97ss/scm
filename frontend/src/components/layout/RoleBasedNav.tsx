@@ -8,29 +8,46 @@ import { cn } from '@/utils/cn'
 import { navLabelKey } from '@/utils/navLabel'
 import type { NavGroupConfig } from '@/config/navigation'
 
-const itemLinkClasses = ({ isActive }: { isActive: boolean }) =>
+/**
+ * `nested` sets a sub-item apart from its parent group header — deeper
+ * inset (ps-9 vs the header's px-3) plus a smaller icon (h-4 vs h-5) so the
+ * hierarchy reads correctly at a glance. Both use logical start/end
+ * properties, not left/right, so the extra inset lands on the correct side
+ * under RTL instead of always indenting from the physical left.
+ *
+ * Deliberately NOT distinguished via text-transform/uppercase (see the
+ * group header below) — uppercase is a no-op in scripts with no case
+ * distinction (Arabic, Urdu, Hindi, CJK, ...), so it can't be the only
+ * signal separating a nav level from a sub-nav level for every locale.
+ */
+const itemLinkClasses = (nested: boolean) => ({ isActive }: { isActive: boolean }) =>
   cn(
-    'flex items-center gap-3 rounded-md border-s-2 px-3 py-2 text-sm font-medium transition-colors',
+    'flex items-center gap-3 rounded-md border-s-2 py-2 text-sm font-medium transition-colors',
+    nested ? 'ps-9 pe-3' : 'px-3',
     'hover:bg-muted',
     isActive ? 'border-primary bg-primary/10 text-primary' : 'border-transparent text-foreground'
   )
+
+const flatItemLinkClasses = itemLinkClasses(false)
+const nestedItemLinkClasses = itemLinkClasses(true)
 
 /**
  * Every group except the single flat "Overview" entry (see NavGroupConfig's
  * `flat` docblock) renders as a collapsible parent menu with its own icon —
  * expand/collapse in the full-width sidebar, or a flyout menu off the icon
  * when the sidebar is collapsed to its icon rail (see Sidebar.tsx's
- * `collapsed` state, threaded down here).
+ * `collapsed` state, threaded down here). Collapsed (closed) by default —
+ * expand only the groups the user actually opens.
  */
 export function RoleBasedNav({ groups, collapsed = false, onNavigate }: { groups: NavGroupConfig[]; collapsed?: boolean; onNavigate?: () => void }) {
   const { can } = usePermission()
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
-  const [closedGroups, setClosedGroups] = useState<Set<string>>(new Set())
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
 
   function toggleGroup(label: string) {
-    setClosedGroups((prev) => {
+    setOpenGroups((prev) => {
       const next = new Set(prev)
       if (next.has(label)) next.delete(label)
       else next.add(label)
@@ -49,7 +66,7 @@ export function RoleBasedNav({ groups, collapsed = false, onNavigate }: { groups
         if (group.flat) {
           return (
             <div key={group.label} className="flex w-full flex-col gap-1 pb-5">
-              {!collapsed && <p className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{groupLabel}</p>}
+              {!collapsed && <p className="px-3 text-sm font-semibold text-muted-foreground">{groupLabel}</p>}
               {visibleItems.map((item) => {
                 const itemLabel = t(navLabelKey(item.label), item.label)
                 return (
@@ -60,7 +77,7 @@ export function RoleBasedNav({ groups, collapsed = false, onNavigate }: { groups
                     onClick={onNavigate}
                     title={collapsed ? itemLabel : undefined}
                     aria-label={collapsed ? itemLabel : undefined}
-                    className={itemLinkClasses}
+                    className={flatItemLinkClasses}
                   >
                     {({ isActive }) => (
                       <>
@@ -108,7 +125,7 @@ export function RoleBasedNav({ groups, collapsed = false, onNavigate }: { groups
           )
         }
 
-        const isOpen = !closedGroups.has(group.label)
+        const isOpen = openGroups.has(group.label)
 
         return (
           <div key={group.label} className="flex w-full flex-col gap-1">
@@ -117,19 +134,19 @@ export function RoleBasedNav({ groups, collapsed = false, onNavigate }: { groups
               onClick={() => toggleGroup(group.label)}
               aria-expanded={isOpen}
               className={cn(
-                'flex items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-colors hover:bg-muted',
-                isGroupActive ? 'text-primary' : 'text-muted-foreground'
+                'flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors hover:bg-muted',
+                isGroupActive ? 'text-primary' : 'text-foreground'
               )}
             >
-              <group.icon className="h-4 w-4 shrink-0" />
+              <group.icon className="h-5 w-5 shrink-0" />
               <span className="flex-1 text-start">{groupLabel}</span>
-              <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform', !isOpen && '-rotate-90 rtl:rotate-90')} />
+              <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform', !isOpen && '-rotate-90 rtl:rotate-90')} />
             </button>
             {isOpen &&
               visibleItems.map((item) => {
                 const itemLabel = t(navLabelKey(item.label), item.label)
                 return (
-                  <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={onNavigate} className={itemLinkClasses}>
+                  <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={onNavigate} className={nestedItemLinkClasses}>
                     {({ isActive }) => (
                       <>
                         <item.icon className={cn('h-4 w-4 shrink-0', isActive && 'text-primary')} />
