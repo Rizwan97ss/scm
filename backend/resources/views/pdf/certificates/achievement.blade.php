@@ -4,20 +4,25 @@
     <meta charset="utf-8">
     <title>{{ $certificate->certificate_number }}</title>
     <style>
-        @page { size: A4 landscape; margin: 0; }
+        @page { size: 11in 8.5in landscape; margin: 0; }
         @font-face { font-family: 'Playfair Display'; font-weight: 400; src: url({{ \App\Support\FontEmbedder::dataUri('PlayfairDisplay-Regular.ttf') }}) format('truetype'); }
         @font-face { font-family: 'Poppins'; font-weight: 400; src: url({{ \App\Support\FontEmbedder::dataUri('Poppins-Regular.ttf') }}) format('truetype'); }
         @font-face { font-family: 'Poppins'; font-weight: 600; src: url({{ \App\Support\FontEmbedder::dataUri('Poppins-SemiBold.ttf') }}) format('truetype'); }
         @font-face { font-family: 'Poppins'; font-weight: 700; src: url({{ \App\Support\FontEmbedder::dataUri('Poppins-Bold.ttf') }}) format('truetype'); }
 
-        body { font-family: 'Poppins', sans-serif; font-size: 12px; color: #1a1a1a; margin: 0; padding: 0; }
-        .frame { margin: 22pt; border: 1.5pt solid #2a2a2a; padding: 24pt 60pt; text-align: center; }
-        .ribbon { width: 40pt; margin-bottom: 6pt; }
-        .school-name { font-size: 13px; color: #333333; margin-bottom: 10pt; }
-        .title { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 26px; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.3; margin-bottom: 22pt; }
-        .awarded-to { font-size: 12px; color: #333333; margin-bottom: 8pt; }
-        .student-name { font-family: 'Playfair Display', serif; font-size: 34px; margin-bottom: 22pt; }
-        .body-text { font-size: 11px; line-height: 1.7; max-width: 460pt; margin: 0 auto 30pt; color: #333333; }
+        body { font-family: 'Poppins', sans-serif; font-size: 12px; color: #1a1a1a; margin: 0; padding: 0; position: relative; }
+        .bg-square { position: absolute; width: 130pt; height: 130pt; background: #f1f1f1; }
+        .bg-square.tl { top: 0; left: 0; }
+        .bg-square.tr { top: 0; right: 0; }
+        .bg-square.bl { bottom: 0; left: 0; }
+        .bg-square.br { bottom: 0; right: 0; }
+        .frame { position: relative; margin: 22pt; border: 1.5pt solid #2a2a2a; padding: 26pt 60pt; text-align: center; background: #ffffff; }
+        .ribbon { width: 46pt; margin-bottom: 8pt; }
+        .school-name { font-size: 14px; color: #333333; margin-bottom: 12pt; }
+        .title { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 32px; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.3; margin-bottom: 26pt; }
+        .awarded-to { font-size: 13px; color: #333333; margin-bottom: 10pt; }
+        .student-name { font-family: 'Playfair Display', serif; font-size: 42px; margin-bottom: 26pt; }
+        .body-text { font-size: 12px; line-height: 1.7; max-width: 480pt; margin: 0 auto 34pt; color: #333333; }
         .sign-row { width: 100%; }
         .sign-cell { width: 33%; vertical-align: bottom; }
         .sign-name { font-weight: 700; font-size: 12px; border-top: 1px solid #333333; padding-top: 6pt; display: inline-block; min-width: 140pt; }
@@ -28,6 +33,10 @@
     </style>
 </head>
 <body>
+    <div class="bg-square tl"></div>
+    <div class="bg-square tr"></div>
+    <div class="bg-square bl"></div>
+    <div class="bg-square br"></div>
     <div class="frame">
         <img class="ribbon" src="{{ \App\Support\MedalGenerator::dataUri('#1a1a1a', false, 90) }}" alt="">
 
