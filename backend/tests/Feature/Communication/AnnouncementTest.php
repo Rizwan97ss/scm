@@ -2,9 +2,12 @@
 
 namespace Tests\Feature\Communication;
 
+use App\Jobs\SendPushJob;
+use App\Jobs\SendSmsJob;
 use App\Mail\AnnouncementMail;
 use App\Models\AppNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Mail;
 use Tests\Concerns\InteractsWithSchool;
 use Tests\TestCase;
@@ -56,7 +59,40 @@ class AnnouncementTest extends TestCase
             'title' => 'Staff Meeting', 'body' => 'Meeting at 3pm.', 'audience' => 'staff', 'channels' => ['in_app', 'email'],
         ])->assertCreated();
 
-        Mail::assertSent(AnnouncementMail::class, fn ($mail) => $mail->recipient->id === $staff->id);
+        Mail::assertQueued(AnnouncementMail::class, fn ($mail) => $mail->recipient->id === $staff->id);
+    }
+
+    public function test_sms_channel_queues_a_job_per_recipient_with_a_phone_number(): void
+    {
+        $school = $this->createSchool();
+        $admin = $this->createUserWithRole($school, 'School Admin', ['phone' => null]);
+        $this->createUserWithRole($school, 'Teacher', ['phone' => '+15551234567']);
+        $this->createUserWithRole($school, 'Teacher', ['phone' => null]);
+
+        Bus::fake();
+
+        $this->actingAsInSchool($admin)->postJson('/api/v1/announcements', [
+            'title' => 'Staff Meeting', 'body' => 'Meeting at 3pm.', 'audience' => 'staff', 'channels' => ['in_app', 'sms'],
+        ])->assertCreated();
+
+        Bus::assertDispatched(SendSmsJob::class, fn (SendSmsJob $job) => $job->phone === '+15551234567');
+        Bus::assertDispatchedTimes(SendSmsJob::class, 1);
+    }
+
+    public function test_push_channel_queues_a_job_for_every_recipient(): void
+    {
+        $school = $this->createSchool();
+        $admin = $this->createUserWithRole($school, 'School Admin');
+        $this->createUserWithRole($school, 'Student');
+        $this->createUserWithRole($school, 'Student');
+
+        Bus::fake();
+
+        $this->actingAsInSchool($admin)->postJson('/api/v1/announcements', [
+            'title' => 'Welcome', 'body' => 'Welcome back!', 'audience' => 'students', 'channels' => ['in_app', 'push'],
+        ])->assertCreated();
+
+        Bus::assertDispatchedTimes(SendPushJob::class, 2);
     }
 
     public function test_own_notification_inbox_can_be_marked_read(): void

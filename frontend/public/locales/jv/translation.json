@@ -437,6 +437,8 @@
       "empty": "Durung ana pemberitahuan."
     },
     "topbar": {
+      "disableNotifications": "Mateni Notifikasi",
+      "enableNotifications": "Aktifake Notifikasi",
       "openMenu": "Bukak menu navigasi"
     },
     "userMenu": {

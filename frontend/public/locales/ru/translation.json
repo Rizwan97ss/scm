@@ -437,6 +437,8 @@
       "empty": "Пока нет уведомлений."
     },
     "topbar": {
+      "disableNotifications": "Отключить уведомления",
+      "enableNotifications": "Включить уведомления",
       "openMenu": "Открыть меню навигации"
     },
     "userMenu": {

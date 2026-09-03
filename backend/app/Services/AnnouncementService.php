@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Contracts\PushGatewayInterface;
-use App\Contracts\SmsGatewayInterface;
 use App\Events\NotificationCreated;
+use App\Jobs\SendPushJob;
+use App\Jobs\SendSmsJob;
 use App\Mail\AnnouncementMail;
 use App\Models\Announcement;
 use App\Models\School;
@@ -14,19 +14,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 /**
- * Composes a broadcast and fans it out to every matching recipient.
- * Deliberately synchronous, not queued — this codebase has no queue worker
- * running yet (see docs/roadmap.md), so dispatching a queued job here would
- * silently never be processed rather than actually sending anything.
- * Queueing this is a reasonable future hardening step once a worker exists.
+ * Composes a broadcast and fans it out to every matching recipient. Each
+ * channel is queued per recipient (Mail::queue()/SendSmsJob/SendPushJob),
+ * not sent inline — a worker has run in production since Phase 15
+ * (GenerateDataExportJob), it just had nothing else to process until now.
  */
 class AnnouncementService
 {
-    public function __construct(
-        private readonly SmsGatewayInterface $sms,
-        private readonly PushGatewayInterface $push,
-    ) {}
-
     /**
      * @param  array{title: string, body: string, audience: string, channels: array<int, string>}  $data
      */
@@ -93,15 +87,15 @@ class AnnouncementService
     {
         foreach ($recipients as $recipient) {
             if (in_array('email', $channels, true) && $recipient->email) {
-                Mail::to($recipient->email)->send(new AnnouncementMail($announcement, $recipient));
+                Mail::to($recipient->email)->queue(new AnnouncementMail($announcement, $recipient));
             }
 
             if (in_array('sms', $channels, true) && $recipient->phone) {
-                $this->sms->send($recipient->phone, "{$announcement->title}: {$announcement->body}");
+                SendSmsJob::dispatch($recipient->phone, "{$announcement->title}: {$announcement->body}");
             }
 
             if (in_array('push', $channels, true)) {
-                $this->push->send($recipient, $announcement->title, $announcement->body);
+                SendPushJob::dispatch($recipient, $announcement->title, $announcement->body);
             }
         }
     }

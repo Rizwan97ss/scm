@@ -437,6 +437,8 @@
       "empty": "No notifications yet."
     },
     "topbar": {
+      "disableNotifications": "Disable notifications",
+      "enableNotifications": "Enable notifications",
       "openMenu": "Open navigation menu"
     },
     "userMenu": {

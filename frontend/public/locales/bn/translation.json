@@ -437,6 +437,8 @@
       "empty": "এখনো কোনো বিজ্ঞপ্তি নেই।"
     },
     "topbar": {
+      "disableNotifications": "বিজ্ঞপ্তি বন্ধ করুন",
+      "enableNotifications": "বিজ্ঞপ্তি চালু করুন",
       "openMenu": "নেভিগেশন মেনু খুলুন"
     },
     "userMenu": {

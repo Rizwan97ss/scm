@@ -437,6 +437,8 @@
       "empty": "لا توجد إشعارات بعد."
     },
     "topbar": {
+      "disableNotifications": "إيقاف الإشعارات",
+      "enableNotifications": "تفعيل الإشعارات",
       "openMenu": "فتح قائمة التنقل"
     },
     "userMenu": {

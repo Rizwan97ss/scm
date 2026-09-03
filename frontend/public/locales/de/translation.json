@@ -437,6 +437,8 @@
       "empty": "Noch keine Benachrichtigungen."
     },
     "topbar": {
+      "disableNotifications": "Benachrichtigungen deaktivieren",
+      "enableNotifications": "Benachrichtigungen aktivieren",
       "openMenu": "Navigationsmenü öffnen"
     },
     "userMenu": {

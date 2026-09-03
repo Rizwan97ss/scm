@@ -437,6 +437,8 @@
       "empty": "아직 알림이 없습니다."
     },
     "topbar": {
+      "disableNotifications": "알림 끄기",
+      "enableNotifications": "알림 켜기",
       "openMenu": "탐색 메뉴 열기"
     },
     "userMenu": {

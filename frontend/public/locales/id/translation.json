@@ -437,6 +437,8 @@
       "empty": "Belum ada notifikasi."
     },
     "topbar": {
+      "disableNotifications": "Nonaktifkan Notifikasi",
+      "enableNotifications": "Aktifkan Notifikasi",
       "openMenu": "Buka menu navigasi"
     },
     "userMenu": {

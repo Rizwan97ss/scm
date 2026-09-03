@@ -437,6 +437,8 @@
       "empty": "ابھی تک کوئی اطلاع نہیں۔"
     },
     "topbar": {
+      "disableNotifications": "اطلاعات غیر فعال کریں",
+      "enableNotifications": "اطلاعات فعال کریں",
       "openMenu": "نیویگیشن مینو کھولیں"
     },
     "userMenu": {

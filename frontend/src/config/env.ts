@@ -20,6 +20,9 @@ export const env = {
   // if either is unset, falling back to NotificationBell's own poll.
   pusherKey: import.meta.env.VITE_PUSHER_APP_KEY as string | undefined,
   pusherCluster: import.meta.env.VITE_PUSHER_APP_CLUSTER as string | undefined,
+  // Optional — usePushSubscription() just disables the "enable notifications"
+  // toggle if unset. Public key only; the private key never leaves the backend.
+  vapidPublicKey: import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined,
   isDev: import.meta.env.DEV,
   isProd: import.meta.env.PROD,
 } as const

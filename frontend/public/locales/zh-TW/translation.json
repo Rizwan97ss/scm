@@ -437,6 +437,8 @@
       "empty": "尚無通知。"
     },
     "topbar": {
+      "disableNotifications": "關閉通知",
+      "enableNotifications": "啟用通知",
       "openMenu": "開啟導覽選單"
     },
     "userMenu": {

@@ -437,6 +437,8 @@
       "empty": "通知はまだありません。"
     },
     "topbar": {
+      "disableNotifications": "通知を無効にする",
+      "enableNotifications": "通知を有効にする",
       "openMenu": "ナビゲーションメニューを開く"
     },
     "userMenu": {

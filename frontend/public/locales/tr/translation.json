@@ -437,6 +437,8 @@
       "empty": "Henüz bildirim yok."
     },
     "topbar": {
+      "disableNotifications": "Bildirimleri Devre Dışı Bırak",
+      "enableNotifications": "Bildirimleri Etkinleştir",
       "openMenu": "Gezinme menüsünü aç"
     },
     "userMenu": {
