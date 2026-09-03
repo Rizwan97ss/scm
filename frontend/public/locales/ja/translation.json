@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "これにより、個人データ（氏名、連絡先、医療/緊急情報）が直ちに削除され、元に戻すことはできません。アカウントに関連する学業および財務記録は、必要に応じて保持されます。",
       "deleteConfirmLabel": "アカウントを削除",
       "confirmPassword": "パスワードを確認してください"
+    },
+    "sidebar": {
+      "expand": "サイドバーを展開",
+      "collapse": "サイドバーを折りたたむ"
     }
   },
   "communication": {

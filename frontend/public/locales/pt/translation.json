@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "Isso remove seus dados pessoais (nome, dados de contato, informações médicas/de emergência) imediatamente e não pode ser desfeito. Registros acadêmicos e financeiros vinculados à sua conta são mantidos, conforme necessário.",
       "deleteConfirmLabel": "Excluir minha conta",
       "confirmPassword": "Confirme sua senha"
+    },
+    "sidebar": {
+      "expand": "Expandir barra lateral",
+      "collapse": "Recolher barra lateral"
     }
   },
   "communication": {

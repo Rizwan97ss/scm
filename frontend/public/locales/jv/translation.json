@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "Iki mbusak data pribadi sampeyan (jeneng, rincian kontak, informasi medis/darurat) langsung lan ora bisa dibalekake. Cathetan akademik lan finansial sing gegandhengan karo akun sampeyan disimpen, manut kabutuhan.",
       "deleteConfirmLabel": "Busak akun saya",
       "confirmPassword": "Konfirmasi sandhi sampeyan"
+    },
+    "sidebar": {
+      "expand": "Ngluwihi sidebar",
+      "collapse": "Nyilikake sidebar"
     }
   },
   "communication": {

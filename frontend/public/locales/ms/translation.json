@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "Ini mengalih keluar data peribadi anda (nama, butiran hubungan, maklumat perubatan/kecemasan) serta-merta dan tidak boleh dibuat asal. Rekod akademik dan kewangan yang berkaitan dengan akaun anda disimpan, seperti yang diperlukan.",
       "deleteConfirmLabel": "Padam akaun saya",
       "confirmPassword": "Sahkan kata laluan anda"
+    },
+    "sidebar": {
+      "expand": "Kembangkan bar sisi",
+      "collapse": "Kuncupkan bar sisi"
     }
   },
   "communication": {

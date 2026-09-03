@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "This removes your personal data (name, contact details, medical/emergency info) immediately and cannot be undone. Academic and financial records tied to your account are kept, as required.",
       "deleteConfirmLabel": "Delete my account",
       "confirmPassword": "Confirm your password"
+    },
+    "sidebar": {
+      "expand": "Expand sidebar",
+      "collapse": "Collapse sidebar"
     }
   },
   "communication": {

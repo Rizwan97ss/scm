@@ -10,13 +10,24 @@ export interface DropdownItem {
   disabled?: boolean
 }
 
-export function Dropdown({ trigger, items }: { trigger: ReactNode; items: DropdownItem[] }) {
+export function Dropdown({
+  trigger,
+  items,
+  side = 'bottom',
+  align = 'end',
+}: {
+  trigger: ReactNode
+  items: DropdownItem[]
+  side?: 'top' | 'right' | 'bottom' | 'left'
+  align?: 'start' | 'center' | 'end'
+}) {
   return (
     <RadixDropdown.Root>
       <RadixDropdown.Trigger asChild>{trigger}</RadixDropdown.Trigger>
       <RadixDropdown.Portal>
         <RadixDropdown.Content
-          align="end"
+          side={side}
+          align={align}
           sideOffset={4}
           className="z-50 min-w-40 rounded-md border border-border bg-card p-1 text-foreground shadow-lg"
         >

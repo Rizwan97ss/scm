@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "Ini menghapus data pribadi Anda (nama, detail kontak, informasi medis/darurat) segera dan tidak dapat dibatalkan. Catatan akademik dan keuangan yang terkait dengan akun Anda tetap disimpan sesuai kebutuhan.",
       "deleteConfirmLabel": "Hapus akun saya",
       "confirmPassword": "Konfirmasi kata sandi Anda"
+    },
+    "sidebar": {
+      "expand": "Perluas bilah sisi",
+      "collapse": "Ciutkan bilah sisi"
     }
   },
   "communication": {

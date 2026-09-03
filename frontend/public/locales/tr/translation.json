@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "Bu işlem kişisel verilerinizi (ad, iletişim bilgileri, tıbbi/acil durum bilgileri) hemen kaldırır ve geri alınamaz. Hesabınızla ilişkili akademik ve mali kayıtlar gerektiği şekilde saklanır.",
       "deleteConfirmLabel": "Hesabımı sil",
       "confirmPassword": "Şifrenizi onaylayın"
+    },
+    "sidebar": {
+      "expand": "Kenar çubuğunu genişlet",
+      "collapse": "Kenar çubuğunu daralt"
     }
   },
   "communication": {

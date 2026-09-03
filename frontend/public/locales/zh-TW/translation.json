@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "此操作會立即刪除您的個人資料（姓名、聯絡方式、醫療/緊急資訊），且無法復原。與您帳戶相關的學術和財務記錄將依需求保留。",
       "deleteConfirmLabel": "刪除我的帳戶",
       "confirmPassword": "確認您的密碼"
+    },
+    "sidebar": {
+      "expand": "展開側邊欄",
+      "collapse": "收合側邊欄"
     }
   },
   "communication": {

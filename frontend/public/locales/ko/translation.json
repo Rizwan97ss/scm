@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "이 작업은 개인 데이터(이름, 연락처, 의료/비상 정보)를 즉시 삭제하며 되돌릴 수 없습니다. 계정과 관련된 학업 및 재무 기록은 필요에 따라 보관됩니다.",
       "deleteConfirmLabel": "내 계정 삭제",
       "confirmPassword": "비밀번호를 확인하세요"
+    },
+    "sidebar": {
+      "expand": "사이드바 펼치기",
+      "collapse": "사이드바 접기"
     }
   },
   "communication": {

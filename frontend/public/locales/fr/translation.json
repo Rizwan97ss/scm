@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "Cela supprime immédiatement vos données personnelles (nom, coordonnées, informations médicales/d'urgence) et est irréversible. Les dossiers académiques et financiers liés à votre compte sont conservés, si nécessaire.",
       "deleteConfirmLabel": "Supprimer mon compte",
       "confirmPassword": "Confirmez votre mot de passe"
+    },
+    "sidebar": {
+      "expand": "Développer la barre latérale",
+      "collapse": "Réduire la barre latérale"
     }
   },
   "communication": {

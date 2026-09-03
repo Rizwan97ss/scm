@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "此操作会立即删除您的个人数据（姓名、联系方式、医疗/紧急信息），且无法撤销。与您账户相关的学术和财务记录将按要求保留。",
       "deleteConfirmLabel": "删除我的账户",
       "confirmPassword": "确认您的密码"
+    },
+    "sidebar": {
+      "expand": "展开侧边栏",
+      "collapse": "收起侧边栏"
     }
   },
   "communication": {

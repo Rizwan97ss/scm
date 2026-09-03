@@ -430,6 +430,10 @@
       "deleteConfirmDescription": "Dies entfernt Ihre persönlichen Daten (Name, Kontaktdaten, medizinische/Notfallinformationen) sofort und kann nicht rückgängig gemacht werden. Akademische und finanzielle Datensätze zu Ihrem Konto werden nach Bedarf aufbewahrt.",
       "deleteConfirmLabel": "Mein Konto löschen",
       "confirmPassword": "Bestätigen Sie Ihr Passwort"
+    },
+    "sidebar": {
+      "expand": "Seitenleiste erweitern",
+      "collapse": "Seitenleiste einklappen"
     }
   },
   "communication": {
