@@ -50,6 +50,97 @@ export interface PendingLeaveRequestSummary {
   to: string
 }
 
+export interface OutstandingInvoiceRow {
+  id: number
+  invoice_number: string
+  student_name: string | null
+  balance: number
+  due_date: string | null
+}
+
+export interface OutstandingInvoicesSummary {
+  total_outstanding: number
+  overdue_count: number
+  top: OutstandingInvoiceRow[]
+}
+
+export interface FeeCollectionThisMonth {
+  from_date: string
+  to_date: string
+  total_collected: number
+  payment_count: number
+  by_method: Record<string, number>
+  by_category: Record<string, number>
+}
+
+export interface LibraryDueSoonRow {
+  id: number
+  book_title: string
+  borrower_name: string | null
+  due_date: string
+}
+
+export interface TransportSummary {
+  vehicle_count: number
+  students_assigned: number
+}
+
+export interface TransportAssignmentRow {
+  id: number
+  student_name: string
+  route: string | null
+  vehicle: string | null
+}
+
+export interface HostelSummary {
+  room_count: number
+  total_capacity: number
+  total_occupied: number
+  occupancy_percentage: number | null
+}
+
+export interface PayrollSummary {
+  paid_count: number
+  pending_count: number
+  total_net: number
+}
+
+export interface VisitorsTodaySummary {
+  total_today: number
+  checked_in_now: number
+}
+
+export interface RecentExamPerformanceRow {
+  exam_id: number
+  exam_name: string
+  entries_count: number
+  average_percentage: number | null
+  pass_rate: number | null
+}
+
+export interface SectionTodayAttendance {
+  section_id: number
+  section_name: string
+  summary: AttendanceSummary
+}
+
+export interface StudentRecentGrade {
+  exam_name: string | null
+  subject: string | null
+  percentage: number | null
+  grade_label: string | null
+}
+
+export interface ParentChildSummary {
+  id: number
+  name: string
+  grade_level: string | null
+  section: string | null
+  attendance_percentage: number | null
+  pending_fees: number
+  upcoming_exam_count: number
+}
+
 export interface DashboardSummary {
   role_context: 'staff' | 'teacher' | 'student' | 'parent' | 'super-admin'
   outstanding_fees_total?: number | null
@@ -60,6 +151,18 @@ export interface DashboardSummary {
   upcoming_exams?: UpcomingExamSummary[] | null
   recent_announcements?: RecentAnnouncementSummary[]
   pending_leave_requests?: PendingLeaveRequestSummary[] | null
+  fee_collection_this_month?: FeeCollectionThisMonth | null
+  outstanding_invoices?: OutstandingInvoicesSummary | null
+  library_due_soon?: LibraryDueSoonRow[] | null
+  transport_summary?: TransportSummary | null
+  transport_today_assignments?: TransportAssignmentRow[] | null
+  hostel_summary?: HostelSummary | null
+  payroll_summary?: PayrollSummary | null
+  visitors_today?: VisitorsTodaySummary | null
+  recent_exam_performance?: RecentExamPerformanceRow[] | null
+  section_today?: SectionTodayAttendance[] | null
+  recent_grades?: StudentRecentGrade[] | null
+  children?: ParentChildSummary[]
   [key: string]: unknown
 }
 

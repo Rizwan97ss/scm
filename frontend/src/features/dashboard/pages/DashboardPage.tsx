@@ -18,6 +18,11 @@ import {
   Receipt,
   Megaphone,
   ArrowRight,
+  Bus,
+  Home,
+  BadgeDollarSign,
+  UserCheck,
+  TrendingUp,
 } from 'lucide-react'
 import { dashboardApi } from '@/api/endpoints/dashboard'
 import { queryKeys } from '@/api/queryKeys'
@@ -33,6 +38,7 @@ import { usePermission } from '@/hooks/usePermission'
 import { Card, CardContent, CardHeader, CardTitle, StatCard, type StatTone } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { Avatar } from '@/components/ui/Avatar'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { formatDate } from '@/utils/formatDate'
 import { routePaths } from '@/routes/routePaths'
@@ -228,6 +234,42 @@ export function DashboardPage() {
                 tone="rose"
               />
             )}
+            {summary.transport_summary != null && (
+              <DashboardStatCard
+                label={t('dashboard.studentsOnTransport')}
+                value={String(summary.transport_summary.students_assigned)}
+                icon={<Bus className="h-5 w-5" />}
+                to={can('transport.view') ? routePaths.studentTransportAssignments : undefined}
+                tone="info"
+              />
+            )}
+            {summary.hostel_summary != null && (
+              <DashboardStatCard
+                label={t('dashboard.hostelOccupancy')}
+                value={summary.hostel_summary.occupancy_percentage !== null ? `${summary.hostel_summary.occupancy_percentage}%` : '—'}
+                icon={<Home className="h-5 w-5" />}
+                to={can('hostel.view') ? routePaths.hostelAllocations : undefined}
+                tone="cyan"
+              />
+            )}
+            {summary.payroll_summary != null && (
+              <DashboardStatCard
+                label={t('dashboard.payrollPendingThisMonth')}
+                value={String(summary.payroll_summary.pending_count)}
+                icon={<BadgeDollarSign className="h-5 w-5" />}
+                to={can('payroll.view') ? routePaths.payslips : undefined}
+                tone="warning"
+              />
+            )}
+            {summary.visitors_today != null && (
+              <DashboardStatCard
+                label={t('dashboard.visitorsToday')}
+                value={String(summary.visitors_today.total_today)}
+                icon={<UserCheck className="h-5 w-5" />}
+                to={can('front-desk.view') ? routePaths.visitors : undefined}
+                tone="violet"
+              />
+            )}
           </div>
 
           <div>
@@ -410,40 +452,162 @@ export function DashboardPage() {
               </Card>
             )}
           </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {summary.outstanding_invoices && (
+              <Card>
+                <CardHeader className="flex-row items-center justify-between">
+                  <CardTitle>{t('dashboard.outstandingDues')}</CardTitle>
+                  <ViewAllLink to={routePaths.feeReports} />
+                </CardHeader>
+                <CardContent>
+                  {summary.outstanding_invoices.top.length === 0 ? (
+                    <EmptyState title={t('dashboard.noOutstandingDues')} icon={<Wallet className="h-5 w-5" />} />
+                  ) : (
+                    <ul className="flex flex-col gap-3">
+                      {summary.outstanding_invoices.top.map((invoice) => (
+                        <li key={invoice.id}>
+                          <Link to={routePaths.invoiceDetail(invoice.id)} className="flex items-center justify-between gap-2 text-sm hover:text-primary">
+                            <span className="font-medium">{invoice.student_name ?? invoice.invoice_number}</span>
+                            <span className="text-destructive">{formatCurrency(invoice.balance)}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {summary.library_due_soon && (
+              <Card>
+                <CardHeader className="flex-row items-center justify-between">
+                  <CardTitle>{t('dashboard.libraryDueSoon')}</CardTitle>
+                  <ViewAllLink to={routePaths.bookIssues} />
+                </CardHeader>
+                <CardContent>
+                  {summary.library_due_soon.length === 0 ? (
+                    <EmptyState title={t('dashboard.noBooksDueSoon')} icon={<BookOpen className="h-5 w-5" />} />
+                  ) : (
+                    <ul className="flex flex-col gap-3">
+                      {summary.library_due_soon.map((issue) => (
+                        <li key={issue.id} className="flex items-center justify-between gap-2 text-sm">
+                          <span className="font-medium">{issue.book_title}</span>
+                          <span className="text-muted-foreground">{formatDate(issue.due_date)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {summary.transport_today_assignments && (
+              <Card>
+                <CardHeader className="flex-row items-center justify-between">
+                  <CardTitle>{t('dashboard.transportToday')}</CardTitle>
+                  <ViewAllLink to={routePaths.studentTransportAssignments} />
+                </CardHeader>
+                <CardContent>
+                  {summary.transport_today_assignments.length === 0 ? (
+                    <EmptyState title={t('dashboard.noTransportAssignments')} icon={<Bus className="h-5 w-5" />} />
+                  ) : (
+                    <ul className="flex flex-col gap-3">
+                      {summary.transport_today_assignments.map((assignment) => (
+                        <li key={assignment.id} className="flex items-center justify-between gap-2 text-sm">
+                          <span className="font-medium">{assignment.student_name}</span>
+                          <span className="text-muted-foreground">{assignment.route ?? '—'}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {summary.recent_exam_performance && (
+              <Card>
+                <CardHeader className="flex-row items-center justify-between">
+                  <CardTitle>{t('dashboard.recentExamPerformance')}</CardTitle>
+                  <ViewAllLink to={routePaths.reportsAcademic} />
+                </CardHeader>
+                <CardContent>
+                  {summary.recent_exam_performance.length === 0 ? (
+                    <EmptyState title={t('dashboard.noExamPerformanceYet')} icon={<TrendingUp className="h-5 w-5" />} />
+                  ) : (
+                    <ul className="flex flex-col gap-3">
+                      {summary.recent_exam_performance.map((exam) => (
+                        <li key={exam.exam_id} className="flex items-center justify-between gap-2 text-sm">
+                          <span className="font-medium">{exam.exam_name}</span>
+                          <span className="text-muted-foreground">
+                            {exam.average_percentage !== null ? `${exam.average_percentage}%` : '—'}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </>
       )}
 
       {!isLoading && summary?.role_context === 'teacher' && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <DashboardStatCard
-            label={t('dashboard.assignedSections')}
-            value={String(summary.assigned_section_count ?? 0)}
-            icon={<School className="h-5 w-5" />}
-            to={can('academic-structure.view') ? routePaths.sections : undefined}
-            tone="cyan"
-          />
-          <DashboardStatCard
-            label={t('dashboard.activeStudents')}
-            value={String(summary.student_count ?? 0)}
-            icon={<GraduationCap className="h-5 w-5" />}
-            to={can('students.view') ? routePaths.students : undefined}
-            tone="primary"
-          />
-          <DashboardStatCard
-            label={t('dashboard.attendanceToday')}
-            value={String(summary.todays_attendance_marked_count ?? 0)}
-            icon={<CalendarCheck className="h-5 w-5" />}
-            to={can('student-attendance.mark') ? routePaths.attendanceTake : undefined}
-            tone="success"
-          />
-          <DashboardStatCard
-            label={t('dashboard.homeworkAwaitingGrading')}
-            value={String(summary.pending_homework_grading_count ?? 0)}
-            icon={<NotebookPen className="h-5 w-5" />}
-            to={can('homework.view') ? routePaths.homework : undefined}
-            tone="warning"
-          />
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <DashboardStatCard
+              label={t('dashboard.assignedSections')}
+              value={String(summary.assigned_section_count ?? 0)}
+              icon={<School className="h-5 w-5" />}
+              to={can('academic-structure.view') ? routePaths.sections : undefined}
+              tone="cyan"
+            />
+            <DashboardStatCard
+              label={t('dashboard.activeStudents')}
+              value={String(summary.student_count ?? 0)}
+              icon={<GraduationCap className="h-5 w-5" />}
+              to={can('students.view') ? routePaths.students : undefined}
+              tone="primary"
+            />
+            <DashboardStatCard
+              label={t('dashboard.attendanceToday')}
+              value={String(summary.todays_attendance_marked_count ?? 0)}
+              icon={<CalendarCheck className="h-5 w-5" />}
+              to={can('student-attendance.mark') ? routePaths.attendanceTake : undefined}
+              tone="success"
+            />
+            <DashboardStatCard
+              label={t('dashboard.homeworkAwaitingGrading')}
+              value={String(summary.pending_homework_grading_count ?? 0)}
+              icon={<NotebookPen className="h-5 w-5" />}
+              to={can('homework.view') ? routePaths.homework : undefined}
+              tone="warning"
+            />
+          </div>
+
+          {summary.section_today && summary.section_today.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('dashboard.sectionAttendanceToday')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="flex flex-col gap-3">
+                  {summary.section_today.map((entry) => (
+                    <li key={entry.section_id} className="flex items-center justify-between gap-2 text-sm">
+                      <span className="font-medium">{entry.section_name}</span>
+                      <span className="text-muted-foreground">
+                        {entry.summary.percentage !== null ? `${entry.summary.percentage}%` : t('dashboard.notMarkedYet')}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
 
       {!isLoading && summary?.role_context === 'student' && (
@@ -480,26 +644,101 @@ export function DashboardPage() {
               tone="violet"
             />
           </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {summary.upcoming_exams && (
+              <Card>
+                <CardHeader className="flex-row items-center justify-between">
+                  <CardTitle>{t('dashboard.upcomingExams')}</CardTitle>
+                  <ViewAllLink to={routePaths.examTimetable} />
+                </CardHeader>
+                <CardContent>
+                  {summary.upcoming_exams.length === 0 ? (
+                    <EmptyState title={t('dashboard.noUpcomingExams')} icon={<ClipboardList className="h-5 w-5" />} />
+                  ) : (
+                    <ul className="flex flex-col gap-3">
+                      {summary.upcoming_exams.map((exam) => (
+                        <li key={exam.id} className="flex items-center justify-between gap-2 text-sm">
+                          <span className="font-medium">{exam.name}</span>
+                          <span className="text-muted-foreground">{formatDate(exam.date)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {summary.recent_grades && (
+              <Card>
+                <CardHeader className="flex-row items-center justify-between">
+                  <CardTitle>{t('dashboard.recentGrades')}</CardTitle>
+                  <ViewAllLink to={routePaths.myResults} />
+                </CardHeader>
+                <CardContent>
+                  {summary.recent_grades.length === 0 ? (
+                    <EmptyState title={t('dashboard.noGradesYet')} icon={<TrendingUp className="h-5 w-5" />} />
+                  ) : (
+                    <ul className="flex flex-col gap-3">
+                      {summary.recent_grades.map((grade, index) => (
+                        <li key={index} className="flex items-center justify-between gap-2 text-sm">
+                          <span className="font-medium">{grade.subject}</span>
+                          <span className="text-muted-foreground">
+                            {grade.percentage !== null ? `${grade.percentage}%` : '—'} {grade.grade_label ? `(${grade.grade_label})` : ''}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </>
       )}
 
       {!isLoading && summary?.role_context === 'parent' && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <DashboardStatCard
-            label={t('dashboard.linkedChildren')}
-            value={String(summary.children_count ?? 0)}
-            icon={<GraduationCap className="h-5 w-5" />}
-            to={routePaths.parentChildren}
-            tone="primary"
-          />
-          <DashboardStatCard
-            label={t('dashboard.outstandingFees')}
-            value={formatCurrency((summary.children_pending_fees_total as number) ?? 0)}
-            icon={<Wallet className="h-5 w-5" />}
-            to={routePaths.invoices}
-            tone="destructive"
-          />
-        </div>
+        <>
+          {(!summary.children || summary.children.length === 0) && (
+            <EmptyState title={t('dashboard.noChildrenLinked')} icon={<GraduationCap className="h-5 w-5" />} />
+          )}
+
+          {summary.children && summary.children.length > 0 && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {summary.children.map((child) => (
+                <Link
+                  key={child.id}
+                  to={routePaths.parentChildProfile(child.id)}
+                  className="block rounded-xl border border-border bg-card text-card-foreground shadow-sm transition-shadow hover:shadow-md hover:shadow-primary/5"
+                >
+                  <CardContent className="flex flex-col gap-3 pt-4 sm:pt-6">
+                    <div className="flex items-center gap-3">
+                      <Avatar name={child.name} size={40} />
+                      <div>
+                        <p className="font-medium">{child.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {child.grade_level} {child.section ? `- ${child.section}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 border-t border-border pt-3 text-sm">
+                      <span className="text-muted-foreground">{t('dashboard.attendanceThisMonth')}</span>
+                      <span className="font-medium">{child.attendance_percentage !== null ? `${child.attendance_percentage}%` : '—'}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      <span className="text-muted-foreground">{t('dashboard.outstandingFees')}</span>
+                      <span className={cn('font-medium', child.pending_fees > 0 && 'text-destructive')}>{formatCurrency(child.pending_fees)}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      <span className="text-muted-foreground">{t('dashboard.upcomingExams')}</span>
+                      <span className="font-medium">{child.upcoming_exam_count}</span>
+                    </div>
+                  </CardContent>
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   )
