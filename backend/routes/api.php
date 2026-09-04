@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\V1\BookIssueController;
 use App\Http\Controllers\Api\V1\CertificateController;
 use App\Http\Controllers\Api\V1\CertificateTemplateController;
 use App\Http\Controllers\Api\V1\ClassSubjectTeacherController;
+use App\Http\Controllers\Api\V1\CourseMaterialController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DataExportController;
 use App\Http\Controllers\Api\V1\AssessmentComponentTypeController;
@@ -390,6 +391,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::put('homework-submissions/{submission}/grade', [HomeworkSubmissionController::class, 'grade'])->name('homework-submissions.grade');
 
             Route::apiResource('student-remarks', StudentRemarkController::class)->names('student-remarks');
+
+            // ---- Course Resource Library -----------------------------------------
+            Route::apiResource('course-materials', CourseMaterialController::class)->names('course-materials');
+            Route::post('course-materials/{courseMaterial}/attachments', [CourseMaterialController::class, 'storeAttachment'])->name('course-materials.attachments.store');
+            Route::delete('course-materials/{courseMaterial}/attachments/{media}', [CourseMaterialController::class, 'destroyAttachment'])->name('course-materials.attachments.destroy');
+            Route::post('course-materials/{courseMaterial}/progress', [CourseMaterialController::class, 'markProgress'])->name('course-materials.progress');
 
             // ---- Fees / Billing / Accounting (Phase 8) -----------------------
             // School-to-parent billing — distinct from Phase 6's platform-to-school

@@ -20,6 +20,7 @@ import {
   UsersRound,
   BookOpen,
   CalendarClock,
+  FolderOpen,
   NotebookPen,
   Receipt,
   Tags,
@@ -108,7 +109,10 @@ export const NAV_GROUPS: NavGroupConfig[] = [
   {
     label: 'Teaching',
     icon: NotebookPen,
-    items: [{ label: 'Homework', to: routePaths.homework, icon: NotebookPen, permissions: ['homework.view'] }],
+    items: [
+      { label: 'Homework', to: routePaths.homework, icon: NotebookPen, permissions: ['homework.view'] },
+      { label: 'Course Materials', to: routePaths.courseMaterials, icon: FolderOpen, permissions: ['course-materials.view'] },
+    ],
   },
   {
     label: 'Fees & Accounting',
@@ -229,6 +233,7 @@ export const PARENT_NAV_GROUPS: NavGroupConfig[] = [
     items: [
       { label: 'Dashboard', to: routePaths.dashboard, icon: LayoutDashboard },
       { label: 'My Children', to: routePaths.parentChildren, icon: GraduationCap },
+      { label: 'Course Materials', to: routePaths.courseMaterials, icon: FolderOpen },
       { label: 'Notice Board', to: routePaths.noticeBoard, icon: Newspaper },
       { label: 'Certificates', to: routePaths.certificates, icon: Award },
     ],
@@ -245,6 +250,7 @@ export const STUDENT_NAV_GROUPS: NavGroupConfig[] = [
       { label: 'My Results', to: routePaths.myResults, icon: ClipboardList },
       { label: 'Exam Timetable', to: routePaths.examTimetable, icon: CalendarClock },
       { label: 'Homework', to: routePaths.homework, icon: NotebookPen },
+      { label: 'Course Materials', to: routePaths.courseMaterials, icon: FolderOpen },
       { label: 'My Online Tests', to: routePaths.myOnlineTests, icon: FileQuestion },
       { label: 'My Fees', to: routePaths.invoices, icon: Receipt },
       { label: 'Notice Board', to: routePaths.noticeBoard, icon: Newspaper },

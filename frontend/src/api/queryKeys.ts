@@ -85,6 +85,8 @@ export const queryKeys = {
   homeworkItem: (id: number) => ['homework', id] as const,
   homeworkRoster: (id: number) => ['homework', id, 'submissions'] as const,
   studentRemarks: (params?: unknown) => ['student-remarks', params] as const,
+  courseMaterials: (params?: unknown) => ['course-materials', params] as const,
+  courseMaterialItem: (id: number) => ['course-materials', id] as const,
 
   feeCategories: (params?: unknown) => ['fee-categories', params] as const,
   feeStructures: (params?: unknown) => ['fee-structures', params] as const,
