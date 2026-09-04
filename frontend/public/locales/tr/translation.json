@@ -499,6 +499,7 @@
     "typeLabel": "Tür"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "Bu video burada oynatılamıyor.",
     "classHint": "Burada yalnızca okuttuğunuz sınıflar görünür.",
     "classLabel": "Sınıf",
     "descriptionStaff": "Öğrencilerin incelemesi için bir sınıfla paylaşılan belgeler, bağlantılar ve videolar.",
@@ -508,6 +509,7 @@
     "fileLabel": "Dosya",
     "markCompleteAction": "Tamamlandı Olarak İşaretle",
     "openAction": "Aç",
+    "openExternally": "Yeni sekmede aç",
     "selectClassPlaceholder": "Bir sınıf seçin",
     "statusCompleted": "Tamamlandı",
     "statusNotStarted": "Başlanmadı",
@@ -519,7 +521,8 @@
     "typeLink": "Bağlantı",
     "typeVideo": "Video",
     "urlHint": "Videoya veya harici kaynağa bir bağlantı.",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "İzle"
   },
   "dashboard": {
     "absences": "Devamsızlıklar",

@@ -499,6 +499,7 @@
     "typeLabel": "प्रकार"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "यह वीडियो यहाँ नहीं चलाया जा सकता।",
     "classHint": "यहाँ केवल वे कक्षाएँ दिखाई देती हैं जो आप पढ़ाते हैं।",
     "classLabel": "कक्षा",
     "descriptionStaff": "छात्रों की समीक्षा के लिए किसी सेक्शन के साथ साझा किए गए दस्तावेज़, लिंक और वीडियो।",
@@ -508,6 +509,7 @@
     "fileLabel": "फ़ाइल",
     "markCompleteAction": "पूर्ण के रूप में चिह्नित करें",
     "openAction": "खोलें",
+    "openExternally": "इसे नए टैब में खोलें",
     "selectClassPlaceholder": "एक कक्षा चुनें",
     "statusCompleted": "पूर्ण",
     "statusNotStarted": "शुरू नहीं हुआ",
@@ -519,7 +521,8 @@
     "typeLink": "लिंक",
     "typeVideo": "वीडियो",
     "urlHint": "वीडियो या बाहरी संसाधन का लिंक।",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "देखें"
   },
   "dashboard": {
     "absences": "अनुपस्थितियाँ",

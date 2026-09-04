@@ -499,6 +499,7 @@
     "typeLabel": "النوع"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "لا يمكن تشغيل هذا الفيديو هنا.",
     "classHint": "تظهر هنا الصفوف التي تُدرّسها فقط.",
     "classLabel": "الصف",
     "descriptionStaff": "مستندات وروابط ومقاطع فيديو تُشارك مع صف ليراجعها الطلاب.",
@@ -508,6 +509,7 @@
     "fileLabel": "الملف",
     "markCompleteAction": "تحديد كمكتمل",
     "openAction": "فتح",
+    "openExternally": "افتحه في علامة تبويب جديدة",
     "selectClassPlaceholder": "اختر صفًا",
     "statusCompleted": "مكتمل",
     "statusNotStarted": "لم يبدأ",
@@ -519,7 +521,8 @@
     "typeLink": "رابط",
     "typeVideo": "فيديو",
     "urlHint": "رابط للفيديو أو المصدر الخارجي.",
-    "urlLabel": "الرابط"
+    "urlLabel": "الرابط",
+    "watchAction": "مشاهدة"
   },
   "dashboard": {
     "absences": "الغيابات",

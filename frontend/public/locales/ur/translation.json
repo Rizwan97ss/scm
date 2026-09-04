@@ -499,6 +499,7 @@
     "typeLabel": "قسم"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "یہ ویڈیو یہاں نہیں چل سکتی۔",
     "classHint": "یہاں صرف وہ کلاسیں ظاہر ہوتی ہیں جو آپ پڑھاتے ہیں۔",
     "classLabel": "کلاس",
     "descriptionStaff": "طلبہ کے جائزے کے لیے کسی سیکشن کے ساتھ شیئر کردہ دستاویزات، لنکس اور ویڈیوز۔",
@@ -508,6 +509,7 @@
     "fileLabel": "فائل",
     "markCompleteAction": "مکمل کے طور پر نشان زد کریں",
     "openAction": "کھولیں",
+    "openExternally": "اسے نئے ٹیب میں کھولیں",
     "selectClassPlaceholder": "ایک کلاس منتخب کریں",
     "statusCompleted": "مکمل",
     "statusNotStarted": "شروع نہیں ہوا",
@@ -519,7 +521,8 @@
     "typeLink": "لنک",
     "typeVideo": "ویڈیو",
     "urlHint": "ویڈیو یا بیرونی وسیلے کا لنک۔",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "دیکھیں"
   },
   "dashboard": {
     "absences": "غیر حاضریاں",

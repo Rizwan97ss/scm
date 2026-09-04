@@ -499,6 +499,7 @@
     "typeLabel": "類型"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "此影片無法在此播放。",
     "classHint": "此處僅顯示您任教的班級。",
     "classLabel": "班級",
     "descriptionStaff": "與班級共享、供學生查看的文件、連結和影片。",
@@ -508,6 +509,7 @@
     "fileLabel": "檔案",
     "markCompleteAction": "標記為已完成",
     "openAction": "開啟",
+    "openExternally": "在新分頁中開啟",
     "selectClassPlaceholder": "選擇班級",
     "statusCompleted": "已完成",
     "statusNotStarted": "未開始",
@@ -519,7 +521,8 @@
     "typeLink": "連結",
     "typeVideo": "影片",
     "urlHint": "指向影片或外部資源的連結。",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "觀看"
   },
   "dashboard": {
     "absences": "缺席",

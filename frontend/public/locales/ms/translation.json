@@ -499,6 +499,7 @@
     "typeLabel": "Jenis"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "Video ini tidak dapat dimainkan di sini.",
     "classHint": "Hanya kelas yang anda ajar dipaparkan di sini.",
     "classLabel": "Kelas",
     "descriptionStaff": "Dokumen, pautan, dan video yang dikongsi dengan kelas untuk semakan pelajar.",
@@ -508,6 +509,7 @@
     "fileLabel": "Fail",
     "markCompleteAction": "Tandakan Selesai",
     "openAction": "Buka",
+    "openExternally": "Buka dalam tab baharu",
     "selectClassPlaceholder": "Pilih kelas",
     "statusCompleted": "Selesai",
     "statusNotStarted": "Belum Bermula",
@@ -519,7 +521,8 @@
     "typeLink": "Pautan",
     "typeVideo": "Video",
     "urlHint": "Pautan ke video atau sumber luaran.",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "Tonton"
   },
   "dashboard": {
     "absences": "Ketidakhadiran",

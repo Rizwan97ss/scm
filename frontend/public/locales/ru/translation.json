@@ -499,6 +499,7 @@
     "typeLabel": "Тип"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "Это видео нельзя воспроизвести здесь.",
     "classHint": "Здесь отображаются только классы, в которых вы преподаёте.",
     "classLabel": "Класс",
     "descriptionStaff": "Документы, ссылки и видео, доступные классу для просмотра учащимися.",
@@ -508,6 +509,7 @@
     "fileLabel": "Файл",
     "markCompleteAction": "Отметить как выполненное",
     "openAction": "Открыть",
+    "openExternally": "Открыть в новой вкладке",
     "selectClassPlaceholder": "Выберите класс",
     "statusCompleted": "Завершено",
     "statusNotStarted": "Не начато",
@@ -519,7 +521,8 @@
     "typeLink": "Ссылка",
     "typeVideo": "Видео",
     "urlHint": "Ссылка на видео или внешний ресурс.",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "Смотреть"
   },
   "dashboard": {
     "absences": "Пропуски",

@@ -499,6 +499,7 @@
     "typeLabel": "Jinis"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "Video iki ora bisa diputer ing kene.",
     "classHint": "Mung kelas sing sampeyan wulang sing katon ing kene.",
     "classLabel": "Kelas",
     "descriptionStaff": "Dokumen, tautan, lan video sing dienggo bareng karo kelas kanggo dideleng siswa.",
@@ -508,6 +509,7 @@
     "fileLabel": "Berkas",
     "markCompleteAction": "Tandhani Rampung",
     "openAction": "Bukak",
+    "openExternally": "Bukak ing tab anyar",
     "selectClassPlaceholder": "Pilih kelas",
     "statusCompleted": "Rampung",
     "statusNotStarted": "Durung Diwiwiti",
@@ -519,7 +521,8 @@
     "typeLink": "Tautan",
     "typeVideo": "Video",
     "urlHint": "Tautan menyang video utawa sumber daya njaba.",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "Tonton"
   },
   "dashboard": {
     "absences": "Ora Mlebu",

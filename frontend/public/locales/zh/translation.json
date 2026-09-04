@@ -499,6 +499,7 @@
     "typeLabel": "类型"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "此视频无法在此播放。",
     "classHint": "此处仅显示您任教的班级。",
     "classLabel": "班级",
     "descriptionStaff": "与班级共享、供学生查看的文档、链接和视频。",
@@ -508,6 +509,7 @@
     "fileLabel": "文件",
     "markCompleteAction": "标记为已完成",
     "openAction": "打开",
+    "openExternally": "在新标签页中打开",
     "selectClassPlaceholder": "选择班级",
     "statusCompleted": "已完成",
     "statusNotStarted": "未开始",
@@ -519,7 +521,8 @@
     "typeLink": "链接",
     "typeVideo": "视频",
     "urlHint": "指向视频或外部资源的链接。",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "观看"
   },
   "dashboard": {
     "absences": "缺勤",

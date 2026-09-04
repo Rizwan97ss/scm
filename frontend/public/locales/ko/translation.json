@@ -499,6 +499,7 @@
     "typeLabel": "유형"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "이 동영상은 여기서 재생할 수 없습니다.",
     "classHint": "여기에는 본인이 가르치는 학급만 표시됩니다.",
     "classLabel": "학급",
     "descriptionStaff": "학생이 확인할 수 있도록 반과 공유하는 문서, 링크, 동영상.",
@@ -508,6 +509,7 @@
     "fileLabel": "파일",
     "markCompleteAction": "완료로 표시",
     "openAction": "열기",
+    "openExternally": "새 탭에서 열기",
     "selectClassPlaceholder": "학급 선택",
     "statusCompleted": "완료",
     "statusNotStarted": "시작 안 함",
@@ -519,7 +521,8 @@
     "typeLink": "링크",
     "typeVideo": "동영상",
     "urlHint": "동영상 또는 외부 리소스 링크.",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "시청"
   },
   "dashboard": {
     "absences": "결석",

@@ -499,6 +499,7 @@
     "typeLabel": "Type"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "This video can't be played here.",
     "classHint": "Only classes you teach appear here.",
     "classLabel": "Class",
     "descriptionStaff": "Documents, links, and videos shared with a section for students to review.",
@@ -508,6 +509,7 @@
     "fileLabel": "File",
     "markCompleteAction": "Mark Complete",
     "openAction": "Open",
+    "openExternally": "Open it in a new tab",
     "selectClassPlaceholder": "Select a class",
     "statusCompleted": "Completed",
     "statusNotStarted": "Not Started",
@@ -519,7 +521,8 @@
     "typeLink": "Link",
     "typeVideo": "Video",
     "urlHint": "A link to the video or external resource.",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "Watch"
   },
   "dashboard": {
     "absences": "Absences",

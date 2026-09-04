@@ -2,8 +2,10 @@ import { useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { CheckCircle2, ExternalLink, FileText, Plus, Trash2 } from 'lucide-react'
+import { CheckCircle2, ExternalLink, FileText, Play, Plus, Trash2 } from 'lucide-react'
 import { courseMaterialsApi } from '@/api/endpoints/courseMaterials'
+import { VideoPlayerModal } from '../components/VideoPlayerModal'
+import { resolveVideoEmbed } from '../utils/videoEmbed'
 import { classSubjectTeachersApi, sectionsApi } from '@/api/endpoints/academics'
 import { queryKeys } from '@/api/queryKeys'
 import { useAuth } from '@/context/AuthContext'
@@ -71,6 +73,7 @@ export function CourseMaterialListPage() {
   const [file, setFile] = useState<File | null>(null)
   const [deleting, setDeleting] = useState<CourseMaterial | null>(null)
   const [markingId, setMarkingId] = useState<number | null>(null)
+  const [watching, setWatching] = useState<CourseMaterial | null>(null)
 
   function openCreate() {
     setEditing(null)
@@ -121,7 +124,12 @@ export function CourseMaterialListPage() {
         setMarkingId(null)
       }
     }
-    if (url) window.open(url, '_blank', 'noopener,noreferrer')
+    if (!url) return
+    if (resolveVideoEmbed(url).kind !== 'none') {
+      setWatching(material)
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
   }
 
   const columns: DataTableColumn<CourseMaterial>[] = [
@@ -147,30 +155,35 @@ export function CourseMaterialListPage() {
       key: 'actions',
       header: '',
       align: 'right',
-      render: (row) => (
-        <div className="flex justify-end gap-2">
-          {resourceUrl(row) && (
-            <Button variant="outline" size="sm" onClick={() => openResource(row)} isLoading={markingId === row.id}>
-              <ExternalLink className="h-3.5 w-3.5" /> {t('courseMaterials.openAction')}
-            </Button>
-          )}
-          {isStudent && !row.my_progress?.completed_at && (
-            <Button variant="outline" size="sm" onClick={() => openResource(row, true)} isLoading={markingId === row.id}>
-              <CheckCircle2 className="h-3.5 w-3.5" /> {t('courseMaterials.markCompleteAction')}
-            </Button>
-          )}
-          {canManage && (
-            <Button variant="outline" size="sm" onClick={() => openEdit(row)}>
-              {t('common.edit')}
-            </Button>
-          )}
-          {can('course-materials.delete') && (
-            <Button variant="outline" size="sm" onClick={() => setDeleting(row)} aria-label={t('common.deleteItem', { item: row.title })}>
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          )}
-        </div>
-      ),
+      render: (row) => {
+        const url = resourceUrl(row)
+        const isVideo = resolveVideoEmbed(url).kind !== 'none'
+        return (
+          <div className="flex justify-end gap-2">
+            {url && (
+              <Button variant="outline" size="sm" onClick={() => openResource(row)} isLoading={markingId === row.id}>
+                {isVideo ? <Play className="h-3.5 w-3.5" /> : <ExternalLink className="h-3.5 w-3.5" />}{' '}
+                {isVideo ? t('courseMaterials.watchAction') : t('courseMaterials.openAction')}
+              </Button>
+            )}
+            {isStudent && !row.my_progress?.completed_at && (
+              <Button variant="outline" size="sm" onClick={() => openResource(row, true)} isLoading={markingId === row.id}>
+                <CheckCircle2 className="h-3.5 w-3.5" /> {t('courseMaterials.markCompleteAction')}
+              </Button>
+            )}
+            {canManage && (
+              <Button variant="outline" size="sm" onClick={() => openEdit(row)}>
+                {t('common.edit')}
+              </Button>
+            )}
+            {can('course-materials.delete') && (
+              <Button variant="outline" size="sm" onClick={() => setDeleting(row)} aria-label={t('common.deleteItem', { item: row.title })}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
+        )
+      },
     },
   ]
 
@@ -254,6 +267,16 @@ export function CourseMaterialListPage() {
           </Button>
         </form>
       </Modal>
+
+      {watching && (
+        <VideoPlayerModal
+          open={!!watching}
+          onOpenChange={(open) => !open && setWatching(null)}
+          title={watching.title}
+          embed={resolveVideoEmbed(resourceUrl(watching))}
+          fallbackUrl={resourceUrl(watching)}
+        />
+      )}
 
       <ConfirmDialog
         open={!!deleting}

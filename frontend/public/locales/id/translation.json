@@ -499,6 +499,7 @@
     "typeLabel": "Jenis"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "Video ini tidak dapat diputar di sini.",
     "classHint": "Hanya kelas yang Anda ajar yang muncul di sini.",
     "classLabel": "Kelas",
     "descriptionStaff": "Dokumen, tautan, dan video yang dibagikan ke suatu kelas untuk ditinjau siswa.",
@@ -508,6 +509,7 @@
     "fileLabel": "Berkas",
     "markCompleteAction": "Tandai Selesai",
     "openAction": "Buka",
+    "openExternally": "Buka di tab baru",
     "selectClassPlaceholder": "Pilih kelas",
     "statusCompleted": "Selesai",
     "statusNotStarted": "Belum Dimulai",
@@ -519,7 +521,8 @@
     "typeLink": "Tautan",
     "typeVideo": "Video",
     "urlHint": "Tautan ke video atau sumber daya eksternal.",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "Tonton"
   },
   "dashboard": {
     "absences": "Ketidakhadiran",

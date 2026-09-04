@@ -499,6 +499,7 @@
     "typeLabel": "種別"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "この動画はここでは再生できません。",
     "classHint": "ここにはあなたが担当するクラスのみ表示されます。",
     "classLabel": "クラス",
     "descriptionStaff": "生徒が確認できるようクラスと共有するドキュメント、リンク、動画。",
@@ -508,6 +509,7 @@
     "fileLabel": "ファイル",
     "markCompleteAction": "完了にする",
     "openAction": "開く",
+    "openExternally": "新しいタブで開く",
     "selectClassPlaceholder": "クラスを選択",
     "statusCompleted": "完了",
     "statusNotStarted": "未着手",
@@ -519,7 +521,8 @@
     "typeLink": "リンク",
     "typeVideo": "動画",
     "urlHint": "動画または外部リソースへのリンク。",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "視聴"
   },
   "dashboard": {
     "absences": "欠席",

@@ -499,6 +499,7 @@
     "typeLabel": "ধরন"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "এই ভিডিওটি এখানে চালানো যাচ্ছে না।",
     "classHint": "শুধুমাত্র আপনি যে ক্লাসগুলো পড়ান সেগুলো এখানে দেখা যাবে।",
     "classLabel": "ক্লাস",
     "descriptionStaff": "শিক্ষার্থীদের পর্যালোচনার জন্য একটি শাখার সাথে শেয়ার করা নথি, লিঙ্ক এবং ভিডিও।",
@@ -508,6 +509,7 @@
     "fileLabel": "ফাইল",
     "markCompleteAction": "সম্পন্ন হিসেবে চিহ্নিত করুন",
     "openAction": "খুলুন",
+    "openExternally": "নতুন ট্যাবে খুলুন",
     "selectClassPlaceholder": "একটি ক্লাস নির্বাচন করুন",
     "statusCompleted": "সম্পন্ন",
     "statusNotStarted": "শুরু হয়নি",
@@ -519,7 +521,8 @@
     "typeLink": "লিঙ্ক",
     "typeVideo": "ভিডিও",
     "urlHint": "ভিডিও বা বাহ্যিক সম্পদের একটি লিঙ্ক।",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "দেখুন"
   },
   "dashboard": {
     "absences": "অনুপস্থিতি",

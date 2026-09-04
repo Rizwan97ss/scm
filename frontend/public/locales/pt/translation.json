@@ -499,6 +499,7 @@
     "typeLabel": "Tipo"
   },
   "courseMaterials": {
+    "cannotEmbedVideo": "Este vídeo não pode ser reproduzido aqui.",
     "classHint": "Apenas as turmas que você leciona aparecem aqui.",
     "classLabel": "Turma",
     "descriptionStaff": "Documentos, links e vídeos compartilhados com uma turma para revisão dos alunos.",
@@ -508,6 +509,7 @@
     "fileLabel": "Arquivo",
     "markCompleteAction": "Marcar como concluído",
     "openAction": "Abrir",
+    "openExternally": "Abra-o em uma nova aba",
     "selectClassPlaceholder": "Selecione uma turma",
     "statusCompleted": "Concluído",
     "statusNotStarted": "Não Iniciado",
@@ -519,7 +521,8 @@
     "typeLink": "Link",
     "typeVideo": "Vídeo",
     "urlHint": "Um link para o vídeo ou recurso externo.",
-    "urlLabel": "URL"
+    "urlLabel": "URL",
+    "watchAction": "Assistir"
   },
   "dashboard": {
     "absences": "Faltas",
